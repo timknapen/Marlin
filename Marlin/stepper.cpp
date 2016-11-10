@@ -244,8 +244,24 @@ volatile long Stepper::endstops_trigsteps[XYZ];
 
 // Some useful constants
 
-#define ENABLE_STEPPER_DRIVER_INTERRUPT()  SBI(TIMSK1, OCIE1A)
-#define DISABLE_STEPPER_DRIVER_INTERRUPT() CBI(TIMSK1, OCIE1A)
+#if defined(__AVR__)
+  #define ENABLE_STEPPER_DRIVER_INTERRUPT()  SBI(TIMSK1, OCIE1A)
+  #define DISABLE_STEPPER_DRIVER_INTERRUPT() CBI(TIMSK1, OCIE1A)
+#elif defined(__arm__) && defined(IRQ_FTM2)
+  #define ENABLE_STEPPER_DRIVER_INTERRUPT()  NVIC_ENABLE_IRQ(IRQ_FTM2)
+  #define DISABLE_STEPPER_DRIVER_INTERRUPT() NVIC_DISABLE_IRQ(IRQ_FTM2)
+  #define ISR(func) static void func (void)
+  static unsigned short OCR1Aval;
+  class OCR1Aemu {
+    public: inline OCR1Aemu & operator = (unsigned short val) __attribute__((always_inline)) {
+      __disable_irq();
+      FTM2_C0V = FTM2_C0V - OCR1Aval + val;
+      OCR1Aval = val;
+      __enable_irq();
+      return *this;
+    }
+  } OCR1A;
+#endif
 
 /**
  *         __________________________
@@ -678,6 +694,17 @@ void Stepper::isr() {
   }
 }
 
+#if defined(__arm__) && defined(IRQ_FTM2)
+void ftm2_isr(void) {
+  int flags = FTM2_STATUS;
+  FTM2_STATUS = 0;
+  if (flags & 0x01) {
+    FTM2_C0V += OCR1Aval;
+    TIMER1_COMPA_vect();
+  }
+}
+#endif
+
 #if ENABLED(ADVANCE) || ENABLED(LIN_ADVANCE)
 
   // Timer interrupt for E. e_steps is set in the main routine;
@@ -769,6 +796,11 @@ void Stepper::init() {
   // Init TMC Steppers
   #if ENABLED(HAVE_TMCDRIVER)
     tmc_init();
+  #endif
+
+  // Init TMC2130 Steppers
+  #if ENABLED(HAVE_TMCDRIVER)
+    tmc2130_init();
   #endif
 
   // Init L6470 Steppers
@@ -902,6 +934,7 @@ void Stepper::init() {
     E_AXIS_INIT(3);
   #endif
 
+#if defined(__AVR__)
   // waveform generation = 0100 = CTC
   CBI(TCCR1B, WGM13);
   SBI(TCCR1B, WGM12);
@@ -922,6 +955,22 @@ void Stepper::init() {
   // Init Stepper ISR to 122 Hz for quick starting
   OCR1A = 0x4000;
   TCNT1 = 0;
+
+  #elif defined(__MK20DX256__)
+    FTM2_SC = 0;
+    FTM2_MOD = 0xFFFF;
+    FTM2_CNT = 0;
+    OCR1A = 0x4000;
+    FTM2_C0SC = 0x68;
+    #if F_BUS >= 32000000
+    FTM2_SC = FTM_SC_CLKS(4) | FTM_SC_CLKS(1);
+    #elif F_BUS >= 16000000
+    FTM2_SC = FTM_SC_CLKS(3) | FTM_SC_CLKS(1);
+    #else
+    #error "Clock must be at least 16 MHz"
+    #endif
+  #endif
+
   ENABLE_STEPPER_DRIVER_INTERRUPT();
 
   #if ENABLED(ADVANCE) || ENABLED(LIN_ADVANCE)

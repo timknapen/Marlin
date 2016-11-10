@@ -1018,68 +1018,70 @@ void Temperature::init() {
   #endif
 
   // Set analog inputs
-  ADCSRA = _BV(ADEN) | _BV(ADSC) | _BV(ADIF) | 0x07;
-  DIDR0 = 0;
-  #ifdef DIDR2
-    DIDR2 = 0;
-  #endif
-  #if HAS_TEMP_0
-    ANALOG_SELECT(TEMP_0_PIN);
-  #endif
-  #if HAS_TEMP_1
-    ANALOG_SELECT(TEMP_1_PIN);
-  #endif
-  #if HAS_TEMP_2
-    ANALOG_SELECT(TEMP_2_PIN);
-  #endif
-  #if HAS_TEMP_3
-    ANALOG_SELECT(TEMP_3_PIN);
-  #endif
-  #if HAS_TEMP_BED
-    ANALOG_SELECT(TEMP_BED_PIN);
-  #endif
-  #if ENABLED(FILAMENT_WIDTH_SENSOR)
-    ANALOG_SELECT(FILWIDTH_PIN);
-  #endif
+  #if defined(__AVR__)
+    ADCSRA = _BV(ADEN) | _BV(ADSC) | _BV(ADIF) | 0x07;
+    DIDR0 = 0;
+    #ifdef DIDR2
+      DIDR2 = 0;
+    #endif
+    #if HAS_TEMP_0
+      ANALOG_SELECT(TEMP_0_PIN);
+    #endif
+    #if HAS_TEMP_1
+      ANALOG_SELECT(TEMP_1_PIN);
+    #endif
+    #if HAS_TEMP_2
+      ANALOG_SELECT(TEMP_2_PIN);
+    #endif
+    #if HAS_TEMP_3
+      ANALOG_SELECT(TEMP_3_PIN);
+    #endif
+    #if HAS_TEMP_BED
+      ANALOG_SELECT(TEMP_BED_PIN);
+    #endif
+    #if ENABLED(FILAMENT_WIDTH_SENSOR)
+      ANALOG_SELECT(FILWIDTH_PIN);
+    #endif
 
-  #if HAS_AUTO_FAN_0
-    #if E0_AUTO_FAN_PIN == FAN1_PIN
-      SET_OUTPUT(E0_AUTO_FAN_PIN);
-      #if ENABLED(FAST_PWM_FAN)
-        setPwmFrequency(E0_AUTO_FAN_PIN, 1); // No prescaling. Pwm frequency = F_CPU/256/8
+    #if HAS_AUTO_FAN_0
+      #if E0_AUTO_FAN_PIN == FAN1_PIN
+        SET_OUTPUT(E0_AUTO_FAN_PIN);
+        #if ENABLED(FAST_PWM_FAN)
+          setPwmFrequency(E0_AUTO_FAN_PIN, 1); // No prescaling. Pwm frequency = F_CPU/256/8
+        #endif
+      #else
+        SET_OUTPUT(E0_AUTO_FAN_PIN);
       #endif
-    #else
-      SET_OUTPUT(E0_AUTO_FAN_PIN);
     #endif
-  #endif
-  #if HAS_AUTO_FAN_1 && !AUTO_1_IS_0
-    #if E1_AUTO_FAN_PIN == FAN1_PIN
-      SET_OUTPUT(E1_AUTO_FAN_PIN);
-      #if ENABLED(FAST_PWM_FAN)
-        setPwmFrequency(E1_AUTO_FAN_PIN, 1); // No prescaling. Pwm frequency = F_CPU/256/8
+    #if HAS_AUTO_FAN_1 && !AUTO_1_IS_0
+      #if E1_AUTO_FAN_PIN == FAN1_PIN
+        SET_OUTPUT(E1_AUTO_FAN_PIN);
+        #if ENABLED(FAST_PWM_FAN)
+          setPwmFrequency(E1_AUTO_FAN_PIN, 1); // No prescaling. Pwm frequency = F_CPU/256/8
+        #endif
+      #else
+        SET_OUTPUT(E1_AUTO_FAN_PIN);
       #endif
-    #else
-      SET_OUTPUT(E1_AUTO_FAN_PIN);
     #endif
-  #endif
-  #if HAS_AUTO_FAN_2 && !AUTO_2_IS_0 && !AUTO_2_IS_1
-    #if E2_AUTO_FAN_PIN == FAN1_PIN
-      SET_OUTPUT(E2_AUTO_FAN_PIN);
-      #if ENABLED(FAST_PWM_FAN)
-        setPwmFrequency(E2_AUTO_FAN_PIN, 1); // No prescaling. Pwm frequency = F_CPU/256/8
+    #if HAS_AUTO_FAN_2 && !AUTO_2_IS_0 && !AUTO_2_IS_1
+      #if E2_AUTO_FAN_PIN == FAN1_PIN
+        SET_OUTPUT(E2_AUTO_FAN_PIN);
+        #if ENABLED(FAST_PWM_FAN)
+          setPwmFrequency(E2_AUTO_FAN_PIN, 1); // No prescaling. Pwm frequency = F_CPU/256/8
+        #endif
+      #else
+        SET_OUTPUT(E2_AUTO_FAN_PIN);
       #endif
-    #else
-      SET_OUTPUT(E2_AUTO_FAN_PIN);
     #endif
-  #endif
-  #if HAS_AUTO_FAN_3 && !AUTO_3_IS_0 && !AUTO_3_IS_1 && !AUTO_3_IS_2
-    #if E3_AUTO_FAN_PIN == FAN1_PIN
-      SET_OUTPUT(E3_AUTO_FAN_PIN);
-      #if ENABLED(FAST_PWM_FAN)
-        setPwmFrequency(E3_AUTO_FAN_PIN, 1); // No prescaling. Pwm frequency = F_CPU/256/8
+    #if HAS_AUTO_FAN_3 && !AUTO_3_IS_0 && !AUTO_3_IS_1 && !AUTO_3_IS_2
+      #if E3_AUTO_FAN_PIN == FAN1_PIN
+        SET_OUTPUT(E3_AUTO_FAN_PIN);
+        #if ENABLED(FAST_PWM_FAN)
+          setPwmFrequency(E3_AUTO_FAN_PIN, 1); // No prescaling. Pwm frequency = F_CPU/256/8
+        #endif
+      #else
+        SET_OUTPUT(E3_AUTO_FAN_PIN);
       #endif
-    #else
-      SET_OUTPUT(E3_AUTO_FAN_PIN);
     #endif
   #endif
 
@@ -1474,6 +1476,7 @@ void Temperature::set_current_temp_raw() {
   }
 #endif // PINS_DEBUGGING
 
+#if defined(__AVR__)
 /**
  * Timer 0 is shared with millies so don't change the prescaler.
  *
@@ -1941,3 +1944,4 @@ void Temperature::isr() {
     }
   #endif
 }
+#endif // __AVR__

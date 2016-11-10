@@ -4027,9 +4027,45 @@
   #define PG5_WPORT   PORTG
   #define PG5_DDR     DDRG
   #define PG5_PWM     &OCR0B
+#endif // __AVR_ATmega1281__ || __AVR_ATmega2561__
 
+#if defined(__arm__) || defined(CORE_TEENSY) // Teensy 3.x
 
-#endif
+  #define GPIO_BITBAND_ADDR(reg, bit) (((uint32_t)&(reg) - 0x40000000) * 32 + (bit) * 4 + 0x42000000)
+  #define GPIO_BITBAND(reg, bit) (*(uint32_t *)GPIO_BITBAND_ADDR((reg), (bit)))
+
+  /// Read a pin
+  #undef _READ
+  #define _READ(p)        ((bool)(CORE_PIN ## p ## _PINREG & CORE_PIN ## p ## _BITMASK))
+  /// write to a pin
+  #undef _WRITE
+  #define _WRITE(p, v)    do { if (v) CORE_PIN ## p ## _PORTSET = CORE_PIN ## p ## _BITMASK; \
+                            else CORE_PIN ## p ## _PORTCLEAR = CORE_PIN ## p ## _BITMASK; } while (0)
+  /// toggle a pin
+  #undef _TOGGLE
+  #define _TOGGLE(p)      (*(&(CORE_PIN ## p ## _PORTCLEAR)+1) = CORE_PIN ## p ## _BITMASK)
+  /// set pin as input
+  #undef _SET_INPUT
+  #define _SET_INPUT(p)   do { CORE_PIN ## p ## _CONFIG = PORT_PCR_MUX(1); \
+                            GPIO_BITBAND(CORE_PIN ## p ## _DDRREG , CORE_PIN ## p ## _BIT) = 0; \
+                            } while (0)
+  /// set pin as output
+  #undef _SET_OUTPUT
+  #define _SET_OUTPUT(p)  do { CORE_PIN ## p ## _CONFIG = PORT_PCR_MUX(1)|PORT_PCR_SRE|PORT_PCR_DSE; \
+                            GPIO_BITBAND(CORE_PIN ## p ## _DDRREG , CORE_PIN ## p ## _BIT) = 1; \
+                            } while (0)
+  /// check if pin is an input
+  #undef _GET_INPUT
+  #define _GET_INPUT(p)   ((CORE_PIN ## p ## _DDRREG & CORE_PIN ## p ## _BITMASK) == 0)
+  /// check if pin is an output
+  #undef _GET_OUTPUT
+  #define _GET_OUTPUT(p)  ((CORE_PIN ## p ## _DDRREG & CORE_PIN ## p ## _BITMASK) == 0)
+  /// check if pin is an timer (not actually used by Marlin)
+  #undef GET_TIMER
+  #define DIO0_PIN // to pass the test below...
+  #define square(n) ((n) * (n)) // avr-libc nonstandard function
+
+#endif // Teensy 3.x
 
 #ifndef DIO0_PIN
   #error "pins for this chip not defined in arduino.h! If you write an appropriate pin definition and have this firmware work on your chip, please submit a pull request"
