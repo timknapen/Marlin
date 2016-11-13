@@ -5,7 +5,7 @@
 * CLI build: HARDWARE_MOTHERBOARD=85  make
 * 
 ****************************************************************************************/
-#if MOTHERBOARD == 85
+#if MOTHERBOARD == 86
 #define KNOWN_BOARD 1
 #define AT90USB 1286  // Disable MarlinSerial etc.
 
@@ -62,19 +62,19 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 
 #define X_STEP_PIN         0 //  0 Marlin
 #define X_DIR_PIN          1 //  1 Marlin
-#define X_ENABLE_PIN       -1
+#define X_ENABLE_PIN       21
 
 #define Y_STEP_PIN         2 //  2 Marlin
 #define Y_DIR_PIN          3 //  3
-#define Y_ENABLE_PIN       -1    // Shared w/x
+#define Y_ENABLE_PIN       22    // Shared w/x
 
 #define Z_STEP_PIN         4 //  4
 #define Z_DIR_PIN          5 //  5
-#define Z_ENABLE_PIN       -1 // Shared w/x
+#define Z_ENABLE_PIN       23 // Shared w/x
 
 #define E0_STEP_PIN        6 //  6
 #define E0_DIR_PIN         7 //  7
-#define E0_ENABLE_PIN      -1 // Shared w/x
+#define E0_ENABLE_PIN      24 // Shared w/x
 
 #define HEATER_0_PIN       15 //  21  // Extruder
 #define HEATER_1_PIN       -1
@@ -87,13 +87,13 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define Z_STOP_PIN          4
 
 // TODO: temperature.cpp still only AVR compatible - much ADC code
-#define TEMP_0_PIN         -1 // Extruder / Analog pin numbering
+#define TEMP_0_PIN         23 // Extruder / Analog pin numbering
 #define TEMP_BED_PIN       -1 // Bed / Analog pin numbering
 #define TEMP_1_PIN         -1
 #define TEMP_2_PIN         -1
 
 #define SDPOWER            -1
-#define SDCARDDETECT       -1		
+#define SD_DETECT_PIN       -1		
 #define SDSS               20 // 8
 #define LED_PIN             6
 #define PS_ON_PIN          27
