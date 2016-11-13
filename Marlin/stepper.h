@@ -52,6 +52,17 @@
 class Stepper;
 extern Stepper stepper;
 
+static unsigned short OCR1Aval;
+class OCR1Aemu {
+  public: inline OCR1Aemu & operator = (unsigned short val) __attribute__((always_inline)) {
+    __disable_irq();
+    FTM2_C0V = FTM2_C0V - OCR1Aval + val;
+    OCR1Aval = val;
+    __enable_irq();
+    return *this;
+  }
+} OCR1A;
+
 // intRes = intIn1 * intIn2 >> 16
 // uses:
 // r26 to store 0
@@ -298,14 +309,14 @@ class Stepper {
       NOLESS(step_rate, F_CPU / 500000);
       step_rate -= F_CPU / 500000; // Correct for minimal speed
       if (step_rate >= (8 * 256)) { // higher step rate
-        unsigned short table_address = (unsigned short)&speed_lookuptable_fast[(unsigned char)(step_rate >> 8)][0];
+        unsigned int table_address = (unsigned int)&speed_lookuptable_fast[(unsigned char)(step_rate >> 8)][0];
         unsigned char tmp_step_rate = (step_rate & 0x00ff);
         unsigned short gain = (unsigned short)pgm_read_word_near(table_address + 2);
         MultiU16X8toH16(timer, tmp_step_rate, gain);
         timer = (unsigned short)pgm_read_word_near(table_address) - timer;
       }
       else { // lower step rates
-        unsigned short table_address = (unsigned short)&speed_lookuptable_slow[0][0];
+        unsigned int table_address = (unsigned int)&speed_lookuptable_slow[0][0];
         table_address += ((step_rate) >> 1) & 0xfffc;
         timer = (unsigned short)pgm_read_word_near(table_address);
         timer -= (((unsigned short)pgm_read_word_near(table_address + 2) * (unsigned char)(step_rate & 0x0007)) >> 3);
