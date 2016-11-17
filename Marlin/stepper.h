@@ -48,25 +48,24 @@
 #include "stepper_indirection.h"
 #include "language.h"
 #include "types.h"
-//#include <TimerOne.h>
 
 class Stepper;
 extern Stepper stepper;
 
 static unsigned short OCR1Aval;
-//#ifdef OCR1A
-  //#undef OCR1A
-  //error "OCR1A already defined"
-//#endif
-/*class OCR1Aemu {
-  public: inline OCR1Aemu & operator = (unsigned short val) __attribute__((always_inline)) {
-    __disable_irq();
-    FTM2_C0V = FTM2_C0V - OCR1Aval + val;
-    OCR1Aval = val;
-    __enable_irq();
-    return *this;
+
+#if defined(__AVR__)
+  inline void setOCR1A(int cycles) {
+    OCR1A = cycles;
   }
-} //OCR1A;*/
+#elif defined(__arm__)
+  inline void setOCR1A(int cycles) {
+    __disable_irq();
+    FTM2_C0V = FTM2_C0V - OCR1Aval + cycles;
+    OCR1Aval = cycles;
+    __enable_irq();
+  }
+#endif
 
 #if defined(__AVR__)
   // intRes = intIn1 * intIn2 >> 16
@@ -377,7 +376,7 @@ class Stepper {
       step_loops_nominal = step_loops;
       acc_step_rate = current_block->initial_rate;
       acceleration_time = calc_timer(acc_step_rate);
-      //OCR1A = acceleration_time;
+      setOCR1A(acceleration_time);
       
       #if ENABLED(LIN_ADVANCE)
         if (current_block->use_advance_lead) {

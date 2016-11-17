@@ -246,11 +246,8 @@ void Stepper::isr() {
     current_block = NULL;
     planner.discard_current_block();
     cleaning_buffer_counter--;
-    //#if defined(__AVR__)
-    	//OCR1A = 200; // Run at max speed - 10 KHz
-    //#elif defined(__arm__)
-      //FTM2_C0V = 2000;
-    //#endif
+    //COMPARE1A = 200; // Run at max speed - 10 KHz
+    setOCR1A(200);
     return;
   }
 
@@ -268,11 +265,8 @@ void Stepper::isr() {
       step_events_completed = 0;
     }
     else {
-    	//#if defined(__AVR__)
-      	//OCR1A = 2000; // Run at slow speed - 1 KHz
-      //#elif defined(__arm__)
-        //FTM2_C0V = 2000;
-      //#endif
+      //COMPARE1A = 2000; // Run at slow speed - 1 KHz
+      setOCR1A(2000);
       return;
     }
   }
@@ -337,9 +331,7 @@ void Stepper::isr() {
 
     // step_rate to timer interval
 	  timer = calc_timer(acc_step_rate);
-    //#if defined(__AVR__)
-    	//OCR1A = timer;
-    //#endif
+    setOCR1A(timer);
     acceleration_time += timer;
   }
   else if (step_events_completed > (uint32_t)current_block->decelerate_after) {
@@ -358,21 +350,15 @@ void Stepper::isr() {
 
   	// step_rate to timer interval
   	timer = calc_timer(step_rate);
-    //#if defined(__AVR__)
-    	//OCR1A = timer;
-    //#endif
+    setOCR1A(timer);
     deceleration_time += timer;
   }
   else {
-  	//#if defined(__AVR__)
-    	//OCR1A = OCR1A_nominal;
-    //#endif
+    setOCR1A(OCR1A_nominal);
     // ensure we're running at the correct step rate, even if we just came off an acceleration
     step_loops = step_loops_nominal;
   }
-	//#if defined(__AVR__)
-	  //NOLESS(OCR1A, TCNT1 + 16);
-	//#endif
+	//NOLESS(COMPARE1A, TCNT1 + 16);
   // If current block is finished, reset pointer
   if (all_steps_done) {
     current_block = NULL;
@@ -441,14 +427,13 @@ void Stepper::init() {
 	  TCCR1B = (TCCR1B & ~(0x07 << CS10)) | (2 << CS10);
 
 	  // Init Stepper ISR to 122 Hz for quick starting
-	  //OCR1A = 0x4000;
+    setOCR1A(0x4000);
 	  TCNT1 = 0;
 	#elif defined(__MK20DX256__)
 	  FTM2_SC = 0; // Init FlexTimer2 Status and Control register
     FTM2_CNT = 0; // Init counter value to 0
-	  FTM2_MOD = 0xFFFF; // 65335
-	  //OCR1A = 0x4000; // 16384
-    //FTM2_C0V = 0x4000;
+	  FTM2_MOD = 0xFFFF; // Set top value for FTM2: 65335
+    setOCR1A(0x4000);
 	  FTM2_C0SC = 0x68; // b0110 1000 // CHF=0, CHIE=1, MSB=1, MSA=0, ELSB=1, ELSA=0, DMA=0
 	  #if F_BUS >= 32000000
 		  FTM2_SC = FTM_SC_CLKS(4) | FTM_SC_CLKS(1);
