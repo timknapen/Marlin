@@ -14,6 +14,7 @@
 #endif
 
 #define LARGE_FLASH        true
+#define USBCON 1286  // Disable MarlinSerial etc.
 
 /* 
 DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a TeensyBreadboard:
@@ -79,7 +80,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define HEATER_0_PIN       15 //  21  // Extruder
 #define HEATER_1_PIN       -1
 #define HEATER_2_PIN       -1
-#define HEATER_BED_PIN     14 // 20  // Bed
+#define HEATER_BED_PIN     -1 // 20  // Bed
 #define FAN_PIN            16 // 22  // Fan
 
 #define X_STOP_PIN          2

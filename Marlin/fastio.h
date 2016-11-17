@@ -563,7 +563,7 @@
   #define DIO13_RPORT PIND
   #define DIO13_WPORT PORTD
   #define DIO13_DDR   DDRD
-  #define DIO13_PWM   OCR1A
+  //#define DIO13_PWM   OCR1A
 
   #define DIO14_PIN   PIND6
   #define DIO14_RPORT PIND
@@ -3416,7 +3416,7 @@
   #define DIO7_RPORT  PINB
   #define DIO7_WPORT  PORTB
   #define DIO7_DDR    DDRB
-  #define DIO7_PWM    &OCR1AL
+  //#define DIO7_PWM    &OCR1AL
 
   #define DIO8_PIN    PINB6
   #define DIO8_RPORT  PINB

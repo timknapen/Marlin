@@ -48,12 +48,17 @@
 #include "stepper_indirection.h"
 #include "language.h"
 #include "types.h"
+//#include <TimerOne.h>
 
 class Stepper;
 extern Stepper stepper;
 
 static unsigned short OCR1Aval;
-class OCR1Aemu {
+//#ifdef OCR1A
+  //#undef OCR1A
+  //error "OCR1A already defined"
+//#endif
+/*class OCR1Aemu {
   public: inline OCR1Aemu & operator = (unsigned short val) __attribute__((always_inline)) {
     __disable_irq();
     FTM2_C0V = FTM2_C0V - OCR1Aval + val;
@@ -61,32 +66,36 @@ class OCR1Aemu {
     __enable_irq();
     return *this;
   }
-} OCR1A;
+} //OCR1A;*/
 
-// intRes = intIn1 * intIn2 >> 16
-// uses:
-// r26 to store 0
-// r27 to store the byte 1 of the 24 bit result
-#define MultiU16X8toH16(intRes, charIn1, intIn2) \
-  asm volatile ( \
-                 "clr r26 \n\t" \
-                 "mul %A1, %B2 \n\t" \
-                 "movw %A0, r0 \n\t" \
-                 "mul %A1, %A2 \n\t" \
-                 "add %A0, r1 \n\t" \
-                 "adc %B0, r26 \n\t" \
-                 "lsr r0 \n\t" \
-                 "adc %A0, r26 \n\t" \
-                 "adc %B0, r26 \n\t" \
-                 "clr r1 \n\t" \
-                 : \
-                 "=&r" (intRes) \
-                 : \
-                 "d" (charIn1), \
-                 "d" (intIn2) \
-                 : \
-                 "r26" \
-               )
+#if defined(__AVR__)
+  // intRes = intIn1 * intIn2 >> 16
+  // uses:
+  // r26 to store 0
+  // r27 to store the byte 1 of the 24 bit result
+  #define MultiU16X8toH16(intRes, charIn1, intIn2) \
+    asm volatile ( \
+                   "clr r26 \n\t" \
+                   "mul %A1, %B2 \n\t" \
+                   "movw %A0, r0 \n\t" \
+                   "mul %A1, %A2 \n\t" \
+                   "add %A0, r1 \n\t" \
+                   "adc %B0, r26 \n\t" \
+                   "lsr r0 \n\t" \
+                   "adc %A0, r26 \n\t" \
+                   "adc %B0, r26 \n\t" \
+                   "clr r1 \n\t" \
+                   : \
+                   "=&r" (intRes) \
+                   : \
+                   "d" (charIn1), \
+                   "d" (intIn2) \
+                   : \
+                   "r26" \
+                 )
+#elif defined(__arm__)
+  #define MultiU16X8toH16(intRes, charIn1, intIn2) (intRes = ((uint32_t)charIn1 * intIn2) >> 8)
+#endif
 
 class Stepper {
 
@@ -368,7 +377,7 @@ class Stepper {
       step_loops_nominal = step_loops;
       acc_step_rate = current_block->initial_rate;
       acceleration_time = calc_timer(acc_step_rate);
-      OCR1A = acceleration_time;
+      //OCR1A = acceleration_time;
       
       #if ENABLED(LIN_ADVANCE)
         if (current_block->use_advance_lead) {

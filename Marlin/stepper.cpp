@@ -92,66 +92,77 @@ volatile long Stepper::endstops_trigsteps[XYZ];
 #define Z_APPLY_DIR(v,Q) Z_DIR_WRITE(v)
 #define Z_APPLY_STEP(v,Q) Z_STEP_WRITE(v)
 
-// intRes = longIn1 * longIn2 >> 24
-// uses:
-// r26 to store 0
-// r27 to store bits 16-23 of the 48bit result. The top bit is used to round the two byte result.
-// note that the lower two bytes and the upper byte of the 48bit result are not calculated.
-// this can cause the result to be out by one as the lower bytes may cause carries into the upper ones.
-// B0 A0 are bits 24-39 and are the returned value
-// C1 B1 A1 is longIn1
-// D2 C2 B2 A2 is longIn2
-//
-#define MultiU24X32toH16(intRes, longIn1, longIn2) \
-  asm volatile ( \
-                 "clr r26 \n\t" \
-                 "mul %A1, %B2 \n\t" \
-                 "mov r27, r1 \n\t" \
-                 "mul %B1, %C2 \n\t" \
-                 "movw %A0, r0 \n\t" \
-                 "mul %C1, %C2 \n\t" \
-                 "add %B0, r0 \n\t" \
-                 "mul %C1, %B2 \n\t" \
-                 "add %A0, r0 \n\t" \
-                 "adc %B0, r1 \n\t" \
-                 "mul %A1, %C2 \n\t" \
-                 "add r27, r0 \n\t" \
-                 "adc %A0, r1 \n\t" \
-                 "adc %B0, r26 \n\t" \
-                 "mul %B1, %B2 \n\t" \
-                 "add r27, r0 \n\t" \
-                 "adc %A0, r1 \n\t" \
-                 "adc %B0, r26 \n\t" \
-                 "mul %C1, %A2 \n\t" \
-                 "add r27, r0 \n\t" \
-                 "adc %A0, r1 \n\t" \
-                 "adc %B0, r26 \n\t" \
-                 "mul %B1, %A2 \n\t" \
-                 "add r27, r1 \n\t" \
-                 "adc %A0, r26 \n\t" \
-                 "adc %B0, r26 \n\t" \
-                 "lsr r27 \n\t" \
-                 "adc %A0, r26 \n\t" \
-                 "adc %B0, r26 \n\t" \
-                 "mul %D2, %A1 \n\t" \
-                 "add %A0, r0 \n\t" \
-                 "adc %B0, r1 \n\t" \
-                 "mul %D2, %B1 \n\t" \
-                 "add %B0, r0 \n\t" \
-                 "clr r1 \n\t" \
-                 : \
-                 "=&r" (intRes) \
-                 : \
-                 "d" (longIn1), \
-                 "d" (longIn2) \
-                 : \
-                 "r26" , "r27" \
-               )
+#define E_APPLY_STEP(v,Q) E_STEP_WRITE(v)
 
-// Some useful constants
+	// intRes = longIn1 * longIn2 >> 24
+#if defined(__AVR__)
+	// uses:
+	// r26 to store 0
+	// r27 to store bits 16-23 of the 48bit result. The top bit is used to round the two byte result.
+	// note that the lower two bytes and the upper byte of the 48bit result are not calculated.
+	// this can cause the result to be out by one as the lower bytes may cause carries into the upper ones.
+	// B0 A0 are bits 24-39 and are the returned value
+	// C1 B1 A1 is longIn1
+	// D2 C2 B2 A2 is longIn2
+	//
+	#define MultiU24X32toH16(intRes, longIn1, longIn2) \
+	  asm volatile ( \
+	                 "clr r26 \n\t" \
+	                 "mul %A1, %B2 \n\t" \
+	                 "mov r27, r1 \n\t" \
+	                 "mul %B1, %C2 \n\t" \
+	                 "movw %A0, r0 \n\t" \
+	                 "mul %C1, %C2 \n\t" \
+	                 "add %B0, r0 \n\t" \
+	                 "mul %C1, %B2 \n\t" \
+	                 "add %A0, r0 \n\t" \
+	                 "adc %B0, r1 \n\t" \
+	                 "mul %A1, %C2 \n\t" \
+	                 "add r27, r0 \n\t" \
+	                 "adc %A0, r1 \n\t" \
+	                 "adc %B0, r26 \n\t" \
+	                 "mul %B1, %B2 \n\t" \
+	                 "add r27, r0 \n\t" \
+	                 "adc %A0, r1 \n\t" \
+	                 "adc %B0, r26 \n\t" \
+	                 "mul %C1, %A2 \n\t" \
+	                 "add r27, r0 \n\t" \
+	                 "adc %A0, r1 \n\t" \
+	                 "adc %B0, r26 \n\t" \
+	                 "mul %B1, %A2 \n\t" \
+	                 "add r27, r1 \n\t" \
+	                 "adc %A0, r26 \n\t" \
+	                 "adc %B0, r26 \n\t" \
+	                 "lsr r27 \n\t" \
+	                 "adc %A0, r26 \n\t" \
+	                 "adc %B0, r26 \n\t" \
+	                 "mul %D2, %A1 \n\t" \
+	                 "add %A0, r0 \n\t" \
+	                 "adc %B0, r1 \n\t" \
+	                 "mul %D2, %B1 \n\t" \
+	                 "add %B0, r0 \n\t" \
+	                 "clr r1 \n\t" \
+	                 : \
+	                 "=&r" (intRes) \
+	                 : \
+	                 "d" (longIn1), \
+	                 "d" (longIn2) \
+	                 : \
+	                 "r26" , "r27" \
+	               )
+#elif defined(__arm__)
+	#define MultiU24X32toH16(intRes, longIn1, longIn2) (intRes = ((uint64_t)longIn1 * longIn2) >> 24)
+#endif
 
-#define ENABLE_STEPPER_DRIVER_INTERRUPT()  SBI(TIMSK1, OCIE1A)
-#define DISABLE_STEPPER_DRIVER_INTERRUPT() CBI(TIMSK1, OCIE1A)
+#if defined(__AVR__)
+	// Some useful constants
+	#define ENABLE_STEPPER_DRIVER_INTERRUPT()  SBI(TIMSK1, OCIE1A)
+	#define DISABLE_STEPPER_DRIVER_INTERRUPT() CBI(TIMSK1, OCIE1A)
+#elif defined(__arm__) // && defined(IRQ_FTM2)
+	#define ENABLE_STEPPER_DRIVER_INTERRUPT()  NVIC_ENABLE_IRQ(IRQ_FTM2)
+	#define DISABLE_STEPPER_DRIVER_INTERRUPT() NVIC_DISABLE_IRQ(IRQ_FTM2)
+	#define ISR(func) static void func (void)
+#endif
 
 /**
  *         __________________________
@@ -172,7 +183,9 @@ volatile long Stepper::endstops_trigsteps[XYZ];
  */
 void Stepper::wake_up() {
   //  TCNT1 = 0;
-  ENABLE_STEPPER_DRIVER_INTERRUPT();
+  #if defined(__AVR__)
+  	ENABLE_STEPPER_DRIVER_INTERRUPT();
+  #endif
 }
 
 void Stepper::set_directions() {
@@ -215,14 +228,29 @@ void Stepper::set_directions() {
  *  2000     1 KHz - sleep rate
  *  4000   500  Hz - init rate
  */
-ISR(TIMER1_COMPA_vect) { Stepper::isr(); }
+#if defined(__AVR__)
+	ISR(TIMER1_COMPA_vect) { Stepper::isr(); }
+#elif defined(__arm__) && defined(IRQ_FTM2)
+void ftm2_isr(void) {
+  int flags = FTM2_STATUS;
+  FTM2_STATUS = 0;
+  if (flags & 0x01) {
+    FTM2_C0V += OCR1Aval;
+    TIMER1_COMPA_vect();
+  }
+}
+#endif
 
 void Stepper::isr() {
   if (cleaning_buffer_counter) {
     current_block = NULL;
     planner.discard_current_block();
     cleaning_buffer_counter--;
-    OCR1A = 200; // Run at max speed - 10 KHz
+    //#if defined(__AVR__)
+    	//OCR1A = 200; // Run at max speed - 10 KHz
+    //#elif defined(__arm__)
+      //FTM2_C0V = 2000;
+    //#endif
     return;
   }
 
@@ -240,13 +268,17 @@ void Stepper::isr() {
       step_events_completed = 0;
     }
     else {
-      OCR1A = 2000; // Run at slow speed - 1 KHz
+    	//#if defined(__AVR__)
+      	//OCR1A = 2000; // Run at slow speed - 1 KHz
+      //#elif defined(__arm__)
+        //FTM2_C0V = 2000;
+      //#endif
       return;
     }
   }
 
   // Update endstops state, if enabled
-  if (endstops.enabled || endstops.z_probe_enabled) endstops.update();
+  if (endstops.enabled ) endstops.update();
 
   // Take multiple steps per interrupt (For high speed moves)
   bool all_steps_done = false;
@@ -293,19 +325,29 @@ void Stepper::isr() {
   uint16_t timer, step_rate;
   if (step_events_completed <= (uint32_t)current_block->accelerate_until) {
 
-    MultiU24X32toH16(acc_step_rate, acceleration_time, current_block->acceleration_rate);
+  	#if defined(__AVR__)
+    	MultiU24X32toH16(acc_step_rate, acceleration_time, current_block->acceleration_rate);
+    #elif defined(__arm__)
+    	acc_step_rate = acceleration_time * current_block->acceleration_rate;
+    #endif
     acc_step_rate += current_block->initial_rate;
 
     // upper limit
     NOMORE(acc_step_rate, current_block->nominal_rate);
 
     // step_rate to timer interval
-    timer = calc_timer(acc_step_rate);
-    OCR1A = timer;
+	  timer = calc_timer(acc_step_rate);
+    //#if defined(__AVR__)
+    	//OCR1A = timer;
+    //#endif
     acceleration_time += timer;
   }
   else if (step_events_completed > (uint32_t)current_block->decelerate_after) {
-    MultiU24X32toH16(step_rate, deceleration_time, current_block->acceleration_rate);
+  	#if defined(__AVR__)
+    	MultiU24X32toH16(step_rate, deceleration_time, current_block->acceleration_rate);
+  	#elif defined(__arm__)
+  		step_rate = deceleration_time * current_block->acceleration_rate;
+		#endif
 
     if (step_rate < acc_step_rate) { // Still decelerating?
       step_rate = acc_step_rate - step_rate;
@@ -314,19 +356,23 @@ void Stepper::isr() {
     else
       step_rate = current_block->final_rate;
 
-    // step_rate to timer interval
-    timer = calc_timer(step_rate);
-    OCR1A = timer;
+  	// step_rate to timer interval
+  	timer = calc_timer(step_rate);
+    //#if defined(__AVR__)
+    	//OCR1A = timer;
+    //#endif
     deceleration_time += timer;
   }
   else {
-    OCR1A = OCR1A_nominal;
+  	//#if defined(__AVR__)
+    	//OCR1A = OCR1A_nominal;
+    //#endif
     // ensure we're running at the correct step rate, even if we just came off an acceleration
     step_loops = step_loops_nominal;
   }
-
-  NOLESS(OCR1A, TCNT1 + 16);
-
+	//#if defined(__AVR__)
+	  //NOLESS(OCR1A, TCNT1 + 16);
+	//#endif
   // If current block is finished, reset pointer
   if (all_steps_done) {
     current_block = NULL;
@@ -376,27 +422,44 @@ void Stepper::init() {
   AXIS_INIT(z, Z, Z);
   E_AXIS_INIT(0);
 
-  // waveform generation = 0100 = CTC
-  CBI(TCCR1B, WGM13);
-  SBI(TCCR1B, WGM12);
-  CBI(TCCR1A, WGM11);
-  CBI(TCCR1A, WGM10);
+  #if defined(__AVR__)
+	  // waveform generation = 0100 = CTC
+	  CBI(TCCR1B, WGM13);
+	  SBI(TCCR1B, WGM12);
+	  CBI(TCCR1A, WGM11);
+	  CBI(TCCR1A, WGM10);
 
-  // output mode = 00 (disconnected)
-  TCCR1A &= ~(3 << COM1A0);
-  TCCR1A &= ~(3 << COM1B0);
+	  // output mode = 00 (disconnected)
+	  TCCR1A &= ~(3 << COM1A0);
+	  TCCR1A &= ~(3 << COM1B0);
 
-  // Set the timer pre-scaler
-  // Generally we use a divider of 8, resulting in a 2MHz timer
-  // frequency on a 16MHz MCU. If you are going to change this, be
-  // sure to regenerate speed_lookuptable.h with
-  // create_speed_lookuptable.py
-  TCCR1B = (TCCR1B & ~(0x07 << CS10)) | (2 << CS10);
+	  // Set the timer pre-scaler
+	  // Generally we use a divider of 8, resulting in a 2MHz timer
+	  // frequency on a 16MHz MCU. If you are going to change this, be
+	  // sure to regenerate speed_lookuptable.h with
+	  // create_speed_lookuptable.py
+	  TCCR1B = (TCCR1B & ~(0x07 << CS10)) | (2 << CS10);
 
-  // Init Stepper ISR to 122 Hz for quick starting
-  OCR1A = 0x4000;
-  TCNT1 = 0;
-  ENABLE_STEPPER_DRIVER_INTERRUPT();
+	  // Init Stepper ISR to 122 Hz for quick starting
+	  //OCR1A = 0x4000;
+	  TCNT1 = 0;
+	#elif defined(__MK20DX256__)
+	  FTM2_SC = 0; // Init FlexTimer2 Status and Control register
+    FTM2_CNT = 0; // Init counter value to 0
+	  FTM2_MOD = 0xFFFF; // 65335
+	  //OCR1A = 0x4000; // 16384
+    //FTM2_C0V = 0x4000;
+	  FTM2_C0SC = 0x68; // b0110 1000 // CHF=0, CHIE=1, MSB=1, MSA=0, ELSB=1, ELSA=0, DMA=0
+	  #if F_BUS >= 32000000
+		  FTM2_SC = FTM_SC_CLKS(4) | FTM_SC_CLKS(1);
+	  #elif F_BUS >= 16000000
+		  FTM2_SC = FTM_SC_CLKS(3) | FTM_SC_CLKS(1);
+	  #else
+		  #error "Clock must be at least 16 MHz"
+	  #endif
+	#endif
+
+	ENABLE_STEPPER_DRIVER_INTERRUPT();
 
   endstops.enable(true); // Start with endstops active. After homing they can be disabled
   sei();
@@ -473,10 +536,14 @@ void Stepper::finish_and_disable() {
 
 void Stepper::quick_stop() {
   cleaning_buffer_counter = 5000;
-  DISABLE_STEPPER_DRIVER_INTERRUPT();
+  #if defined(__AVR__)
+  	DISABLE_STEPPER_DRIVER_INTERRUPT();
+  #endif
   while (planner.blocks_queued()) planner.discard_current_block();
   current_block = NULL;
-  ENABLE_STEPPER_DRIVER_INTERRUPT();
+  #if defined(__AVR__)
+  	ENABLE_STEPPER_DRIVER_INTERRUPT();
+  #endif
 }
 
 void Stepper::endstop_triggered(AxisEnum axis) {
