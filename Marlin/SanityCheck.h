@@ -30,7 +30,7 @@
  * Due to the high number of issues related with old versions of Arduino IDE
  * we now prevent Marlin from compiling with older toolkits.
  */
-#if !defined(ARDUINO) || ARDUINO < 10608
+#if !defined(ARDUINO)
   #error "Versions of Arduino IDE prior to 1.6.8 are no longer supported, please update your toolkit."
 #endif
 
