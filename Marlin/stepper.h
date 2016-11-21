@@ -58,7 +58,7 @@ static unsigned short OCR1Aval;
   inline void setOCR1A(int cycles) {
     OCR1A = cycles;
   }
-#elif defined(__arm__)
+#elif defined(__MK64FX512__)
   inline void setOCR1A(int cycles) {
     __disable_irq();
     FTM2_C0V = FTM2_C0V - OCR1Aval + cycles;
@@ -92,7 +92,7 @@ static unsigned short OCR1Aval;
                    : \
                    "r26" \
                  )
-#elif defined(__arm__)
+#elif defined(__MK64FX512__)
   #define MultiU16X8toH16(intRes, charIn1, intIn2) (intRes = ((uint32_t)charIn1 * intIn2) >> 8)
 #endif
 

@@ -846,7 +846,7 @@ void Temperature::init() {
   // Interleave temperature interrupt with millies interrupt
   OCR0B = 128; // Set output compare value
   SBI(TIMSK0, OCIE0B); // Enable Timer/Counter Output Compare Match B bit in Timer Interrupt Mask Register
-#elif defined (__arm__)
+#elif defined (__MK64FX512__)
 
 #endif
 
@@ -1091,7 +1091,7 @@ void Temperature::set_current_temp_raw() {
 
 #if defined(__AVR__)
   ISR(TIMER0_COMPB_vect) { Temperature::isr(); }
-#elif defined(__arm__) && defined(IRQ_FTM2)
+#elif defined(__MK64FX512__) && defined(IRQ_FTM2)
   #define ISR(func) static void func (void)
   void ftm3_isr(void) {
     int flags = FTM3_STATUS;

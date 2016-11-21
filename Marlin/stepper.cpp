@@ -150,7 +150,7 @@ volatile long Stepper::endstops_trigsteps[XYZ];
 	                 : \
 	                 "r26" , "r27" \
 	               )
-#elif defined(__arm__)
+#elif defined(__MK64FX512__)
 	#define MultiU24X32toH16(intRes, longIn1, longIn2) (intRes = ((uint64_t)longIn1 * longIn2) >> 24)
 #endif
 
@@ -158,7 +158,7 @@ volatile long Stepper::endstops_trigsteps[XYZ];
 	// Some useful constants
 	#define ENABLE_STEPPER_DRIVER_INTERRUPT()  SBI(TIMSK1, OCIE1A)
 	#define DISABLE_STEPPER_DRIVER_INTERRUPT() CBI(TIMSK1, OCIE1A)
-#elif defined(__arm__) // && defined(IRQ_FTM2)
+#elif defined(__MK64FX512__) // && defined(IRQ_FTM2)
 	#define ENABLE_STEPPER_DRIVER_INTERRUPT()  NVIC_ENABLE_IRQ(IRQ_FTM2)
 	#define DISABLE_STEPPER_DRIVER_INTERRUPT() NVIC_DISABLE_IRQ(IRQ_FTM2)
 	#define ISR(func) static void func (void)
@@ -230,7 +230,7 @@ void Stepper::set_directions() {
  */
 #if defined(__AVR__)
 	ISR(TIMER1_COMPA_vect) { Stepper::isr(); }
-#elif defined(__arm__) && defined(IRQ_FTM2)
+#elif defined(__MK64FX512__) && defined(IRQ_FTM2)
 void ftm2_isr(void) {
   int flags = FTM2_STATUS;
   FTM2_STATUS = 0;
@@ -321,7 +321,7 @@ void Stepper::isr() {
 
   	#if defined(__AVR__)
     	MultiU24X32toH16(acc_step_rate, acceleration_time, current_block->acceleration_rate);
-    #elif defined(__arm__)
+    #elif defined(__MK64FX512__)
     	acc_step_rate = acceleration_time * current_block->acceleration_rate;
     #endif
     acc_step_rate += current_block->initial_rate;
@@ -337,7 +337,7 @@ void Stepper::isr() {
   else if (step_events_completed > (uint32_t)current_block->decelerate_after) {
   	#if defined(__AVR__)
     	MultiU24X32toH16(step_rate, deceleration_time, current_block->acceleration_rate);
-  	#elif defined(__arm__)
+  	#elif defined(__MK64FX512__)
   		step_rate = deceleration_time * current_block->acceleration_rate;
 		#endif
 

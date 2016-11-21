@@ -9,8 +9,8 @@
 #define KNOWN_BOARD 1
 #define AT90USB 1286  // Disable MarlinSerial etc.
 
-#ifndef __MK20DX256__
-#error Oops!  Make sure you have 'Teensy 3.1' selected from the 'Tools -> Boards' menu.
+#ifndef __MK64FX512__
+#error Oops!  Make sure you have 'Teensy 3.5' selected from the 'Tools -> Boards' menu.
 #endif
 
 #define LARGE_FLASH        true
