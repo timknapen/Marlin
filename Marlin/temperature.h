@@ -36,6 +36,24 @@
   #include "stepper.h"
 #endif
 
+#if defined(__MK64FX512__) || defined(__MK66FX1M0__)
+static const uint8_t pin2sc1a[] = {
+  5, 14, 8, 9, 13, 12, 6, 7, 15, 4, 3, 19+128, 14+128, 15+128, // 0-13 -> A0-A13
+  5, 14, 8, 9, 13, 12, 6, 7, 15, 4, // 14-23 are A0-A9
+  255, 255, 255, 255, 255, 255, 255, // 24-30 are digital only
+  14+128, 15+128, 17, 18, 4+128, 5+128, 6+128, 7+128, 17+128,  // 31-39 are A12-A20
+  255, 255, 255, 255, 255, 255, 255, 255, 255,  // 40-48 are digital only
+  10+128, 11+128, // 49-50 are A23-A24
+  255, 255, 255, 255, 255, 255, 255, // 51-57 are digital only
+  255, 255, 255, 255, 255, 255, // 58-63 (sd card pins) are digital only
+  3, 19+128, // 64-65 are A10-A11
+  23, 23+128,// 66-67 are A21-A22 (DAC pins)
+  1, 1+128,  // 68-69 are A25-A26 (unused USB host port on Teensy 3.5)
+  26,        // 70 is Temperature Sensor
+  18+128     // 71 is Vref
+};
+#endif
+
 #ifndef SOFT_PWM_SCALE
   #define SOFT_PWM_SCALE 0
 #endif

@@ -194,7 +194,7 @@ const short temptable_4[][2] PROGMEM = {
 };
 #endif
 
-#if ANY_THERMISTOR_IS(5) // 100k ParCan thermistor (104GT-2)
+#if ANY_THERMISTOR_IS(5) && !defined(__MK64FX512__)// 100k ParCan thermistor (104GT-2)
 // ATC Semitec 104GT-2 (Used in ParCan)
 // Verified by linagee. Source: http://shop.arcol.hu/static/datasheets/thermistors.pdf
 // Calculated using 4.7kohm pullup, voltage divider math, and manufacturer provided temp/resistance
@@ -1115,6 +1115,48 @@ const short temptable_70[][2] PROGMEM = {
   { 1005 * OVERSAMPLENR,   5 },
   { 1009 * OVERSAMPLENR,   0 } // safety
 };
+#endif
+
+#if ANY_THERMISTOR_IS(5) && defined(__MK64FX512__) // 100k ParCan thermistor (104GT-2)
+// ATC Semitec 104GT-2 (Used in ParCan)
+// Verified by linagee. Source: http://shop.arcol.hu/static/datasheets/thermistors.pdf
+// Calculated using 4.7kohm pullup, voltage divider math, and manufacturer provided temp/resistance
+// For Teensy3.5 with 3.3 VCC
+const short temptable_5[][2] PROGMEM = {    
+  {    1 * OVERSAMPLENR,  713 },
+  {   17 * OVERSAMPLENR,  300 },
+  {   20 * OVERSAMPLENR,  290 },
+  {   23 * OVERSAMPLENR,  280 },
+  {   27 * OVERSAMPLENR,  270 },
+  {   31 * OVERSAMPLENR,  260 },
+  {   37 * OVERSAMPLENR,  250 },
+  {   43 * OVERSAMPLENR,  240 },
+  {   51 * OVERSAMPLENR,  230 },
+  {   61 * OVERSAMPLENR,  220 },
+  {   73 * OVERSAMPLENR,  210 },
+  {   88 * OVERSAMPLENR,  200 },
+  {  106 * OVERSAMPLENR,  190 },
+  {  128 * OVERSAMPLENR,  180 },
+  {  155 * OVERSAMPLENR,  170 },
+  {  189 * OVERSAMPLENR,  160 },
+  {  230 * OVERSAMPLENR,  150 },
+  {  279 * OVERSAMPLENR,  140 },
+  {  336 * OVERSAMPLENR,  130 },
+  {  402 * OVERSAMPLENR,  120 },
+  {  476 * OVERSAMPLENR,  110 },
+  {  555 * OVERSAMPLENR,  100 },
+  {  635 * OVERSAMPLENR,   90 },
+  {  713 * OVERSAMPLENR,   80 },
+  {  785 * OVERSAMPLENR,   70 },
+  {  847 * OVERSAMPLENR,   60 },
+  {  898 * OVERSAMPLENR,   50 },
+  {  938 * OVERSAMPLENR,   40 },
+  {  967 * OVERSAMPLENR,   30 },
+  {  987 * OVERSAMPLENR,   20 },
+  { 1001 * OVERSAMPLENR,   10 },
+  { 1011 * OVERSAMPLENR,    0 }
+};        
+
 #endif
 
 // Pt1000 and Pt100 handling

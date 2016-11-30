@@ -817,7 +817,6 @@ void Temperature::updateTemperaturesFromRawValues() {
  * The manager is implemented by periodic calls to manage_heater()
  */
 void Temperature::init() {
-
   // Finish init of mult hotend arrays
   HOTEND_LOOP() {
     // populate with the first value
@@ -847,7 +846,23 @@ void Temperature::init() {
   OCR0B = 128; // Set output compare value
   SBI(TIMSK0, OCIE0B); // Enable Timer/Counter Output Compare Match B bit in Timer Interrupt Mask Register
 #elif defined (__MK64FX512__)
+  FTM1_MODE = FTM_MODE_WPDIS | FTM_MODE_FTMEN; // Disable write protection, Enable FTM1
+  FTM1_SC = 0x00; // Set this to zero before changing the modulus
+  FTM1_CNT = 0x0000; // Reset the count to zero
+  FTM1_MOD = 0xFFFF; // max modulus = 65535
+  FTM1_C0V = 0xFFFF; // Initial FTM0 Channel 0 compare value 65535 - 381Hz
+  FTM1_SC = (FTM_SC_CLKS(0b1)&FTM_SC_CLKS_MASK) | (FTM_SC_PS(0b10)&FTM_SC_PS_MASK); // Bus clock 50MHz divided by prescaler 4
+  FTM1_C0SC = FTM_CSC_CHIE | FTM_CSC_MSA | FTM_CSC_ELSA; // Enable channels interrupts, Select Output Compare mode
 
+  analog_init();
+  while (ADC0_SC3 & ADC_SC3_CAL) {} ; // Wait for calibration to finish
+  NVIC_ENABLE_IRQ(IRQ_FTM1);
+/*  
+  int channelTemp0 = pin2sc1a[TEMP_0_PIN];
+  #if TEMP_BED_PIN >= 0
+    int channelBed = pin2sc1a[TEMP_BED_PIN];
+  #endif
+*/
 #endif
 
   // Wait for temperature measurement to settle
@@ -1091,20 +1106,16 @@ void Temperature::set_current_temp_raw() {
 
 #if defined(__AVR__)
   ISR(TIMER0_COMPB_vect) { Temperature::isr(); }
-#elif defined(__MK64FX512__) && defined(IRQ_FTM2)
-  #define ISR(func) static void func (void)
-  void ftm3_isr(void) {
-    int flags = FTM3_STATUS;
-    FTM3_STATUS = 0;
-    if (flags & 0x01) {
-      FTM3_C0V += OCR1Aval;
-      TIMER0_COMPB_vect();
-    }
-  }
+#elif defined(__MK64FX512__)// && defined(IRQ_FTM2)
+extern "C" void ftm1_isr(void) {
+  FTM1_CNT = 0x0000;
+  Temperature::isr();
+  FTM1_SC &= ~FTM_SC_TOF; // Clear FTM Overflow flag
+  FTM1_C0SC &= ~FTM_CSC_CHF; // Clear FTM Channel Compare flag
+}
 #endif
 
 void Temperature::isr() {
-
   static uint8_t temp_count = 0;
   static TempState temp_state = StartupDelay;
   static uint8_t pwm_count = _BV(SOFT_PWM_SCALE);
@@ -1130,61 +1141,102 @@ void Temperature::isr() {
   pwm_count += _BV(SOFT_PWM_SCALE);
   pwm_count &= 0x7F; //  = 127 = 0b111 1111
 
-// arm TODO
+  #if defined(__AVR__)
+    #define SET_ADMUX_ADCSRA(pin) ADMUX = _BV(REFS0) | (pin & 0x07); SBI(ADCSRA, ADSC)
+    #define START_ADC(pin) ADCSRB = 0; SET_ADMUX_ADCSRA(pin)
+    #define TEMP_READ ADC
+  #elif defined(__MK64FX512__)
+    #define START_ADC(pin) ADC0_SC1A = pin2sc1a[pin];
+    #define TEMP_READ ADC0_RA
+  #endif
 
   // Prepare or measure a sensor, each one every 12th frame
   switch (temp_state) {
     case PrepareTemp_0:
-#if (__AVR__)    
-      ADCSRB = 0; // Init control and status register B to 0
-      ADMUX = _BV(REFS0) | (TEMP_0_PIN & 0x07); // ADMUX = 0b01000101 // For pin 13
-      SBI(ADCSRA, ADSC); // Start Conversion
-#endif
+      #if HAS_TEMP_0
+        START_ADC(TEMP_0_PIN);
+      #endif
       lcd_buttons_update();
       temp_state = MeasureTemp_0;
       break;
     case MeasureTemp_0:
-      //raw_temp_value[0] += ADC;
-      raw_temp_value[0] += 200; // TODO
+      #if HAS_TEMP_0
+        raw_temp_value[0] += TEMP_READ;
+      #endif
       temp_state = PrepareTemp_BED;
       break;
-#if 1
+
     case PrepareTemp_BED:
+      #if HAS_TEMP_BED
+        START_ADC(TEMP_BED_PIN);
+      #endif
       lcd_buttons_update();
       temp_state = MeasureTemp_BED;
       break;
     case MeasureTemp_BED:
+      #if HAS_TEMP_BED
+        raw_temp_bed_value += TEMP_READ;
+      #endif
       temp_state = PrepareTemp_1;
       break;
+
     case PrepareTemp_1:
+      #if HAS_TEMP_1
+        START_ADC(TEMP_1_PIN);
+      #endif
       lcd_buttons_update();
       temp_state = MeasureTemp_1;
       break;
     case MeasureTemp_1:
+      #if HAS_TEMP_1
+        raw_temp_value[1] += TEMP_READ;
+      #endif
       temp_state = PrepareTemp_2;
       break;
 
     case PrepareTemp_2:
+      #if HAS_TEMP_2
+        START_ADC(TEMP_2_PIN);
+      #endif
       lcd_buttons_update();
       temp_state = MeasureTemp_2;
       break;
     case MeasureTemp_2:
+      #if HAS_TEMP_2
+        raw_temp_value[2] += TEMP_READ;
+      #endif
       temp_state = PrepareTemp_3;
       break;
 
     case PrepareTemp_3:
+      #if HAS_TEMP_3
+        START_ADC(TEMP_3_PIN);
+      #endif
       lcd_buttons_update();
       temp_state = MeasureTemp_3;
       break;
     case MeasureTemp_3:
+      #if HAS_TEMP_3
+        raw_temp_value[3] += TEMP_READ;
+      #endif
       temp_state = Prepare_FILWIDTH;
       break;
 
     case Prepare_FILWIDTH:
+      #if ENABLED(FILAMENT_WIDTH_SENSOR)
+        START_ADC(FILWIDTH_PIN);
+      #endif
       lcd_buttons_update();
       temp_state = Measure_FILWIDTH;
       break;
     case Measure_FILWIDTH:
+      #if ENABLED(FILAMENT_WIDTH_SENSOR)
+        // raw_filwidth_value += ADC;  //remove to use an IIR filter approach
+        if (ADC > 102) { //check that ADC is reading a voltage > 0.5 volts, otherwise don't take in the data.
+          raw_filwidth_value -= (raw_filwidth_value >> 7); //multiply raw_filwidth_value by 127/128
+          raw_filwidth_value += ((unsigned long)ADC << 7); //add new ADC reading
+        }
+      #endif
       temp_state = PrepareTemp_0;
       temp_count++;
       break;
@@ -1192,7 +1244,7 @@ void Temperature::isr() {
     case StartupDelay:
       temp_state = PrepareTemp_0;
       break;
-#endif
+
     // default:
     //   SERIAL_ERROR_START;
     //   SERIAL_ERRORLNPGM("Temp measurement error!");
