@@ -275,9 +275,7 @@ volatile long Stepper::endstops_trigsteps[XYZ];
  */
 void Stepper::wake_up() {
   //  TCNT1 = 0;
-  #if defined(__AVR__)
     ENABLE_STEPPER_DRIVER_INTERRUPT();
-  #endif
 }
 
 /**
@@ -321,10 +319,6 @@ void Stepper::set_directions() {
   #endif // !ADVANCE && !LIN_ADVANCE
 }
 
-#if ENABLED(ENDSTOP_INTERRUPTS_FEATURE)
-  extern volatile uint8_t e_hit;
-#endif
-
 /**
  * Stepper Driver Interrupt
  *
@@ -353,7 +347,7 @@ void Stepper::set_directions() {
 
  */
 #if defined(__AVR__)
-ISR(TIMER1_COMPA_vect) { Stepper::isr(); }
+  ISR(TIMER1_COMPA_vect) { Stepper::isr(); }
 #elif defined(__MK64FX512__)// && defined(IRQ_FTM2)
 extern "C" void ftm0_isr(void) {
   FTM0_CNT = 0x0000;
@@ -365,14 +359,15 @@ extern "C" void ftm0_isr(void) {
 
 void Stepper::isr() {
   if (cleaning_buffer_counter) {
-    --cleaning_buffer_counter;
     current_block = NULL;
     planner.discard_current_block();
     #ifdef SD_FINISHED_RELEASECOMMAND
-      if (!cleaning_buffer_counter && (SD_FINISHED_STEPPERRELEASE)) enqueue_and_echo_commands_P(PSTR(SD_FINISHED_RELEASECOMMAND));
+      if ((cleaning_buffer_counter == 1) && (SD_FINISHED_STEPPERRELEASE))
+        enqueue_and_echo_commands_P(PSTR(SD_FINISHED_RELEASECOMMAND));
     #endif
+    cleaning_buffer_counter--;
     //OCR1A = 200; // Run at max speed - 10 KHz
-	setTimer(200);
+    setTimer(200);
     return;
   }
 
@@ -381,6 +376,7 @@ void Stepper::isr() {
     // Anything in the buffer?
     current_block = planner.get_current_block();
     if (current_block) {
+      SBI(current_block->flag, BLOCK_BIT_BUSY);
       trapezoid_generator_reset();
 
       // Initialize Bresenham counters to 1/2 the ceiling
@@ -418,21 +414,11 @@ void Stepper::isr() {
   }
 
   // Update endstops state, if enabled
-  if ((endstops.enabled
+  if (endstops.enabled
     #if HAS_BED_PROBE
       || endstops.z_probe_enabled
     #endif
-    )
-    #if ENABLED(ENDSTOP_INTERRUPTS_FEATURE)
-      && e_hit
-    #endif
-  ) {
-    endstops.update();
-
-    #if ENABLED(ENDSTOP_INTERRUPTS_FEATURE)
-      e_hit--;
-    #endif
-  }
+  ) endstops.update();
 
   // Take multiple steps per interrupt (For high speed moves)
   bool all_steps_done = false;
@@ -605,6 +591,7 @@ void Stepper::isr() {
   #endif
 
   // Calculate new timer value
+  uint16_t timer, step_rate;
   if (step_events_completed <= (uint32_t)current_block->accelerate_until) {
 
     MultiU24X32toH16(acc_step_rate, acceleration_time, current_block->acceleration_rate);
@@ -614,9 +601,9 @@ void Stepper::isr() {
     NOMORE(acc_step_rate, current_block->nominal_rate);
 
     // step_rate to timer interval
-    uint16_t timer = calc_timer(acc_step_rate);
+    timer = calc_timer(acc_step_rate);
     //OCR1A = timer;
-	setTimer(timer);
+    setTimer(timer);
     acceleration_time += timer;
 
     #if ENABLED(LIN_ADVANCE)
@@ -657,12 +644,11 @@ void Stepper::isr() {
     #endif
   }
   else if (step_events_completed > (uint32_t)current_block->decelerate_after) {
-    uint16_t step_rate;
     #if defined(__AVR__)
-	  MultiU24X32toH16(step_rate, deceleration_time, current_block->acceleration_rate);
-	#elif defined(__MK64FX512__)
-  		step_rate = deceleration_time * current_block->acceleration_rate;
-	#endif
+      MultiU24X32toH16(step_rate, deceleration_time, current_block->acceleration_rate);
+    #elif defined(__MK64FX512__)
+      step_rate = deceleration_time * current_block->acceleration_rate;
+    #endif
 
     if (step_rate < acc_step_rate) { // Still decelerating?
       step_rate = acc_step_rate - step_rate;
@@ -672,9 +658,9 @@ void Stepper::isr() {
       step_rate = current_block->final_rate;
 
     // step_rate to timer interval
-    uint16_t timer = calc_timer(step_rate);
+    timer = calc_timer(step_rate);
     //OCR1A = timer;
-	setTimer(timer);
+    setTimer(timer);
     deceleration_time += timer;
 
     #if ENABLED(LIN_ADVANCE)
