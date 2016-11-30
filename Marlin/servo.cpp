@@ -108,10 +108,10 @@ static inline void handle_interrupts(timer16_Sequence_t timer, volatile uint16_t
 }
 
 #ifndef WIRING // Wiring pre-defines signal handlers so don't define any if compiling for the Wiring platform
-
+#if defined(__AVR__)
   // Interrupt handlers for Arduino
   #if ENABLED(_useTimer1)
-    //SIGNAL (TIMER1_COMPA_vect) { handle_interrupts(_timer1, &TCNT1, &OCR1A); }
+    SIGNAL (TIMER1_COMPA_vect) { handle_interrupts(_timer1, &TCNT1, &OCR1A); }
   #endif
 
   #if ENABLED(_useTimer3)
@@ -125,6 +125,7 @@ static inline void handle_interrupts(timer16_Sequence_t timer, volatile uint16_t
   #if ENABLED(_useTimer5)
     SIGNAL (TIMER5_COMPA_vect) { handle_interrupts(_timer5, &TCNT5, &OCR5A); }
   #endif
+#endif
 
 #else //!WIRING
 
