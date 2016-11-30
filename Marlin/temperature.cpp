@@ -1762,6 +1762,7 @@ void Temperature::isr() {
     } // (pwm_count % 64) == 0
 
   #endif // SLOW_PWM_HEATERS
+  
 #if defined(__AVR__)
   #define SET_ADMUX_ADCSRA(pin) ADMUX = _BV(REFS0) | (pin & 0x07); SBI(ADCSRA, ADSC)
   #ifdef MUX5
