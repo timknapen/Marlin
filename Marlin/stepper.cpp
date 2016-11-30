@@ -159,9 +159,8 @@ volatile long Stepper::endstops_trigsteps[XYZ];
 	#define ENABLE_STEPPER_DRIVER_INTERRUPT()  SBI(TIMSK1, OCIE1A)
 	#define DISABLE_STEPPER_DRIVER_INTERRUPT() CBI(TIMSK1, OCIE1A)
 #elif defined(__MK64FX512__) // && defined(IRQ_FTM2)
-	#define ENABLE_STEPPER_DRIVER_INTERRUPT()  NVIC_ENABLE_IRQ(IRQ_FTM2)
-	#define DISABLE_STEPPER_DRIVER_INTERRUPT() NVIC_DISABLE_IRQ(IRQ_FTM2)
-	#define ISR(func) static void func (void)
+	#define ENABLE_STEPPER_DRIVER_INTERRUPT()  NVIC_ENABLE_IRQ(IRQ_FTM0);
+	#define DISABLE_STEPPER_DRIVER_INTERRUPT() NVIC_DISABLE_IRQ(IRQ_FTM0);
 #endif
 
 /**
@@ -227,17 +226,27 @@ void Stepper::set_directions() {
  *   200    10 KHz - nominal max rate
  *  2000     1 KHz - sleep rate
  *  4000   500  Hz - init rate
+ *
+ * Teensy3.5 Table
+ * FTM0 runs at a base frequency of F_BUS = 60MHz and a prescale of 8.
+ * FTM compare val = F_BUS / prescale / frequency
+ *
+ * FTM0_C0V   Frequency
+ *        1     7.5 MHz
+ *      187.5    40 KHz
+ *      375      20 KHz - capped max rate
+ *      750      10 KHz - nominal max rate
+ *     7500       1 KHz - sleep rate
+ *    15000      500 Hz - init rate
  */
 #if defined(__AVR__)
 	ISR(TIMER1_COMPA_vect) { Stepper::isr(); }
-#elif defined(__MK64FX512__) && defined(IRQ_FTM2)
-void ftm2_isr(void) {
-  int flags = FTM2_STATUS;
-  FTM2_STATUS = 0;
-  if (flags & 0x01) {
-    FTM2_C0V += OCR1Aval;
-    TIMER1_COMPA_vect();
-  }
+#elif defined(__MK64FX512__)// && defined(IRQ_FTM2)
+extern "C" void ftm0_isr(void) {
+  FTM0_CNT = 0x0000;
+  Stepper::isr();
+  FTM0_SC &= ~FTM_SC_TOF; // Clear FTM Overflow flag
+  FTM0_C0SC &= ~FTM_CSC_CHF; // Clear FTM Channel Compare flag
 }
 #endif
 
@@ -247,7 +256,7 @@ void Stepper::isr() {
     planner.discard_current_block();
     cleaning_buffer_counter--;
     //COMPARE1A = 200; // Run at max speed - 10 KHz
-    setOCR1A(200);
+    setTimer(200);
     return;
   }
 
@@ -266,7 +275,7 @@ void Stepper::isr() {
     }
     else {
       //COMPARE1A = 2000; // Run at slow speed - 1 KHz
-      setOCR1A(2000);
+      setTimer(2000);
       return;
     }
   }
@@ -331,7 +340,7 @@ void Stepper::isr() {
 
     // step_rate to timer interval
 	  timer = calc_timer(acc_step_rate);
-    setOCR1A(timer);
+    setTimer(timer);
     acceleration_time += timer;
   }
   else if (step_events_completed > (uint32_t)current_block->decelerate_after) {
@@ -350,11 +359,11 @@ void Stepper::isr() {
 
   	// step_rate to timer interval
   	timer = calc_timer(step_rate);
-    setOCR1A(timer);
+    setTimer(timer);
     deceleration_time += timer;
   }
   else {
-    setOCR1A(OCR1A_nominal);
+    setTimer(OCR1A_nominal);
     // ensure we're running at the correct step rate, even if we just came off an acceleration
     step_loops = step_loops_nominal;
   }
@@ -366,7 +375,7 @@ void Stepper::isr() {
   }
 }
 
-void Stepper::init() {  
+void Stepper::init() {
   // Init TMC2130 Steppers
   #if ENABLED(HAVE_TMC2130)
     tmc2130_init();
@@ -427,21 +436,16 @@ void Stepper::init() {
 	  TCCR1B = (TCCR1B & ~(0x07 << CS10)) | (2 << CS10);
 
 	  // Init Stepper ISR to 122 Hz for quick starting
-    setOCR1A(0x4000);
+    setTimer(0x4000);
 	  TCNT1 = 0;
-	#elif defined(__MK20DX256__)
-	  FTM2_SC = 0; // Init FlexTimer2 Status and Control register
-    FTM2_CNT = 0; // Init counter value to 0
-	  FTM2_MOD = 0xFFFF; // Set top value for FTM2: 65335
-    setOCR1A(0x4000);
-	  FTM2_C0SC = 0x68; // b0110 1000 // CHF=0, CHIE=1, MSB=1, MSA=0, ELSB=1, ELSA=0, DMA=0
-	  #if F_BUS >= 32000000
-		  FTM2_SC = FTM_SC_CLKS(4) | FTM_SC_CLKS(1);
-	  #elif F_BUS >= 16000000
-		  FTM2_SC = FTM_SC_CLKS(3) | FTM_SC_CLKS(1);
-	  #else
-		  #error "Clock must be at least 16 MHz"
-	  #endif
+	#elif defined(__MK64FX512__)
+    FTM0_MODE = FTM_MODE_WPDIS | FTM_MODE_FTMEN;
+    FTM0_SC = 0x00; // Set this to zero before changing the modulus
+    FTM0_CNT = 0x0000; // Reset the count to zero
+    FTM0_MOD = 0xFFFF; // max modulus = 65535
+    FTM0_C0V = 0xFFFF; // Initial FTM0 Channel 0 compare value 65535 - ?Hz
+    FTM0_SC = (FTM_SC_CLKS(0b1)&FTM_SC_CLKS_MASK) | (FTM_SC_PS(0b11)&FTM_SC_PS_MASK); // Bus clock 60MHz divided by prescaler 8
+    FTM0_C0SC = FTM_CSC_CHIE | FTM_CSC_MSA | FTM_CSC_ELSA;
 	#endif
 
 	ENABLE_STEPPER_DRIVER_INTERRUPT();

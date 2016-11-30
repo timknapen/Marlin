@@ -52,17 +52,14 @@
 class Stepper;
 extern Stepper stepper;
 
-static unsigned short OCR1Aval;
-
 #if defined(__AVR__)
-  inline void setOCR1A(int cycles) {
+  inline void setTimer(int cycles) {
     OCR1A = cycles;
   }
 #elif defined(__MK64FX512__)
-  inline void setOCR1A(int cycles) {
+  inline void setTimer(int cycles) {
     __disable_irq();
-    FTM2_C0V = FTM2_C0V - OCR1Aval + cycles;
-    OCR1Aval = cycles;
+    FTM0_C0V = 3.75 * cycles; // Timer runs faster than on AVR so we need to count higher
     __enable_irq();
   }
 #endif
@@ -376,7 +373,7 @@ class Stepper {
       step_loops_nominal = step_loops;
       acc_step_rate = current_block->initial_rate;
       acceleration_time = calc_timer(acc_step_rate);
-      setOCR1A(acceleration_time);
+      setTimer(acceleration_time);
       
       #if ENABLED(LIN_ADVANCE)
         if (current_block->use_advance_lead) {
