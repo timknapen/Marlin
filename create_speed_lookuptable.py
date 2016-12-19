@@ -47,5 +47,3 @@ print "};"
 print
 
 print "#endif"
-
-print a[0]
