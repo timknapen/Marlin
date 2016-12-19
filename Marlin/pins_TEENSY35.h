@@ -61,9 +61,9 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 
 // TODO: needs work here, to define pinout....
 
-#define X_STEP_PIN         0 //  0 Marlin
-#define X_DIR_PIN          1 //  1 Marlin
-#define X_ENABLE_PIN       21
+#define X_STEP_PIN         11 //  0 Marlin
+#define X_DIR_PIN          12 //  1 Marlin
+#define X_ENABLE_PIN       24
 
 #define Y_STEP_PIN         2 //  2 Marlin
 #define Y_DIR_PIN          3 //  3
@@ -77,7 +77,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define E0_DIR_PIN         7 //  7
 #define E0_ENABLE_PIN      24 // Shared w/x
 
-#define HEATER_0_PIN       15 //  21  // Extruder
+#define HEATER_0_PIN       32 //  21  // Extruder
 #define HEATER_1_PIN       -1
 #define HEATER_2_PIN       -1
 #define HEATER_BED_PIN     -1 // 20  // Bed
@@ -87,8 +87,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define Y_STOP_PIN          3
 #define Z_STOP_PIN          4
 
-// TODO: temperature.cpp still only AVR compatible - much ADC code
-#define TEMP_0_PIN          3 // Extruder / Analog pin numbering
+#define TEMP_0_PIN          3 // Extruder / Analog pin numbering: 3 => A3
 #define TEMP_BED_PIN       -1 // Bed / Analog pin numbering
 #define TEMP_1_PIN         -1
 #define TEMP_2_PIN         -1
