@@ -350,8 +350,8 @@ void Stepper::set_directions() {
   ISR(TIMER1_COMPA_vect) { Stepper::isr(); }
 #elif defined(__MK64FX512__)// && defined(IRQ_FTM2)
 extern "C" void ftm0_isr(void) {
-  FTM0_CNT = 0x0000;
   Stepper::isr();
+  FTM0_CNT = 0x0000;
   FTM0_SC &= ~FTM_SC_TOF; // Clear FTM Overflow flag
   FTM0_C0SC &= ~FTM_CSC_CHF; // Clear FTM Channel Compare flag
 }
@@ -367,7 +367,8 @@ void Stepper::isr() {
     #endif
     cleaning_buffer_counter--;
     //OCR1A = 200; // Run at max speed - 10 KHz
-    setTimer(200);
+    //setTimer(200);
+    FTM0_C0V = 0x2EE; // 750 = 200*3.75
     return;
   }
 
@@ -397,7 +398,8 @@ void Stepper::isr() {
       #if ENABLED(Z_LATE_ENABLE)
         if (current_block->steps[Z_AXIS] > 0) {
           enable_z();
-          OCR1A = 2000; // Run at slow speed - 1 KHz
+          //OCR1A = 2000; // Run at slow speed - 1 KHz
+          setTimer(2000);
           return;
         }
       #endif
@@ -408,7 +410,8 @@ void Stepper::isr() {
     }
     else {
       //OCR1A = 2000; // Run at slow speed - 1 KHz
-	  setTimer(2000);
+      //setTimer(2000);
+      FTM0_C0V = 0x1D4C;
       return;
     }
   }
@@ -593,7 +596,6 @@ void Stepper::isr() {
   // Calculate new timer value
   uint16_t timer, step_rate;
   if (step_events_completed <= (uint32_t)current_block->accelerate_until) {
-
     MultiU24X32toH16(acc_step_rate, acceleration_time, current_block->acceleration_rate);
     acc_step_rate += current_block->initial_rate;
 
@@ -603,6 +605,8 @@ void Stepper::isr() {
     // step_rate to timer interval
     timer = calc_timer(acc_step_rate);
     //OCR1A = timer;
+    //setTimer(0x1FF);
+    //MYSERIAL.println("Accelerate");
     setTimer(timer);
     acceleration_time += timer;
 
@@ -644,11 +648,7 @@ void Stepper::isr() {
     #endif
   }
   else if (step_events_completed > (uint32_t)current_block->decelerate_after) {
-    #if defined(__AVR__)
-      MultiU24X32toH16(step_rate, deceleration_time, current_block->acceleration_rate);
-    #elif defined(__MK64FX512__)
-      step_rate = deceleration_time * current_block->acceleration_rate;
-    #endif
+    MultiU24X32toH16(step_rate, deceleration_time, current_block->acceleration_rate);
 
     if (step_rate < acc_step_rate) { // Still decelerating?
       step_rate = acc_step_rate - step_rate;
@@ -660,7 +660,10 @@ void Stepper::isr() {
     // step_rate to timer interval
     timer = calc_timer(step_rate);
     //OCR1A = timer;
+    //setTimer(0x1FF);
+    //MYSERIAL.println("Decelerate");
     setTimer(timer);
+
     deceleration_time += timer;
 
     #if ENABLED(LIN_ADVANCE)
@@ -708,14 +711,20 @@ void Stepper::isr() {
       eISR_Rate = (OCR1A_nominal >> 3) * step_loops_nominal / abs(e_steps[TOOL_E_INDEX]);
 
     #endif
-
     //OCR1A = OCR1A_nominal;
-	setTimer(OCR1A_nominal);
+    setTimer(OCR1A_nominal);
+    //MYSERIAL.print("OCR1A_nominal: ");
+    //MYSERIAL.println(OCR1A_nominal);
+    //setTimer(0x1FF);
+
     // ensure we're running at the correct step rate, even if we just came off an acceleration
     step_loops = step_loops_nominal;
   }
 
-  // NOLESS(OCR1A, TCNT1 + 16); TODO
+  #if defined(__AVR__)
+  	NOLESS(OCR1A, TCNT1 + 16);
+  #endif
+  // NOLESS(FTM0_C0V, FTM0_CNT + 16);
 
   // If current block is finished, reset pointer
   if (all_steps_done) {

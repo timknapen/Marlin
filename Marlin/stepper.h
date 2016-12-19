@@ -58,9 +58,7 @@ extern Stepper stepper;
   }
 #elif defined(__MK64FX512__)
   inline void setTimer(int cycles) {
-    __disable_irq();
-    FTM0_C0V = 3.75 * cycles; // Timer runs faster than on AVR so we need to count higher
-    __enable_irq();
+    FTM0_C0V = cycles; // Timer runs faster than on AVR so we need to count higher
   }
 #endif
 
@@ -296,7 +294,6 @@ class Stepper {
 
     static FORCE_INLINE unsigned short calc_timer(unsigned short step_rate) {
       unsigned short timer;
-
       NOMORE(step_rate, MAX_STEP_FREQUENCY);
 
       if (step_rate > 20000) { // If steprate > 20kHz >> step 4 times
