@@ -367,8 +367,8 @@ void Stepper::isr() {
     #endif
     cleaning_buffer_counter--;
     //OCR1A = 200; // Run at max speed - 10 KHz
-    //setTimer(200);
-    FTM0_C0V = 0x2EE; // 750 = 200*3.75
+    setTimer(750); // 750 = 200*3.75
+    //FTM0_C0V = 0x2EE;
     return;
   }
 
@@ -410,8 +410,8 @@ void Stepper::isr() {
     }
     else {
       //OCR1A = 2000; // Run at slow speed - 1 KHz
-      //setTimer(2000);
-      FTM0_C0V = 0x1D4C;
+      setTimer(7500); // 3.75 * 2000
+      //FTM0_C0V = 0x1D4C;
       return;
     }
   }
@@ -605,8 +605,6 @@ void Stepper::isr() {
     // step_rate to timer interval
     timer = calc_timer(acc_step_rate);
     //OCR1A = timer;
-    //setTimer(0x1FF);
-    //MYSERIAL.println("Accelerate");
     setTimer(timer);
     acceleration_time += timer;
 
@@ -660,8 +658,6 @@ void Stepper::isr() {
     // step_rate to timer interval
     timer = calc_timer(step_rate);
     //OCR1A = timer;
-    //setTimer(0x1FF);
-    //MYSERIAL.println("Decelerate");
     setTimer(timer);
 
     deceleration_time += timer;
@@ -713,9 +709,6 @@ void Stepper::isr() {
     #endif
     //OCR1A = OCR1A_nominal;
     setTimer(OCR1A_nominal);
-    //MYSERIAL.print("OCR1A_nominal: ");
-    //MYSERIAL.println(OCR1A_nominal);
-    //setTimer(0x1FF);
 
     // ensure we're running at the correct step rate, even if we just came off an acceleration
     step_loops = step_loops_nominal;
