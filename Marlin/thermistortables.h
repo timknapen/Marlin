@@ -194,7 +194,7 @@ const short temptable_4[][2] PROGMEM = {
 };
 #endif
 
-#if ANY_THERMISTOR_IS(5) && !defined(__MK64FX512__)// 100k ParCan thermistor (104GT-2)
+#if ANY_THERMISTOR_IS(5) && !(defined(__MK64FX512__) || defined(__MK66FX1M0__))// 100k ParCan thermistor (104GT-2)
 // ATC Semitec 104GT-2 (Used in ParCan)
 // Verified by linagee. Source: http://shop.arcol.hu/static/datasheets/thermistors.pdf
 // Calculated using 4.7kohm pullup, voltage divider math, and manufacturer provided temp/resistance
@@ -1117,7 +1117,7 @@ const short temptable_70[][2] PROGMEM = {
 };
 #endif
 
-#if ANY_THERMISTOR_IS(5) && defined(__MK64FX512__) // 100k ParCan thermistor (104GT-2)
+#if ANY_THERMISTOR_IS(5) && (defined(__MK64FX512__) || defined(__MK66FX1M0__)) // 100k ParCan thermistor (104GT-2)
 // ATC Semitec 104GT-2 (Used in ParCan)
 // Verified by linagee. Source: http://shop.arcol.hu/static/datasheets/thermistors.pdf
 // Calculated using 4.7kohm pullup, voltage divider math, and manufacturer provided temp/resistance

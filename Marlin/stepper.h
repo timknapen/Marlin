@@ -56,7 +56,7 @@ extern Stepper stepper;
   inline void setTimer(int cycles) {
     OCR1A = cycles;
   }
-#elif defined(__MK64FX512__)
+#elif defined(__MK64FX512__) || defined(__MK66FX1M0__)
   inline void setTimer(int cycles) {
     FTM0_C0V = cycles; // Timer runs faster than on AVR so we need to count higher
   }
@@ -87,7 +87,7 @@ extern Stepper stepper;
                    : \
                    "r26" \
                  )
-#elif defined(__MK64FX512__)
+#elif defined(__MK64FX512__) || defined(__MK66FX1M0__)
   #define MultiU16X8toH16(intRes, charIn1, intIn2) (intRes = ((uint32_t)charIn1 * intIn2) >> 8)
 #endif
 

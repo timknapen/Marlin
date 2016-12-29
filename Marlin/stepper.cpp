@@ -242,7 +242,7 @@ volatile long Stepper::endstops_trigsteps[XYZ];
                  : \
                  "r26" , "r27" \
                )
-#elif defined(__MK64FX512__)
+#elif defined(__MK64FX512__) || defined(__MK66FX1M0__)
 	#define MultiU24X32toH16(intRes, longIn1, longIn2) (intRes = ((uint64_t)longIn1 * longIn2) >> 24)
 #endif
 
@@ -251,7 +251,7 @@ volatile long Stepper::endstops_trigsteps[XYZ];
 
 #define ENABLE_STEPPER_DRIVER_INTERRUPT()  SBI(TIMSK1, OCIE1A)
 #define DISABLE_STEPPER_DRIVER_INTERRUPT() CBI(TIMSK1, OCIE1A)
-#elif defined(__MK64FX512__) // && defined(IRQ_FTM2)
+#elif defined(__MK64FX512__) || defined(__MK66FX1M0__) // && defined(IRQ_FTM2)
 	#define ENABLE_STEPPER_DRIVER_INTERRUPT()  NVIC_ENABLE_IRQ(IRQ_FTM0);
 	#define DISABLE_STEPPER_DRIVER_INTERRUPT() NVIC_DISABLE_IRQ(IRQ_FTM0);
 #endif
@@ -348,7 +348,7 @@ void Stepper::set_directions() {
  */
 #if defined(__AVR__)
   ISR(TIMER1_COMPA_vect) { Stepper::isr(); }
-#elif defined(__MK64FX512__)// && defined(IRQ_FTM2)
+#elif defined(__MK64FX512__) || defined(__MK66FX1M0__) // && defined(IRQ_FTM2)
 extern "C" void ftm0_isr(void) {
   Stepper::isr();
   FTM0_CNT = 0x0000;
@@ -977,7 +977,7 @@ void Stepper::init() {
   //OCR1A = 0x4000;
   setTimer(0x4000);
   TCNT1 = 0;
-#elif defined(__MK64FX512__)
+#elif defined(__MK64FX512__) || defined(__MK66FX1M0__)
     FTM0_MODE = FTM_MODE_WPDIS | FTM_MODE_FTMEN;
     FTM0_SC = 0x00; // Set this to zero before changing the modulus
     FTM0_CNT = 0x0000; // Reset the count to zero

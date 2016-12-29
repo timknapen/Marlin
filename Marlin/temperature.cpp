@@ -1088,7 +1088,7 @@ void Temperature::init() {
   // Interleave temperature interrupt with millies interrupt
   OCR0B = 128;
   SBI(TIMSK0, OCIE0B);
-#elif defined (__MK64FX512__)
+#elif defined (__MK64FX512__) || defined(__MK66FX1M0__)
   FTM1_MODE = FTM_MODE_WPDIS | FTM_MODE_FTMEN; // Disable write protection, Enable FTM1
   FTM1_SC = 0x00; // Set this to zero before changing the modulus
   FTM1_CNT = 0x0000; // Reset the count to zero
@@ -1508,7 +1508,7 @@ void Temperature::set_current_temp_raw() {
  */
 #if defined(__AVR__)
   ISR(TIMER0_COMPB_vect) { Temperature::isr(); }
-#elif defined(__MK64FX512__)// && defined(IRQ_FTM2)
+#elif defined(__MK64FX512__) || defined(__MK66FX1M0__) // && defined(IRQ_FTM2)
 extern "C" void ftm1_isr(void) {
   FTM1_CNT = 0x0000;
   Temperature::isr();
@@ -1771,7 +1771,7 @@ void Temperature::isr() {
     #define START_ADC(pin) ADCSRB = 0; SET_ADMUX_ADCSRA(pin)
     #define TEMP_READ ADC
   #endif
-#elif defined(__MK64FX512__)
+#elif defined(__MK64FX512__) || defined(__MK66FX1M0__)
     #define START_ADC(pin) ADC0_SC1A = pin2sc1a[pin];
     #define TEMP_READ ADC0_RA
 #endif
