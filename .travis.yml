@@ -20,10 +20,10 @@ before_install:
   #
 install:
   #
-  # Install arduino 1.6.10
+  # Install arduino 1.8.0
   - wget http://downloads-02.arduino.cc/arduino-1.8.0-linux64.tar.xz
-  - tar xf arduino-1.6.10-linux64.tar.xz
-  - sudo mv arduino-1.6.10 /usr/local/share/arduino
+  - tar xf arduino-1.8.0-linux64.tar.xz
+  - sudo mv arduino-1.8.0 /usr/local/share/arduino
   - ln -s /usr/local/share/arduino/arduino ${TRAVIS_BUILD_DIR}/buildroot/bin/arduino
   #
   # Install: LiquidCrystal_I2C library
@@ -45,6 +45,26 @@ install:
   # Install: TMC26X Stepper Motor Controller library
   - git clone https://github.com/trinamic/TMC26XStepper.git
   - sudo mv TMC26XStepper /usr/local/share/arduino/libraries/TMC26XStepper
+
+  # Install Teensy stuff
+  - sudo apt-get install binutils-arm-none-eabi gcc-arm-none-eabi
+
+  - git clone https://github.com/ARM-software/CMSIS.git
+  - sudo cp CMSIS/CMSIS/Lib/GCC/*.a /usr/local/share/arduino/hardware/tools/arm/arm-none-eabi/lib/
+
+  - sudo mkdir -p /usr/local/share/arduino/hardware/teensy/avr
+  - git clone https://github.com/teemuatlut/teensyfiles_for_marlin.git
+  - sudo cp /teensyfiles_for_marlin/*.txt /usr/local/share/arduino/hardware/teensy/avr/
+
+  - git clone https://github.com/PaulStoffregen/cores.git
+  - sudo mv cores /usr/local/share/arduino/hardware/teensy/avr
+
+  - mkdir -p /usr/local/share/arduino/hardware/tools/arm
+  #- cd /usr/local/share/arduino/hardware/tools/arm/
+  #- ln -s /usr/bin
+  #- ln -s /usr/lib
+  - ln -s /usr/local/share/arduino/hardware/tools/arm/bin /usr/bin
+  - ln -s /usr/local/share/arduino/hardware/tools/arm/lib /usr/lib
   #
 before_script:
   #
