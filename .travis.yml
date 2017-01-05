@@ -18,12 +18,14 @@ before_install:
   - sleep 3
   - export DISPLAY=:1.0
   #
-  - lsb_release -a
-  - sudo apt-get -qq update
+  # - lsb_release -a
+  # - sudo apt-get -qq update
   # - sudo apt-get install -y binutils-arm-none-eabi
   - wget http://mirrors.kernel.org/ubuntu/pool/universe/b/binutils-arm-none-eabi/binutils-arm-none-eabi_2.24-2ubuntu2+4_amd64.deb
   - sudo dpkg -i binutils-arm-none-eabi_2.24-2ubuntu2+4_amd64.deb
-  - sudo apt-get install -y gcc-arm-none-eabi
+  # - sudo apt-get install -y gcc-arm-none-eabi
+  - wget http://mirrors.kernel.org/ubuntu/pool/universe/g/gcc-arm-none-eabi/gcc-arm-none-eabi_4.8.2-14ubuntu1+6_amd64.deb
+  - sudo dpkg -i gcc-arm-none-eabi_4.8.2-14ubuntu1+6_amd64.deb
   #
 install:
   #
