@@ -18,6 +18,7 @@ before_install:
   - sleep 3
   - export DISPLAY=:1.0
   #
+  - sudo apt-get -qq update
   - sudo apt-get install -y binutils-arm-none-eabi gcc-arm-none-eabi
   #
 install:
