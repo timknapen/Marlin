@@ -126,7 +126,7 @@ script:
   # Test Teensy3.5 with default config
   # 
   - restore_configs
-  - opt_set MOTHERBOARD TEENSY35
+  - opt_set MOTHERBOARD BOARD_TEENSY35
   - build_marlin_teensy35
   #
   # Test PIDTEMPBED
