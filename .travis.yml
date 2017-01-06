@@ -73,8 +73,10 @@ install:
   #- cd /usr/local/share/arduino/hardware/tools/arm/
   #- ln -s /usr/bin
   #- ln -s /usr/lib
-  - sudo ln -s /usr/local/share/arduino/hardware/tools/arm/bin /usr/bin
-  - sudo ln -s /usr/local/share/arduino/hardware/tools/arm/lib /usr/lib
+  - sudo ln -s /usr/bin /usr/local/share/arduino/hardware/tools/arm/bin
+  - sudo ln -s /usr/lib /usr/local/share/arduino/hardware/tools/arm/lib
+  - ls /usr/local/share/arduino/hardware
+  - ls /usr/local/share/arduino/hardware/tools
   - ls /usr/local/share/arduino/hardware/tools/arm
   - ls /usr/bin
   - ls /usr/local/share/arduino/hardware/tools/arm/bin
