@@ -73,8 +73,8 @@ install:
   #- cd /usr/local/share/arduino/hardware/tools/arm/
   #- ln -s /usr/bin
   #- ln -s /usr/lib
-  - ln -s /usr/local/share/arduino/hardware/tools/arm/bin /usr/bin
-  - ln -s /usr/local/share/arduino/hardware/tools/arm/lib /usr/lib
+  - sudo ln -s /usr/local/share/arduino/hardware/tools/arm/bin /usr/bin
+  - sudo ln -s /usr/local/share/arduino/hardware/tools/arm/lib /usr/lib
   #
 before_script:
   #
