@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-arduino --verify --board teensy:avr:teensy35 Marlin/Marlin.ino
+arduino --verify --board teensy:avr:teensy35:speed=120 Marlin/Marlin.ino
