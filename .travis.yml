@@ -123,6 +123,11 @@ script:
   - opt_enable_adv LIN_ADVANCE
   - build_marlin
   #
+  # Test Teensy3.5 with default config
+  # 
+  - restore_configs
+  - opt_set MOTHERBOARD TEENSY35
+  #
   # Test PIDTEMPBED
   #
   - restore_configs
