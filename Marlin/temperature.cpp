@@ -1769,8 +1769,8 @@ void Temperature::isr() {
     #define START_ADC(pin) if (pin > 7) ADCSRB = _BV(MUX5); else ADCSRB = 0; SET_ADMUX_ADCSRA(pin)
   #else
     #define START_ADC(pin) ADCSRB = 0; SET_ADMUX_ADCSRA(pin)
-    #define TEMP_READ ADC
   #endif
+  #define TEMP_READ ADC
 #elif defined(__MK64FX512__) || defined(__MK66FX1M0__)
     #define START_ADC(pin) ADC0_SC1A = pin2sc1a[pin];
     #define TEMP_READ ADC0_RA
