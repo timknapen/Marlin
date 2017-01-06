@@ -70,16 +70,16 @@ install:
   - sudo mv cores /usr/local/share/arduino/hardware/teensy/avr
 
   - mkdir -p /usr/local/share/arduino/hardware/tools/arm
-  #- cd /usr/local/share/arduino/hardware/tools/arm/
-  #- ln -s /usr/bin
-  #- ln -s /usr/lib
+  # - cd /usr/local/share/arduino/hardware/tools/arm/
+  # - ln -s /usr/bin
+  # - ln -s /usr/lib
   - sudo ln -s /usr/bin /usr/local/share/arduino/hardware/tools/arm/bin
   - sudo ln -s /usr/lib /usr/local/share/arduino/hardware/tools/arm/lib
-  - ls /usr/local/share/arduino/hardware
-  - ls /usr/local/share/arduino/hardware/tools
-  - ls /usr/local/share/arduino/hardware/tools/arm
-  - ls /usr/bin
-  - ls /usr/local/share/arduino/hardware/tools/arm/bin
+  # - ls /usr/local/share/arduino/hardware
+  # - ls /usr/local/share/arduino/hardware/tools
+  # - ls /usr/local/share/arduino/hardware/tools/arm
+  # - ls /usr/bin
+  # - ls /usr/local/share/arduino/hardware/tools/arm/bin
   #
 before_script:
   #
