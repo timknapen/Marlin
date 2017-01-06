@@ -1518,6 +1518,9 @@ extern "C" void ftm1_isr(void) {
 #endif
 
 void Temperature::isr() {
+  //Allow UART and stepper ISRs
+  CBI(TIMSK0, OCIE0B); //Disable Temperature ISR
+  sei();
 
   static uint8_t temp_count = 0;
   static TempState temp_state = StartupDelay;
@@ -1975,4 +1978,6 @@ void Temperature::isr() {
       if (!endstop_monitor_count) endstop_monitor();  // report changes in endstop status
     }
   #endif
+
+  SBI(TIMSK0, OCIE0B); //re-enable Temperature ISR
 }
