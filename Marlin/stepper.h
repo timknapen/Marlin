@@ -53,16 +53,6 @@ class Stepper;
 extern Stepper stepper;
 
 #if defined(__AVR__)
-  inline void setTimer(int cycles) {
-    OCR1A = cycles;
-  }
-#elif defined(__MK64FX512__) || defined(__MK66FX1M0__)
-  inline void setTimer(int cycles) {
-    FTM0_C0V = cycles; // Timer runs faster than on AVR so we need to count higher
-  }
-#endif
-
-#if defined(__AVR__)
   // intRes = intIn1 * intIn2 >> 16
   // uses:
   // r26 to store 0
@@ -134,7 +124,11 @@ class Stepper {
         static long old_advance;
       #endif
     #else
-      #define _NEXT_ISR(T) OCR1A = T
+      #if defined(__AVR__)
+        #define _NEXT_ISR(T) OCR1A = T
+      #elif defined(__MK64FX512__) || defined(__MK66FX1M0__)
+        #define _NEXT_ISR(T) FTM0_C0V = T
+      #endif
     #endif // ADVANCE or LIN_ADVANCE
 
     static long acceleration_time, deceleration_time;

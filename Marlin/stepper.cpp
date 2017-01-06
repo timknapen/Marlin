@@ -373,9 +373,13 @@ void Stepper::set_directions() {
   }
 #endif
 void Stepper::isr() {
-  #define _ENABLE_ISRs() cli(); SBI(TIMSK0, OCIE0B); ENABLE_STEPPER_DRIVER_INTERRUPT()
+  #if defined(__AVR__)
+    #define _ENABLE_ISRs() cli(); SBI(TIMSK0, OCIE0B); ENABLE_STEPPER_DRIVER_INTERRUPT()
+  #elif defined(__MK64FX512__) || defined(__MK66FX1M0__)
+    #define _ENABLE_ISRs() ENABLE_STEPPER_DRIVER_INTERRUPT()
+  #endif
 
-  #if DISABLED(ADVANCE) && DISABLED(LIN_ADVANCE)
+  #if DISABLED(ADVANCE) && DISABLED(LIN_ADVANCE) && defined(__AVR__)
     //Disable Timer0 ISRs and enable global ISR again to capture UART events (incoming chars)
     CBI(TIMSK0, OCIE0B); //Temperature ISR
     DISABLE_STEPPER_DRIVER_INTERRUPT();
@@ -737,7 +741,7 @@ void Stepper::isr() {
     step_loops = step_loops_nominal;
   }
 
-  #if DISABLED(ADVANCE) && DISABLED(LIN_ADVANCE)
+  #if DISABLED(ADVANCE) && DISABLED(LIN_ADVANCE) && defined(__AVR__)
     NOLESS(OCR1A, TCNT1 + 16);
   #endif
 
@@ -1036,8 +1040,7 @@ void Stepper::init() {
   TCCR1B = (TCCR1B & ~(0x07 << CS10)) | (2 << CS10);
 
   // Init Stepper ISR to 122 Hz for quick starting
-  //OCR1A = 0x4000;
-  setTimer(0x4000);
+  OCR1A = 0x4000;
   TCNT1 = 0;
 #elif defined(__MK64FX512__) || defined(__MK66FX1M0__)
     FTM0_MODE = FTM_MODE_WPDIS | FTM_MODE_FTMEN;
