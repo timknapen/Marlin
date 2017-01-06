@@ -60,10 +60,10 @@ install:
   # Install Teensy stuff
 
   - git clone https://github.com/ARM-software/CMSIS.git
-  - sudo cp CMSIS/CMSIS/Lib/GCC/*.a /usr/local/share/arduino/hardware/tools/arm/arm-none-eabi/lib/
+  - sudo cp CMSIS/CMSIS/Lib/GCC/*.a /usr/lin/arm-none-eabi/lib/
 
-  - sudo mkdir -p /usr/local/share/arduino/hardware/teensy/avr
   - git clone https://github.com/teemuatlut/teensyfiles_for_marlin.git
+  - sudo mkdir -p /usr/local/share/arduino/hardware/teensy/avr
   - sudo cp /teensyfiles_for_marlin/*.txt /usr/local/share/arduino/hardware/teensy/avr/
 
   - git clone https://github.com/PaulStoffregen/cores.git
