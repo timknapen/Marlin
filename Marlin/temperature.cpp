@@ -1518,6 +1518,11 @@ extern "C" void ftm1_isr(void) {
 #endif
 
 void Temperature::isr() {
+  #if defined(__AVR__)
+    //Allow UART and stepper ISRs
+    CBI(TIMSK0, OCIE0B); //Disable Temperature ISR
+    sei();
+  #endif
 
   static uint8_t temp_count = 0;
   static TempState temp_state = StartupDelay;
@@ -1769,8 +1774,8 @@ void Temperature::isr() {
     #define START_ADC(pin) if (pin > 7) ADCSRB = _BV(MUX5); else ADCSRB = 0; SET_ADMUX_ADCSRA(pin)
   #else
     #define START_ADC(pin) ADCSRB = 0; SET_ADMUX_ADCSRA(pin)
-    #define TEMP_READ ADC
   #endif
+  #define TEMP_READ ADC
 #elif defined(__MK64FX512__) || defined(__MK66FX1M0__)
     #define START_ADC(pin) ADC0_SC1A = pin2sc1a[pin];
     #define TEMP_READ ADC0_RA
@@ -1974,5 +1979,9 @@ void Temperature::isr() {
       endstop_monitor_count &= 0x7F;
       if (!endstop_monitor_count) endstop_monitor();  // report changes in endstop status
     }
+  #endif
+
+  #if defined(__AVR__)
+    SBI(TIMSK0, OCIE0B); //re-enable Temperature ISR
   #endif
 }

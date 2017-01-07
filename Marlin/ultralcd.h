@@ -43,12 +43,7 @@
   void lcd_reset_alert_level();
   void lcd_kill_screen();
   void kill_screen(const char* lcd_msg);
-
-  #if (ENABLED(LCD_I2C_TYPE_MCP23017) || ENABLED(LCD_I2C_TYPE_MCP23008)) && ENABLED(DETECT_DEVICE)
-    bool lcd_detected();
-  #else
-    inline bool lcd_detected() { return true; }
-  #endif
+  bool lcd_detected(void);
 
   #if HAS_BUZZER
     void lcd_buzz(long duration, uint16_t freq);
@@ -88,7 +83,7 @@
     void lcd_quick_feedback(); // Audible feedback for a button click - could also be visual
 
     #if ENABLED(FILAMENT_CHANGE_FEATURE)
-      void lcd_filament_change_show_message(FilamentChangeMessage message);
+      void lcd_filament_change_show_message(const FilamentChangeMessage message);
     #endif // FILAMENT_CHANGE_FEATURE
 
   #else
@@ -156,8 +151,8 @@
   inline void lcd_update() {}
   inline void lcd_init() {}
   inline bool lcd_hasstatus() { return false; }
-  inline void lcd_setstatus(const char* message, const bool persist=false) { UNUSED(message); UNUSED(persist); }
-  inline void lcd_setstatuspgm(const char* message, const uint8_t level=0) { UNUSED(message); UNUSED(level); }
+  inline void lcd_setstatus(const char* const message, const bool persist=false) { UNUSED(message); UNUSED(persist); }
+  inline void lcd_setstatuspgm(const char* const message, const uint8_t level=0) { UNUSED(message); UNUSED(level); }
   inline void lcd_buttons_update() {}
   inline void lcd_reset_alert_level() {}
   inline bool lcd_detected() { return true; }
