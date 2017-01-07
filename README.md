@@ -1,6 +1,6 @@
 # Marlin 3D Printer Firmware
 
-[![Build Status](https://travis-ci.org/teemuatlut/Marlin.svg?branch=travis_for_teensy)](https://travis-ci.org/teemuatlut/Marlin)
+[![Build Status](https://travis-ci.org/teemuatlut/Marlin.svg?branch=teensy35)](https://travis-ci.org/teemuatlut/Marlin)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/2224/badge.svg)](https://scan.coverity.com/projects/2224)
 
 The goal of this fork is to bring Marlin to Teensy3.5 and Teensy3.6 32bit ARM boards.
