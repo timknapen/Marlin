@@ -5,7 +5,7 @@
 * CLI build: HARDWARE_MOTHERBOARD=85  make
 * 
 ****************************************************************************************/
-#if MOTHERBOARD == 86
+#if MOTHERBOARD == 841
 #define KNOWN_BOARD 1
 #define AT90USB 1286  // Disable MarlinSerial etc.
 
