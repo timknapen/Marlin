@@ -163,7 +163,7 @@
     #define DEFAULT_KEEPALIVE_INTERVAL 2
   #endif
 
-  #ifdef __SAM3X8E__
+  #if defined(__SAM3X8E__) || defined(__MK64FX512__)
     /**
      * Hidden options for developer
      */
