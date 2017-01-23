@@ -26,7 +26,7 @@
 
   #if ENABLED(USE_WATCHDOG)
 
-    #include "watchdog_Due.h"
+    #include "watchdog_Teensy.h"
 
     // Initialize watchdog with a 4 second interrupt time
     void watchdogSetup(void) {

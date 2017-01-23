@@ -38,7 +38,7 @@
 #include "Arduino.h"
 
 #include "fastio_Teensy.h"
-#include "watchdog_Teensy.h"
+//#include "watchdog_Teensy.h"
 
 #include "HAL_timers_Teensy.h"
 
@@ -58,7 +58,7 @@
   #define MYSERIAL Serial3
 #endif
 
-#define _BV(bit) 	(1 << (bit))
+//#define _BV(bit) 	(1 << (bit))
 
 #if ENABLED(DELTA_FAST_SQRT)
   #undef ATAN2
@@ -83,8 +83,9 @@
   #define analogInputToDigitalPin(p) ((p < 12u) ? (p) + 54u : -1)
 #endif
 
-#define CRITICAL_SECTION_START	uint32_t primask=__get_PRIMASK(); __disable_irq();
-#define CRITICAL_SECTION_END    if (primask==0) __enable_irq();
+#define CRITICAL_SECTION_START  unsigned char _sreg = SREG; cli();
+#define CRITICAL_SECTION_END    SREG = _sreg;
+
 
 // On AVR this is in math.h?
 #define square(x) ((x)*(x))
@@ -115,17 +116,19 @@
 // --------------------------------------------------------------------------
 
 /** result of last ADC conversion */
-extern uint16_t HAL_adc_result;
+//extern uint16_t HAL_adc_result;
 
 // --------------------------------------------------------------------------
 // Public functions
 // --------------------------------------------------------------------------
 
 // Disable interrupts
-void cli(void);
+//void cli(void);
+//void cli();
 
 // Enable interrupts
-void sei(void);
+//void sei(void);
+//void sei();
 
 /** clear reset reason */
 void HAL_clear_reset_source (void);
@@ -135,7 +138,9 @@ uint8_t HAL_get_reset_source (void);
 
 void _delay_ms(int delay);
 
-int freeMemory(void);
+extern "C" {
+  int freeMemory(void);
+}
 
 // SPI: Extended functions which take a channel number (hardware SPI only)
 /** Write single byte to specified SPI channel */
@@ -156,19 +161,18 @@ void eeprom_update_block (const void *__src, void *__dst, size_t __n);
 
 // ADC
 
-#define HAL_ANALOG_SELECT(pin)
+void HAL_adc_init();
 
-inline void HAL_adc_init(void) {}//todo
+#define HAL_START_ADC(pin)  HAL_adc_start_conversion(pin);
+#define HAL_READ_ADC        HAL_adc_get_result();
 
-#define HAL_START_ADC(pin)  HAL_adc_start_conversion(pin)
-#define HAL_READ_ADC        HAL_adc_result
-
+#define HAL_ANALOG_SELECT(pin) NOOP;
 
 void HAL_adc_start_conversion (uint8_t adc_pin);
 
 uint16_t HAL_adc_get_result(void);
 
-//
+/*
 uint16_t HAL_getAdcReading(uint8_t chan);
 
 void HAL_startAdcConversion(uint8_t chan);
@@ -179,7 +183,7 @@ uint16_t HAL_getAdcFreerun(uint8_t chan, bool wait_for_conversion = false);
 
 void HAL_enable_AdcFreerun(void);
 //void HAL_disable_AdcFreerun(uint8_t chan);
-
+*/
 
 // --------------------------------------------------------------------------
 //

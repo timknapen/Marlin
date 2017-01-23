@@ -25,6 +25,10 @@
 
   #include "HAL_DUE/spi_pins.h"
 
+#elif defined(__MK64FX512__)
+
+  #include "HAL_TEENSY35/spi_pins.h"
+
 #elif defined(ARDUINO_ARCH_AVR)
 
   #include "HAL_AVR/spi_pins.h"

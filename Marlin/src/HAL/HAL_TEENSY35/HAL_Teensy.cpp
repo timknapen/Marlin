@@ -60,7 +60,21 @@ uint16_t HAL_adc_result;
 // --------------------------------------------------------------------------
 // Private Variables
 // --------------------------------------------------------------------------
-
+static const uint8_t pin2sc1a[] = {
+  5, 14, 8, 9, 13, 12, 6, 7, 15, 4, 3, 19+128, 14+128, 15+128, // 0-13 -> A0-A13
+  5, 14, 8, 9, 13, 12, 6, 7, 15, 4, // 14-23 are A0-A9
+  255, 255, 255, 255, 255, 255, 255, // 24-30 are digital only
+  14+128, 15+128, 17, 18, 4+128, 5+128, 6+128, 7+128, 17+128,  // 31-39 are A12-A20
+  255, 255, 255, 255, 255, 255, 255, 255, 255,  // 40-48 are digital only
+  10+128, 11+128, // 49-50 are A23-A24
+  255, 255, 255, 255, 255, 255, 255, // 51-57 are digital only
+  255, 255, 255, 255, 255, 255, // 58-63 (sd card pins) are digital only
+  3, 19+128, // 64-65 are A10-A11
+  23, 23+128,// 66-67 are A21-A22 (DAC pins)
+  1, 1+128,  // 68-69 are A25-A26 (unused USB host port on Teensy 3.5)
+  26,        // 70 is Temperature Sensor
+  18+128     // 71 is Vref
+};
 // --------------------------------------------------------------------------
 // Function prototypes
 // --------------------------------------------------------------------------
@@ -72,7 +86,7 @@ uint16_t HAL_adc_result;
 // --------------------------------------------------------------------------
 // Public functions
 // --------------------------------------------------------------------------
-
+/*
 // disable interrupts
 void cli(void)
 {
@@ -84,19 +98,26 @@ void sei(void)
 {
 	interrupts();
 }
+*/
+void HAL_adc_init() {
+  analog_init();
+  while (ADC0_SC3 & ADC_SC3_CAL) {}; // Wait for calibration to finish
+  NVIC_ENABLE_IRQ(IRQ_FTM1);
+}
 
 void HAL_clear_reset_source (void)
 { }
 
 uint8_t HAL_get_reset_source (void)
 {
-  switch ( (RSTC->RSTC_SR >> 8) & 7)
+  switch ( RCM_SRS0 )
   {
-    case 0: return RST_POWER_ON; break;
-    case 1: return RST_BACKUP; break;
-    case 2: return RST_WATCHDOG; break;
-    case 3: return RST_SOFTWARE; break;
-    case 4: return RST_EXTERNAL; break;
+    case 128: return RST_POWER_ON; break;
+    case 64: return RST_EXTERNAL; break;
+    case 32: return RST_WATCHDOG; break;
+//  case 8: return RST_LOSS_OF_LOCK; break;
+//  case 4: return RST_LOSS_OF_CLOCK; break;
+//  case 2: return RST_LOW_VOLTAGE; break;
     default:
       return 0;
   }
@@ -109,22 +130,18 @@ void _delay_ms (int delay_ms)
 }
 
 extern "C" {
-  extern unsigned int _ebss; // end of bss section
-}
+  extern char __bss_end;
+  extern char __heap_start;
+  extern void* __brkval;
 
-// return free memory between end of heap (or end bss) and whatever is current
-int freeMemory()
-{
-  int free_memory;
-  int heap_end = (int)_sbrk(0);
-
-  if(heap_end == 0)
-    free_memory = ((int)&free_memory) - ((int)&_ebss);
-  else
-    free_memory = ((int)&free_memory) - heap_end;
-
-  return free_memory;
-
+  int freeMemory() {
+    int free_memory;
+    if ((int)__brkval == 0)
+      free_memory = ((int)&free_memory) - ((int)&__bss_end);
+    else
+      free_memory = ((int)&free_memory) - ((int)__brkval);
+    return free_memory;
+  }
 }
 
 // --------------------------------------------------------------------------
