@@ -28,14 +28,10 @@
 
     #include "watchdog_Teensy.h"
 
-    // Initialize watchdog with a 4 second interrupt time
-    void watchdogSetup(void) {
-      watchdogEnable (4000);
-    }
-
-    // TODO: implement for Due
     void watchdog_init() {
-      // this is a stub
+      WDOG_TOVALH = 0;
+      WDOG_TOVALL = 4000;
+      WDOG_STCTRLH = WDOG_STCTRLH_WDOGEN;
     }
 
   #endif //USE_WATCHDOG

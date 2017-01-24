@@ -29,6 +29,10 @@
 
 void watchdog_init();
 
-inline void watchdog_reset() { watchdogReset(); }
+inline void watchdog_reset() {
+	// Watchdog refresh sequence
+	WDOG_REFRESH = 0xA602;
+	WDOG_REFRESH = 0xB480;
+}
 
 #endif /* WATCHDOG_TEENSY_H */
