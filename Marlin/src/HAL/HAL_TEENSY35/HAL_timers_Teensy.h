@@ -46,10 +46,18 @@
 #define STEP_TIMER_NUM 0
 #define TEMP_TIMER_NUM 1
 
-#define STEPPER_TIMER STEP_TIMER_NUM
-#define STEPPER_TIMER_PRESCALE // Not defined anywhere else!
+#define FTM0_TIMER_PRESCALE 8
+#define FTM1_TIMER_PRESCALE 4
+#define FTM0_TIMER_PRESCALE_BITS 0b011
+#define FTM1_TIMER_PRESCALE_BITS 0b010
 
-#define HAL_TIMER_RATE         (F_BUS)
+#define FTM0_TIMER_RATE F_BUS/FTM0_TIMER_PRESCALE // 60MHz / 8 = 7500kHz
+#define FTM1_TIMER_RATE F_BUS/FTM1_TIMER_PRESCALE // 60MHz / 4 = 15MHz
+
+#define STEPPER_TIMER STEP_TIMER_NUM // Alias?
+#define STEPPER_TIMER_PRESCALE 0 // Not defined anywhere else!
+
+#define HAL_TIMER_RATE         (FTM0_TIMER_RATE)
 #define HAL_STEPPER_TIMER_RATE HAL_TIMER_RATE
 #define HAL_TICKS_PER_US       (HAL_STEPPER_TIMER_RATE/1000000)
 
@@ -58,30 +66,8 @@
 #define ENABLE_STEPPER_DRIVER_INTERRUPT() HAL_timer_enable_interrupt (STEP_TIMER_NUM)
 #define DISABLE_STEPPER_DRIVER_INTERRUPT()  HAL_timer_disable_interrupt (STEP_TIMER_NUM)
 
-//
 #define HAL_STEP_TIMER_ISR  extern "C" void ftm0_isr(void) //void TC3_Handler()
 #define HAL_TEMP_TIMER_ISR  extern "C" void ftm1_isr(void) //void TC4_Handler()
-
-// --------------------------------------------------------------------------
-// Types
-// --------------------------------------------------------------------------
-/*
-typedef struct {
-  Tc          *pTimerRegs;
-  uint16_t    channel;
-  IRQn_Type   IRQ_Id;
-  uint8_t     priority;
-} tTimerConfig;
-*/
-// --------------------------------------------------------------------------
-// Public Variables
-// --------------------------------------------------------------------------
-
-// extern const tTimerConfig TimerConfig [];
-
-// --------------------------------------------------------------------------
-// Public functions
-// --------------------------------------------------------------------------
 
 void HAL_timer_start (uint8_t timer_num, uint32_t frequency);
 
@@ -91,24 +77,14 @@ static FORCE_INLINE void HAL_timer_set_count (uint8_t timer_num, uint32_t count)
   case 1: FTM1_C0V = count; break;
   default: break;
   }
-/*
-  const tTimerConfig *pConfig = &TimerConfig[timer_num];
-
-  pConfig->pTimerRegs->TC_CHANNEL[pConfig->channel].TC_RC = count;
-*/
 }
 
 static FORCE_INLINE HAL_TIMER_TYPE HAL_timer_get_count (uint8_t timer_num) {
   switch(timer_num) {
-  case 0: return FTM0_MOD;
-  case 1: return FTM1_MOD;
+  case 0: return FTM0_C0V;
+  case 1: return FTM1_C0V;
   default: return 0;
   }
-/*
-  const tTimerConfig *pConfig = &TimerConfig[timer_num];
-
-  return pConfig->pTimerRegs->TC_CHANNEL[pConfig->channel].TC_RC;
-*/
 }
 
 static FORCE_INLINE uint32_t HAL_timer_get_current_count(uint8_t timer_num) {
@@ -117,23 +93,12 @@ static FORCE_INLINE uint32_t HAL_timer_get_current_count(uint8_t timer_num) {
   case 1: return FTM1_CNT;
   default: return 0;
   }
-/*
-  const tTimerConfig *pConfig = &TimerConfig[timer_num];
-
-  return pConfig->pTimerRegs->TC_CHANNEL[pConfig->channel].TC_CV;
-*/
 }
 
 void HAL_timer_enable_interrupt (uint8_t timer_num);
 void HAL_timer_disable_interrupt (uint8_t timer_num);
 
-//void HAL_timer_isr_prologue (uint8_t timer_num);
 void HAL_timer_isr_prologue(uint8_t timer_num);
-
-
-// --------------------------------------------------------------------------
-//
-// --------------------------------------------------------------------------
 
 #endif // _HAL_TIMERS_TEENSY_H
 
