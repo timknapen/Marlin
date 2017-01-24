@@ -9989,6 +9989,7 @@ void setup() {
   #endif
 
   MYSERIAL.begin(BAUDRATE);
+  while(!MYSERIAL);
   SERIAL_PROTOCOLLNPGM("start");
   SERIAL_ECHO_START;
 
