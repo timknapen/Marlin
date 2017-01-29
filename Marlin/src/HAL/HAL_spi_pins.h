@@ -25,9 +25,7 @@
 
   #include "HAL_DUE/spi_pins.h"
 
-#elif defined(__MK64FX512__)
-
-  #include "HAL_TEENSY35/spi_pins.h"
+#elif defined(__MK64FX512__) // Teensy3.x
 
 #elif defined(ARDUINO_ARCH_AVR)
 
