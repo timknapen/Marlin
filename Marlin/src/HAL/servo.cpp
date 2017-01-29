@@ -57,7 +57,7 @@
 
 #include "HAL.h"
 
-#if HAS_SERVOS
+#if HAS_SERVOS && !defined(__MK64FX512__)
 
 //#include <Arduino.h>
 

@@ -69,6 +69,10 @@
 #ifndef servo_h
 #define servo_h
 
+#if defined(__MK64FX512__)
+  #include "HAL_TEENSY35/libServo_Teensy.h" // Teensy HAL uses an inherited library
+#else
+
 #include <inttypes.h>
 
 #if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO_ARCH_SAM)
@@ -100,4 +104,5 @@ class Servo {
     int8_t max;                       // maximum is this value times 4 added to MAX_PULSE_WIDTH
 };
 
+#endif
 #endif
