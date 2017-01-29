@@ -69,9 +69,9 @@ install:
   - git clone https://github.com/PaulStoffregen/cores.git
   - sudo mv cores /usr/local/share/arduino/hardware/teensy/avr
 
-  - sudo mkdir -p /usr/local/share/arduino/hardware/teensy/avr/libraries/
   - git clone https://github.com/PaulStoffregen/Wire.git
-  - sudo mv Wire /usr/local/share/arduino/hardware/teensy/avr/
+  - sudo mkdir -p /usr/local/share/arduino/hardware/teensy/avr/libraries/
+  - sudo mv Wire /usr/local/share/arduino/hardware/teensy/avr/libraries/
 
   - mkdir -p /usr/local/share/arduino/hardware/tools/arm
   - sudo ln -s /usr/bin /usr/local/share/arduino/hardware/tools/arm/bin
