@@ -72,8 +72,6 @@ install:
   - git clone https://github.com/PaulStoffregen/Wire.git
   - sudo mkdir -p /usr/local/share/arduino/hardware/teensy/avr/libraries/
   - sudo mv Wire /usr/local/share/arduino/hardware/teensy/avr/libraries/
-  - ls /usr/local/share/arduino/hardware/teensy/avr/libraries/
-  - ls /usr/local/share/arduino/hardware/teensy/avr/libraries/Wire/
 
   - mkdir -p /usr/local/share/arduino/hardware/tools/arm
   - sudo ln -s /usr/bin /usr/local/share/arduino/hardware/tools/arm/bin
