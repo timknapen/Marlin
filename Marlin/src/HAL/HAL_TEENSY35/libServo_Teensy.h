@@ -6,8 +6,9 @@
 // Inherit and expand on the official library
 class libServo : public Servo {
 	public:
+		int8_t attach(int pin);
+		int8_t attach(int pin, int min, int max);
 		void move(int value);
-		int read();
 	private:
 	   uint16_t min_ticks;
 	   uint16_t max_ticks;

@@ -3,8 +3,14 @@
 #include "../../../MarlinConfig.h"
 
 
-static uint16_t servo_ticks[MAX_SERVOS];
+int8_t libServo::attach(int pin) {
+	if (this->servoIndex >= MAX_SERVOS) return -1;
+	return Servo::attach(pin);
+}
 
+int8_t libServo::attach(int pin, int min, int max) {
+	return Servo::attach(pin, min, max);
+}
 
 void libServo::move(int value) {
   if (this->attach(0) >= 0) {
@@ -14,10 +20,4 @@ void libServo::move(int value) {
       this->detach();
     #endif
   }
-}
-
-int libServo::read() // return the value as degrees
-{
-	if (servoIndex >= MAX_SERVOS) return 0;
-	return map(servo_ticks[servoIndex], min_ticks, max_ticks, 0, 180);     
 }
