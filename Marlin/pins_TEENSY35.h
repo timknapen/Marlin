@@ -10,7 +10,7 @@
 #define AT90USB 1286  // Disable MarlinSerial etc.
 
 #ifndef __MK64FX512__
-#error Oops!  Make sure you have 'Teensy 3.5' selected from the 'Tools -> Boards' menu.
+  #error Oops!  Make sure you have 'Teensy 3.5' selected from the 'Tools -> Boards' menu.
 #endif
 
 #define LARGE_FLASH        true
