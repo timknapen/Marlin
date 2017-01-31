@@ -22,7 +22,7 @@
 /**
  * Description: HAL for Arduino Due and compatible (SAM3X8E)
  *
- * For __MK64FX512__
+ * For Teensy3.5 (__MK64FX512__)
  */
 
 
