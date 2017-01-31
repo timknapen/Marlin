@@ -1,3 +1,5 @@
+#if defined(__MK64FX512__)
+
 #include "../HAL.h"
 #include <SPI.h>
 #include <pins_arduino.h>
@@ -91,3 +93,6 @@ void spiSendBlock(uint8_t token, const uint8_t* buf) {
   while (!TEST(SPSR, SPIF)) { /* Intentionally left empty */ }
   SPI.endTransaction();
 }
+
+
+#endif

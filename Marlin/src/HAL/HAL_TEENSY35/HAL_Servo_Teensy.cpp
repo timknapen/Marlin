@@ -1,3 +1,5 @@
+#if defined(__MK64FX512__)
+
 
 #include "HAL_Servo_Teensy.h"
 #include "../../../MarlinConfig.h"
@@ -21,3 +23,6 @@ void libServo::move(int value) {
     #endif
   }
 }
+
+
+#endif
