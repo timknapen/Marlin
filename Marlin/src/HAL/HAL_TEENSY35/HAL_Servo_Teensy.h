@@ -1,5 +1,5 @@
-#ifndef libServo_Teensy_h
-#define libServo_Teensy_h
+#ifndef HAL_Servo_Teensy_h
+#define HAL_Servo_Teensy_h
 
 #include <Servo.h>
 

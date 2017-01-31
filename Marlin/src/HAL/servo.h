@@ -69,8 +69,8 @@
 #ifndef servo_h
 #define servo_h
 
-#if defined(__MK64FX512__)
-  #include "HAL_TEENSY35/libServo_Teensy.h" // Teensy HAL uses an inherited library
+#if defined(__MK64FX512__) // Teensy3.x
+  #include "HAL_TEENSY35/HAL_Servo_Teensy.h" // Teensy HAL uses an inherited library
 #else
 
 #include <inttypes.h>

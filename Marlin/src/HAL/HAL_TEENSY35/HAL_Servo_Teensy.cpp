@@ -1,5 +1,5 @@
 
-#include "libServo_Teensy.h"
+#include "HAL_Servo_Teensy.h"
 #include "../../../MarlinConfig.h"
 
 
