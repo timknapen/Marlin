@@ -1,5 +1,8 @@
-#include ../HAL.h
+#include "../HAL.h"
+#include <SPI.h>
+#include <pins_arduino.h>
 
+static SPISettings spiConfig;
 
 // Standard SPI functions
 /** Initialise SPI bus */
@@ -16,31 +19,75 @@ void spiBegin(void) {
       WRITE(SS_PIN, HIGH);
     #endif  // SET_SPI_SS_HIGH
     // set a default rate
-    spiInit(1);
+    spiInit(SPI_HALF_SPEED); // 1
   #endif  // SOFTWARE_SPI
 }
 
 /** Configure SPI for specified SPI speed */
 void spiInit(uint8_t spiRate) {
-
+	// Use datarates Marlin uses
+	uint32_t clock;
+	switch (spiRate) {
+  case SPI_FULL_SPEED:		clock = 10000000;	break;
+  case SPI_HALF_SPEED:		clock =  5000000;	break;
+  case SPI_QUARTER_SPEED:	clock =  2500000;	break;
+  case SPI_EIGHTH_SPEED:	clock =  1250000;	break;
+  case SPI_SPEED_5:				clock =   625000;	break;
+  case SPI_SPEED_6:				clock =   312500;	break;
+  default:
+		clock = 4000000; // Default from the SPI libarary
+	}
+	spiConfig = SPISettings(clock, MSBFIRST, SPI_MODE0);
+	SPI.begin();
 }
 
-/** Write single byte to SPI */
-void spiSend(uint8_t b) {
-
-}
-
-/** Read single byte from SPI */
+//------------------------------------------------------------------------------
+/** SPI receive a byte */
 uint8_t spiRec(void) {
-
+  SPI.beginTransaction(spiConfig);
+  uint8_t returnByte = SPI.transfer(0xFF);
+  SPI.endTransaction();
+  return returnByte;
+//  SPDR = 0XFF;
+//  while (!TEST(SPSR, SPIF)) { /* Intentionally left empty */ }
+//  return SPDR;
 }
-
-/** Read from SPI into buffer */
+//------------------------------------------------------------------------------
+/** SPI read data  */
 void spiRead(uint8_t* buf, uint16_t nbyte) {
-
+  SPI.beginTransaction(spiConfig);
+  SPI.transfer(buf, nbyte);
+  SPI.endTransaction();
+//if (nbyte-- == 0) return;
+//  SPDR = 0XFF;
+//for (uint16_t i = 0; i < nbyte; i++) {
+//  while (!TEST(SPSR, SPIF)) { /* Intentionally left empty */ }
+//  buf[i] = SPDR;
+//  SPDR = 0XFF;
+//}
+//while (!TEST(SPSR, SPIF)) { /* Intentionally left empty */ }
+//buf[nbyte] = SPDR;
 }
-
-/** Write token and then write from 512 byte buffer to SPI (for SD card) */
+//------------------------------------------------------------------------------
+/** SPI send a byte */
+void spiSend(uint8_t b) {
+  SPI.beginTransaction(spiConfig);
+  SPI.transfer(b);
+  SPI.endTransaction();
+//  SPDR = b;
+//  while (!TEST(SPSR, SPIF)) { /* Intentionally left empty */ }
+}
+//------------------------------------------------------------------------------
+/** SPI send block  */
 void spiSendBlock(uint8_t token, const uint8_t* buf) {
-
+  SPI.beginTransaction(spiConfig);
+  SPDR = token;
+  for (uint16_t i = 0; i < 512; i += 2) {
+    while (!TEST(SPSR, SPIF)) { /* Intentionally left empty */ }
+    SPDR = buf[i];
+    while (!TEST(SPSR, SPIF)) { /* Intentionally left empty */ }
+    SPDR = buf[i + 1];
+  }
+  while (!TEST(SPSR, SPIF)) { /* Intentionally left empty */ }
+  SPI.endTransaction();
 }
