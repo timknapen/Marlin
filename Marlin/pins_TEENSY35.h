@@ -77,6 +77,10 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define E0_DIR_PIN         7 //  7
 #define E0_ENABLE_PIN      24 // Shared w/x
 
+#define E1_STEP_PIN        8 //  6
+#define E1_DIR_PIN         9 //  7
+#define E1_ENABLE_PIN      25 // Shared w/x
+
 #define HEATER_0_PIN       20 //  21  // Extruder
 #define HEATER_1_PIN       21
 #define HEATER_2_PIN       22
