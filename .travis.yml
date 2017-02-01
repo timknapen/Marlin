@@ -73,9 +73,11 @@ install:
 
   - git clone https://github.com/PaulStoffregen/Wire.git
   - git clone https://github.com/PaulStoffregen/SPI.git
+  - git clone https://github.com/PaulStoffregen/Servo.git
   - sudo mkdir -p /usr/local/share/arduino/hardware/teensy/avr/libraries/
   - sudo mv Wire /usr/local/share/arduino/hardware/teensy/avr/libraries/
   - sudo mv SPI /usr/local/share/arduino/hardware/teensy/avr/libraries/
+  - sudo mv Servo /usr/local/share/arduino/hardware/teensy/avr/libraries/
 
   - mkdir -p /usr/local/share/arduino/hardware/tools/arm
   - sudo ln -s /usr/bin /usr/local/share/arduino/hardware/tools/arm/bin
