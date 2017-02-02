@@ -514,12 +514,12 @@ script:
   #
   # Test DUAL_X_CARRIAGE
   #
-  - restore_configs
-  - opt_set EXTRUDERS 2
-  - opt_set TEMP_SENSOR_1 1
-  - opt_enable USE_XMAX_PLUG
-  - opt_enable_adv DUAL_X_CARRIAGE
-  - build_marlin_teensy35
+  #- restore_configs
+  #- opt_set EXTRUDERS 2
+  #- opt_set TEMP_SENSOR_1 1
+  #- opt_enable USE_XMAX_PLUG
+  #- opt_enable_adv DUAL_X_CARRIAGE
+  #- build_marlin_teensy35
   #
   # Test SWITCHING_EXTRUDER
   #
