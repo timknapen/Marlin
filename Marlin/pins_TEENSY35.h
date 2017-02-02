@@ -13,6 +13,8 @@
   #error Oops!  Make sure you have 'Teensy 3.5' selected from the 'Tools -> Boards' menu.
 #endif
 
+#define BOARD_NAME "Teensy3.5"
+
 #define LARGE_FLASH        true
 #define USBCON 1286  // Disable MarlinSerial etc.
 
@@ -104,6 +106,8 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define KILL_PIN           -1
 #define ALARM_PIN          -1
 
+#define FILWIDTH_PIN       22
+
 #ifndef SDSUPPORT
 // these pins are defined in the SD library if building with SD support
   #define SCK_PIN         13
@@ -111,7 +115,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
   #define MOSI_PIN        11
 #endif
 
-#ifdef ULTIPANEL
+#ifdef ULTRA_LCD
 #define LCD_PINS_RS         8
 #define LCD_PINS_ENABLE     9
 #define LCD_PINS_D4        10
