@@ -450,24 +450,10 @@ script:
   - opt_set TEMP_SENSOR_1 1
   - build_marlin_teensy35
   #
-  # Test 3 extruders on RUMBA (can use any board with >=3 extruders defined)
-  # Include a test for LIN_ADVANCE here also
-  #
-  - opt_set EXTRUDERS 3
-  - opt_set TEMP_SENSOR_2 1
-  - opt_enable_adv LIN_ADVANCE
-  - build_marlin_teensy35
-  #
   # Test PIDTEMPBED
   #
   - restore_configs
   - opt_enable PIDTEMPBED
-  - build_marlin_teensy35
-  #
-  # Test MAX6675
-  #
-  - restore_configs
-  - opt_set TEMP_SENSOR_0 -2
   - build_marlin_teensy35
   #
   # Test a "Fix Mounted" Probe along with Safe Homing
