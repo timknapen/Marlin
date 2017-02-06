@@ -614,7 +614,7 @@ float cartes[XYZ] = { 0 };
 static bool send_ok[BUFSIZE];
 
 #if HAS_SERVOS
-  #if defined(__MK64FX512__)
+  #if defined(__MK64FX512__) || defined(__MK65FX1M0__)
     libServo servo[NUM_SERVOS];
   #else
     Servo servo[NUM_SERVOS];

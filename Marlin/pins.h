@@ -123,6 +123,8 @@
   #include "pins_TEENSY2.h"
 #elif MB(TEENSY35)
   #include "pins_TEENSY35.h"
+#elif MB(TEENSY36)
+  #include "pins_TEENSY36.h"
 #elif MB(GEN3_PLUS)
   #include "pins_GEN3_PLUS.h"
 #elif MB(GEN3_MONOLITHIC)

@@ -5,13 +5,15 @@
 * CLI build: HARDWARE_MOTHERBOARD=85  make
 * 
 ****************************************************************************************/
-#if MOTHERBOARD == 87
+#if MOTHERBOARD == 842
 #define KNOWN_BOARD 1
 #define AT90USB 1286  // Disable MarlinSerial etc.
 
 #ifndef __MK66FX1M0__
-#error Oops!  Make sure you have 'Teensy 3.6' selected from the 'Tools -> Boards' menu.
+  #error Oops!  Make sure you have 'Teensy 3.6' selected from the 'Tools -> Boards' menu.
 #endif
+
+#define BOARD_NAME "Teensy3.5"
 
 #define LARGE_FLASH        true
 #define USBCON 1286  // Disable MarlinSerial etc.
@@ -77,10 +79,14 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define E0_DIR_PIN         7 //  7
 #define E0_ENABLE_PIN      24 // Shared w/x
 
-#define HEATER_0_PIN       32 //  21  // Extruder
-#define HEATER_1_PIN       -1
-#define HEATER_2_PIN       -1
-#define HEATER_BED_PIN     -1 // 20  // Bed
+#define E1_STEP_PIN        8 //  6
+#define E1_DIR_PIN         9 //  7
+#define E1_ENABLE_PIN      25 // Shared w/x
+
+#define HEATER_0_PIN       20 //  21  // Extruder
+#define HEATER_1_PIN       21
+#define HEATER_2_PIN       22
+#define HEATER_BED_PIN     23 // 20  // Bed
 #define FAN_PIN            16 // 22  // Fan
 
 #define X_STOP_PIN          2
@@ -88,9 +94,9 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define Z_STOP_PIN          4
 
 #define TEMP_0_PIN          3 // Extruder / Analog pin numbering: 3 => A3
-#define TEMP_BED_PIN       -1 // Bed / Analog pin numbering
-#define TEMP_1_PIN         -1
-#define TEMP_2_PIN         -1
+#define TEMP_BED_PIN        2 // Bed / Analog pin numbering
+#define TEMP_1_PIN          4
+#define TEMP_2_PIN          5
 
 #define SDPOWER            -1
 #define SD_DETECT_PIN       -1		
@@ -100,6 +106,8 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define KILL_PIN           -1
 #define ALARM_PIN          -1
 
+#define FILWIDTH_PIN       22
+
 #ifndef SDSUPPORT
 // these pins are defined in the SD library if building with SD support
   #define SCK_PIN         13
@@ -107,7 +115,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
   #define MOSI_PIN        11
 #endif
 
-#ifdef ULTIPANEL
+#ifdef ULTRA_LCD
 #define LCD_PINS_RS         8
 #define LCD_PINS_ENABLE     9
 #define LCD_PINS_D4        10
