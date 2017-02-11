@@ -786,4 +786,11 @@
     #undef MOTOR_CURRENT
   #endif
 
+  #if defined(TEENSYDUINO)
+    #undef max
+    #define max(a,b) ((a)>(b)?(a):(b))
+    #undef min
+    #define min(a,b) ((a)<(b)?(a):(b))
+  #endif
+
 #endif // CONDITIONALS_POST_H
