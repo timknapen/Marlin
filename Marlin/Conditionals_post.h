@@ -791,6 +791,8 @@
     #define max(a,b) ((a)>(b)?(a):(b))
     #undef min
     #define min(a,b) ((a)<(b)?(a):(b))
+
+    #define NOT_A_PIN 0 // For PINS_DEBUGGING
   #endif
 
 #endif // CONDITIONALS_POST_H
