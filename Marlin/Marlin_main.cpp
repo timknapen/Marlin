@@ -9993,9 +9993,7 @@ void setup() {
   #endif
 
   MYSERIAL.begin(BAUDRATE);
-  #if defined(__MK64FX512__) || defined(__MK66FX1M0__)
-    while(!MYSERIAL);
-  #endif
+  while(!MYSERIAL);
   SERIAL_PROTOCOLLNPGM("start");
   SERIAL_ECHO_START;
 
