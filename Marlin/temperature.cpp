@@ -1056,22 +1056,22 @@ void Temperature::init() {
   HAL_adc_init();
 
   #if HAS_TEMP_0
-    ANALOG_SELECT(TEMP_0_PIN);
+    HAL_ANALOG_SELECT(TEMP_0_PIN);
   #endif
   #if HAS_TEMP_1
-    ANALOG_SELECT(TEMP_1_PIN);
+    HAL_ANALOG_SELECT(TEMP_1_PIN);
   #endif
   #if HAS_TEMP_2
-    ANALOG_SELECT(TEMP_2_PIN);
+    HAL_ANALOG_SELECT(TEMP_2_PIN);
   #endif
   #if HAS_TEMP_3
-    ANALOG_SELECT(TEMP_3_PIN);
+    HAL_ANALOG_SELECT(TEMP_3_PIN);
   #endif
   #if HAS_TEMP_4
-    ANALOG_SELECT(TEMP_4_PIN);
+    HAL_ANALOG_SELECT(TEMP_4_PIN);
   #endif
   #if HAS_TEMP_BED
-    ANALOG_SELECT(TEMP_BED_PIN);
+    HAL_ANALOG_SELECT(TEMP_BED_PIN);
   #endif
   #if ENABLED(FILAMENT_WIDTH_SENSOR)
     HAL_ANALOG_SELECT(FILWIDTH_PIN);
@@ -1991,7 +1991,7 @@ void Temperature::isr() {
       case Measure_FILWIDTH:
         if (HAL_READ_ADC > 102) { // Make sure ADC is reading > 0.5 volts, otherwise don't read.
           raw_filwidth_value -= (raw_filwidth_value >> 7); // Subtract 1/128th of the raw_filwidth_value
-          raw_filwidth_value += ((unsigned long)ADC << 7); // Add new ADC reading, scaled by 128
+          raw_filwidth_value += ((unsigned long)HAL_READ_ADC << 7); // Add new ADC reading, scaled by 128
         }
         break;
     #endif
