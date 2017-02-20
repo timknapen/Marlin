@@ -1053,18 +1053,8 @@ void Temperature::init() {
 
   #endif // HEATER_0_USES_MAX6675
 
-  #ifdef DIDR2
-    #define ANALOG_SELECT(pin) do{ if (pin < 8) SBI(DIDR0, pin); else SBI(DIDR2, pin - 8); }while(0)
-  #else
-    #define ANALOG_SELECT(pin) do{ SBI(DIDR0, pin); }while(0)
-  #endif
+  HAL_adc_init();
 
-  // Set analog inputs
-  ADCSRA = _BV(ADEN) | _BV(ADSC) | _BV(ADIF) | 0x07;
-  DIDR0 = 0;
-  #ifdef DIDR2
-    DIDR2 = 0;
-  #endif
   #if HAS_TEMP_0
     ANALOG_SELECT(TEMP_0_PIN);
   #endif
@@ -1084,7 +1074,17 @@ void Temperature::init() {
     ANALOG_SELECT(TEMP_BED_PIN);
   #endif
   #if ENABLED(FILAMENT_WIDTH_SENSOR)
-    ANALOG_SELECT(FILWIDTH_PIN);
+    HAL_ANALOG_SELECT(FILWIDTH_PIN);
+  #endif
+
+  #if defined(ARDUINO_ARCH_AVR)
+    // Use timer0 for temperature measurement
+    // Interleave temperature interrupt with millies interrupt
+    OCR0B = 128;
+    SBI(TIMSK0, OCIE0B);
+  #else
+    HAL_timer_start (TEMP_TIMER_NUM, TEMP_TIMER_FREQUENCY);
+    HAL_timer_enable_interrupt (TEMP_TIMER_NUM);
   #endif
 
   #if HAS_AUTO_FAN_0
@@ -1606,7 +1606,10 @@ void Temperature::set_current_temp_raw() {
  *  - For PINS_DEBUGGING, monitor and report endstop pins
  *  - For ENDSTOP_INTERRUPTS_FEATURE check endstops if flagged
  */
-ISR(TIMER0_COMPB_vect) { Temperature::isr(); }
+HAL_TEMP_TIMER_ISR {
+  HAL_timer_isr_prologue (TEMP_TIMER_NUM);
+  Temperature::isr();
+}
 
 volatile bool Temperature::in_temp_isr = false;
 
@@ -1617,7 +1620,7 @@ void Temperature::isr() {
   in_temp_isr = true;
 
   // Allow UART and stepper ISRs
-  CBI(TIMSK0, OCIE0B); //Disable Temperature ISR
+  DISABLE_TEMPERATURE_INTERRUPT(); //Disable Temperature ISR
   sei();
 
   static int8_t temp_count = -1;
@@ -1910,13 +1913,6 @@ void Temperature::isr() {
    * This gives each ADC 0.9765ms to charge up.
    */
 
-  #define SET_ADMUX_ADCSRA(pin) ADMUX = _BV(REFS0) | (pin & 0x07); SBI(ADCSRA, ADSC)
-  #ifdef MUX5
-    #define START_ADC(pin) if (pin > 7) ADCSRB = _BV(MUX5); else ADCSRB = 0; SET_ADMUX_ADCSRA(pin)
-  #else
-    #define START_ADC(pin) ADCSRB = 0; SET_ADMUX_ADCSRA(pin)
-  #endif
-
   switch (adc_sensor_state) {
 
     case SensorsReady: {
@@ -1936,64 +1932,64 @@ void Temperature::isr() {
 
     #if HAS_TEMP_0
       case PrepareTemp_0:
-        START_ADC(TEMP_0_PIN);
+        HAL_START_ADC(TEMP_0_PIN);
         break;
       case MeasureTemp_0:
-        raw_temp_value[0] += ADC;
+        raw_temp_value[0] += HAL_READ_ADC;
         break;
     #endif
 
     #if HAS_TEMP_BED
       case PrepareTemp_BED:
-        START_ADC(TEMP_BED_PIN);
+        HAL_START_ADC(TEMP_BED_PIN);
         break;
       case MeasureTemp_BED:
-        raw_temp_bed_value += ADC;
+        raw_temp_bed_value += HAL_READ_ADC;
         break;
     #endif
 
     #if HAS_TEMP_1
       case PrepareTemp_1:
-        START_ADC(TEMP_1_PIN);
+        HAL_START_ADC(TEMP_1_PIN);
         break;
       case MeasureTemp_1:
-        raw_temp_value[1] += ADC;
+        raw_temp_value[1] += HAL_READ_ADC;
         break;
     #endif
 
     #if HAS_TEMP_2
       case PrepareTemp_2:
-        START_ADC(TEMP_2_PIN);
+        HAL_START_ADC(TEMP_2_PIN);
         break;
       case MeasureTemp_2:
-        raw_temp_value[2] += ADC;
+        raw_temp_value[2] += HAL_READ_ADC;
         break;
     #endif
 
     #if HAS_TEMP_3
       case PrepareTemp_3:
-        START_ADC(TEMP_3_PIN);
+        HAL_START_ADC(TEMP_3_PIN);
         break;
       case MeasureTemp_3:
-        raw_temp_value[3] += ADC;
+        raw_temp_value[3] += HAL_READ_ADC;
         break;
     #endif
 
     #if HAS_TEMP_4
       case PrepareTemp_4:
-        START_ADC(TEMP_4_PIN);
+        HAL_START_ADC(TEMP_4_PIN);
         break;
       case MeasureTemp_4:
-        raw_temp_value[4] += ADC;
+        raw_temp_value[4] += HAL_READ_ADC;
         break;
     #endif
 
     #if ENABLED(FILAMENT_WIDTH_SENSOR)
       case Prepare_FILWIDTH:
-        START_ADC(FILWIDTH_PIN);
+        HAL_START_ADC(FILWIDTH_PIN);
       break;
       case Measure_FILWIDTH:
-        if (ADC > 102) { // Make sure ADC is reading > 0.5 volts, otherwise don't read.
+        if (HAL_READ_ADC > 102) { // Make sure ADC is reading > 0.5 volts, otherwise don't read.
           raw_filwidth_value -= (raw_filwidth_value >> 7); // Subtract 1/128th of the raw_filwidth_value
           raw_filwidth_value += ((unsigned long)ADC << 7); // Add new ADC reading, scaled by 128
         }
@@ -2108,5 +2104,5 @@ void Temperature::isr() {
 
   cli();
   in_temp_isr = false;
-  SBI(TIMSK0, OCIE0B); //re-enable Temperature ISR
+  ENABLE_TEMPERATURE_INTERRUPT(); //re-enable Temperature ISR
 }

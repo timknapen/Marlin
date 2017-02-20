@@ -170,13 +170,37 @@
     #define DEFAULT_KEEPALIVE_INTERVAL 2
   #endif
 
+  #ifdef __SAM3X8E__
+    /**
+     * Hidden options for developer
+     */
+    // Double stepping start from STEP_DOUBLER_FREQUENCY + 1, quad stepping start from STEP_DOUBLER_FREQUENCY * 2 + 1
+    #ifndef STEP_DOUBLER_FREQUENCY
+      #if ENABLED(ADVANCE) || ENABLED(LIN_ADVANCE)
+        #define STEP_DOUBLER_FREQUENCY 60000 // Hz
+      #else
+        #define STEP_DOUBLER_FREQUENCY 80000 // Hz
+      #endif
+    #endif
+    // Disable double / quad stepping
+    //#define DISABLE_MULTI_STEPPING
+  #endif
+
   /**
    * MAX_STEP_FREQUENCY differs for TOSHIBA
    */
   #if ENABLED(CONFIG_STEPPERS_TOSHIBA)
+    #ifdef __SAM3X8E__
+      #define MAX_STEP_FREQUENCY STEP_DOUBLER_FREQUENCY // Max step frequency for Toshiba Stepper Controllers, 96kHz is close to maximum for an Arduino Due
+    #else
     #define MAX_STEP_FREQUENCY 10000 // Max step frequency for Toshiba Stepper Controllers
+    #endif
+  #else
+    #ifdef __SAM3X8E__
+      #define MAX_STEP_FREQUENCY (STEP_DOUBLER_FREQUENCY * 4) // Max step frequency for the Due is approx. 330kHz
   #else
     #define MAX_STEP_FREQUENCY 40000 // Max step frequency for Ultimaker (5000 pps / half step)
+  #endif
   #endif
 
   // MS1 MS2 Stepper Driver Microstepping mode table
@@ -184,7 +208,16 @@
   #define MICROSTEP2 HIGH,LOW
   #define MICROSTEP4 LOW,HIGH
   #define MICROSTEP8 HIGH,HIGH
+  #ifdef __SAM3X8E__
+    #if MB(ALLIGATOR)
+      #define MICROSTEP16 LOW,LOW
+      #define MICROSTEP32 HIGH,HIGH
+    #else
+      #define MICROSTEP16 HIGH,HIGH
+    #endif
+  #else
   #define MICROSTEP16 HIGH,HIGH
+  #endif
 
   /**
    * Advance calculated values
@@ -308,6 +341,10 @@
   #elif TEMP_SENSOR_BED > 0
     #define THERMISTORBED TEMP_SENSOR_BED
     #define BED_USES_THERMISTOR
+  #endif
+
+  #ifdef __SAM3X8E__
+    #define HEATER_USES_AD595 (ENABLED(HEATER_0_USES_AD595) || ENABLED(HEATER_1_USES_AD595) || ENABLED(HEATER_2_USES_AD595) || ENABLED(HEATER_3_USES_AD595))
   #endif
 
   /**
@@ -584,8 +621,48 @@
   // Digital control
   #define HAS_MICROSTEPS (HAS_X_MICROSTEPS || HAS_Y_MICROSTEPS || HAS_Z_MICROSTEPS || HAS_E0_MICROSTEPS || HAS_E1_MICROSTEPS || HAS_E2_MICROSTEPS || HAS_E3_MICROSTEPS || HAS_E4_MICROSTEPS)
   #define HAS_STEPPER_RESET (PIN_EXISTS(STEPPER_RESET))
+  #define HAS_X_ENABLE (PIN_EXISTS(X_ENABLE))
+  #define HAS_X2_ENABLE (PIN_EXISTS(X2_ENABLE))
+  #define HAS_Y_ENABLE (PIN_EXISTS(Y_ENABLE))
+  #define HAS_Y2_ENABLE (PIN_EXISTS(Y2_ENABLE))
+  #define HAS_Z_ENABLE (PIN_EXISTS(Z_ENABLE))
+  #define HAS_Z2_ENABLE (PIN_EXISTS(Z2_ENABLE))
+  #define HAS_E0_ENABLE (PIN_EXISTS(E0_ENABLE))
+  #define HAS_E1_ENABLE (PIN_EXISTS(E1_ENABLE))
+  #define HAS_E2_ENABLE (PIN_EXISTS(E2_ENABLE))
+  #define HAS_E3_ENABLE (PIN_EXISTS(E3_ENABLE))
+  #define HAS_E4_ENABLE (PIN_EXISTS(E4_ENABLE))
+  #define HAS_X_DIR (PIN_EXISTS(X_DIR))
+  #define HAS_X2_DIR (PIN_EXISTS(X2_DIR))
+  #define HAS_Y_DIR (PIN_EXISTS(Y_DIR))
+  #define HAS_Y2_DIR (PIN_EXISTS(Y2_DIR))
+  #define HAS_Z_DIR (PIN_EXISTS(Z_DIR))
+  #define HAS_Z2_DIR (PIN_EXISTS(Z2_DIR))
+  #define HAS_E0_DIR (PIN_EXISTS(E0_DIR))
+  #define HAS_E1_DIR (PIN_EXISTS(E1_DIR))
+  #define HAS_E2_DIR (PIN_EXISTS(E2_DIR))
+  #define HAS_E3_DIR (PIN_EXISTS(E3_DIR))
+  #define HAS_E4_DIR (PIN_EXISTS(E4_DIR))
+  #define HAS_X_STEP (PIN_EXISTS(X_STEP))
+  #define HAS_X2_STEP (PIN_EXISTS(X2_STEP))
+  #define HAS_Y_STEP (PIN_EXISTS(Y_STEP))
+  #define HAS_Y2_STEP (PIN_EXISTS(Y2_STEP))
+  #define HAS_Z_STEP (PIN_EXISTS(Z_STEP))
+  #define HAS_Z2_STEP (PIN_EXISTS(Z2_STEP))
+  #define HAS_E0_STEP (PIN_EXISTS(E0_STEP))
+  #define HAS_E1_STEP (PIN_EXISTS(E1_STEP))
+  #define HAS_E2_STEP (PIN_EXISTS(E2_STEP))
+  #define HAS_E3_STEP (PIN_EXISTS(E3_STEP))
+  #define HAS_E4_STEP (PIN_EXISTS(E4_STEP))
   #define HAS_DIGIPOTSS (PIN_EXISTS(DIGIPOTSS))
+  #define HAS_BUZZER (PIN_EXISTS(BEEPER) || ENABLED(LCD_USE_I2C_BUZZER))
+  #define HAS_CASE_LIGHT (PIN_EXISTS(CASE_LIGHT))
+
   #define HAS_MOTOR_CURRENT_PWM (PIN_EXISTS(MOTOR_CURRENT_PWM_XY) || PIN_EXISTS(MOTOR_CURRENT_PWM_Z) || PIN_EXISTS(MOTOR_CURRENT_PWM_E))
+
+  #define HAS_TEMP_HOTEND (HAS_TEMP_0 || ENABLED(HEATER_0_USES_MAX6675))
+
+  #define HAS_THERMALLY_PROTECTED_BED (HAS_TEMP_BED && HAS_HEATER_BED && ENABLED(THERMAL_PROTECTION_BED))
 
   /**
    * This setting is also used by M109 when trying to calculate
@@ -738,6 +815,7 @@
   #define HAS_LEVELING          (HAS_ABL || ENABLED(MESH_BED_LEVELING))
   #define PLANNER_LEVELING      (ABL_PLANAR || ABL_GRID || ENABLED(MESH_BED_LEVELING) || UBL_DELTA)
   #define HAS_PROBING_PROCEDURE (HAS_ABL || ENABLED(Z_MIN_PROBE_REPEATABILITY_TEST))
+
   #if HAS_PROBING_PROCEDURE
     #define PROBE_BED_WIDTH abs(RIGHT_PROBE_BED_POSITION - (LEFT_PROBE_BED_POSITION))
     #define PROBE_BED_HEIGHT abs(BACK_PROBE_BED_POSITION - (FRONT_PROBE_BED_POSITION))
@@ -804,6 +882,22 @@
 
   // Stepper pulse duration, in cycles
   #define STEP_PULSE_CYCLES ((MINIMUM_STEPPER_PULSE) * CYCLES_PER_MICROSECOND)
+  #ifdef __SAM3X8E__
+    // Add additional delay for between direction signal and pulse signal of stepper
+    #ifndef STEPPER_DIRECTION_DELAY
+      #define STEPPER_DIRECTION_DELAY 0 // time in microseconds
+    #endif
+  #endif
+
+  #ifndef DELTA_ENDSTOP_ADJ
+    #define DELTA_ENDSTOP_ADJ { 0 }
+  #endif
+
+  #ifndef __SAM3X8E__
+    #undef UI_VOLTAGE_LEVEL
+    #undef RADDS_DISPLAY
+    #undef MOTOR_CURRENT
+  #endif
 
   #if ENABLED(SDCARD_SORT_ALPHA)
     #define HAS_FOLDER_SORTING (FOLDER_SORTING || ENABLED(SDSORT_GCODE))

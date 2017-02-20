@@ -20,11 +20,13 @@
  *
  */
 
-#include "Marlin.h"
+#if defined(ARDUINO_ARCH_AVR)
+
+#include "../../../Marlin.h"
 
 #if ENABLED(USE_WATCHDOG)
 
-#include "watchdog.h"
+#include "watchdog_AVR.h"
 
 // Initialize watchdog with a 4 sec interrupt time
 void watchdog_init() {
@@ -51,6 +53,7 @@ void watchdog_init() {
     kill(PSTR("ERR:Please Reset")); //kill blocks //16 characters so it fits on a 16x2 display
     while (1); //wait for user or serial reset
   }
-#endif // WATCHDOG_RESET_MANUAL
+#endif //WATCHDOG_RESET_MANUAL
 
-#endif // USE_WATCHDOG
+
+#endif //USE_WATCHDOG

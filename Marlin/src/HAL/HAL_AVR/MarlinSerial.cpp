@@ -30,7 +30,12 @@
  */
 
 #include "MarlinSerial.h"
-#include "Marlin.h"
+
+#include "../../../Marlin.h"
+
+#if ENABLED(EMERGENCY_PARSER)
+  #include "../../../stepper.h"
+#endif
 
 // Disable HardwareSerial.cpp to support chips without a UART (Attiny, etc.)
 
@@ -46,7 +51,6 @@
 
   #if ENABLED(EMERGENCY_PARSER)
 
-    #include "stepper.h"
     #include "language.h"
 
     // Currently looking for: M108, M112, M410
