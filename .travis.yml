@@ -1,6 +1,8 @@
 ---
 language: c
   #
+dist: trusty
+sudo: required
 notifications:
   email: false
   #
