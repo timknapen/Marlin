@@ -16,33 +16,36 @@
 #define BOARD_NAME "Teensy3.5"
 
 #define LARGE_FLASH        true
-#define USBCON 1286  // Disable MarlinSerial etc.
+#define USBCON //1286  // Disable MarlinSerial etc.
 
 /* 
-DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a TeensyBreadboard:
+teemuatlut plan for Teensy3.5 and Teensy3.6:
 
-                               USB
-           GND       GND |-----#####-----| +5V              ATX +5SB
-     ATX PS_ON    PWM 27 |b7   #####   b6| 26    PWM*       Stepper Enable 
-                  PWM  0 |d0           b5| 25    PWM*        
-                  PWM  1 |d1           b4| 24    PWM        
-         X_MIN         2 |d2           b3| 23               MISO_PIN
-         Y_MIN         3 |d3           b2| 22               MOSI_PIN
-         Z_MIN         4 |d4  * *      b1| 21               SCK_PIN       
-                       5 |d5  e e      b0| 20               SDSS              
-                LED    6 |d6  5 4      e7| 19               
-                       7 |d7           e6| 18               
-       LCD  RS         8 |e0             | GND              
-       LCD  EN         9 |e1   a4 a0    R| AREF             
-       LCD  D4        10 |c0   a5 a1   f0| 38 A0            ENC_1           
-       LCD  D5        11 |c1   a6 a2   f1| 39 A1            ENC_2
-       LCD  D6        12 |c2   a7 a3   f2| 40 A2            ENC_CLK
-       LCD  D6        13 |c3           f3| 41 A3            
-      Bed Heat    PWM 14 |c4   V G R   f4| 42 A4            
- Extruder Heat    PWM 15 |c5   c n S   f5| 43 A5            
-           Fan    PWM 16 |c6   c d T   f6| 44 A6            Bed TC
-                      17 |c7   * * *   f7| 45 A7            Extruder TC * 4.7k * +5        
-                         -----------------                  
+                                                     USB
+                                          GND |-----#####-----| VIN 5V
+      X_STEP_PIN          MOSI1   RX1       0 |     #####     | Analog GND
+      X_DIR_PIN           MISO1   TX1       1 |               | 3.3V
+      Y_STEP_PIN                       PWM  2 | *NC     AREF* | 23  A9 PWM
+      Y_DIR_PIN           SCL2 CAN0TX  PWM  3 | *A26     A10* | 22  A8 PWM
+      Z_STEP_PIN          SDA2 CAN0RX  PWM  4 | *A25     A11* | 21  A7 PWM  CS0   MOSI1  RX1
+      Z_DIR_PIN           MISO1   TX1  PWM  5 | *GND * * 57   | 20  A6 PWM  CS0   SCK1
+      X_ENABLE_PIN                     PWM  6 | *GND * * 56   | 19  A5            SCL0        E0_STEP_PIN
+      Y_ENABLE_PIN  SCL0  MOSI0   RX3  PWM  7 |      * * 55   | 18  A4            SDA0        E0_DIR_PIN
+      Z_ENABLE_PIN  SDA0  MISO0   TX3  PWM  8 |      * * 54   | 17  A3            SDA0        E0_ENABLE_PIN
+                          CS0     RX2  PWM  9 |               | 16  A2            SCL0        TEMP_0_PIN
+                          CS0     TX2  PWM 10 |               | 15  A1      CS0
+      X_STOP_PIN          MOSI0            11 |               | 14  A0 PWM  CS0
+      Y_STOP_PIN          MISO0            12 |               | 13 LED            SCK0        LED_PIN
+                                         3.3V |               | GND
+      Z_STOP_PIN                           24 |   40 * * 53   |    A22 DAC1
+AUX2                                       25 |   41 * * 52   |    A21 DAC0
+AUX2  FAN_PIN             SCL2    TX1      26 |   42 * * 51   | 39 A20      MISO0 SDSS
+AUX2  Z-PROBE PWR         SCK0    RX1      27 | *  *  *  *  * | 38 A19 PWM        SDA1
+AUX2  SLED_PIN            MOSI0            28 |   43 * * 50   | 37 A18 PWM        SCL1
+D10   CONTROLLERFAN_PIN   CAN0TX       PWM 29 |   44 * * 49   | 36 A17 PWM
+D9    HEATER_0_PIN        CAN0RX       PWM 30 |   45 * * 48   | 35 A16 PWM
+                          CS1     RX4  A12 31 |   46 * * 47   | 34 A15 PWM        SDA0  RX5
+                          SCK1    TX4  A13 32 |__GND_*_*_3.3V_| 33 A14 PWM        SCL0  TX5
 
       Interior E4: 36, INT4
       Interior E5: 37, INT5
@@ -54,67 +57,70 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
        E STEP  34 a6  a2 30 Y STEP
        E DIR   35 a7  a3 31 Y DIR
 
+                          Interior pins:          40 * * 53   SCK2
+                                                  41 * * 52   MOSI2
+                                                  42 * * 51   MISO2
+                                          CS2     43 * * 50   A24
+                                          MOSI2   44 * * 49   A23
+                                          MISO2   45 * * 48   TX6   SDA0
+                                          SCK2    46 * * 47   RX6   SCL0
+                                                 GND * * 3.3V
+
 */
 
-//#ifndef AT90USBxx_TEENSYPP_ASSIGNMENTS  // use Teensyduino Teensy++2.0 pin assignments instead of Marlin alphabetical.
-  //#error  Uncomment #define AT90USBxx_TEENSYPP_ASSIGNMENTS in fastio.h for this config
-  //// or build from command line with:  DEFINES=AT90USBxx_TEENSYPP_ASSIGNMENTS HARDWARE_MOTHERBOARD=84  make
-//#endif
+#define X_STEP_PIN          22
+#define X_DIR_PIN           21
+#define X_ENABLE_PIN        39
 
-// TODO: needs work here, to define pinout....
+#define Y_STEP_PIN          19
+#define Y_DIR_PIN           18
+#define Y_ENABLE_PIN        20
 
-#define X_STEP_PIN         11 //  0 Marlin
-#define X_DIR_PIN          12 //  1 Marlin
-#define X_ENABLE_PIN       24
+#define Z_STEP_PIN          38
+#define Z_DIR_PIN           37
+#define Z_ENABLE_PIN        17
 
-#define Y_STEP_PIN         2 //  2 Marlin
-#define Y_DIR_PIN          3 //  3
-#define Y_ENABLE_PIN       22    // Shared w/x
+#define E0_STEP_PIN        31
+#define E0_DIR_PIN         30
+#define E0_ENABLE_PIN      32
 
-#define Z_STEP_PIN         4 //  4
-#define Z_DIR_PIN          5 //  5
-#define Z_ENABLE_PIN       23 // Shared w/x
+#define E1_STEP_PIN        -1
+#define E1_DIR_PIN         -1
+#define E1_ENABLE_PIN      -1
 
-#define E0_STEP_PIN        6 //  6
-#define E0_DIR_PIN         7 //  7
-#define E0_ENABLE_PIN      24 // Shared w/x
+#define HEATER_0_PIN        3
+#define HEATER_1_PIN       -1
+#define HEATER_2_PIN       -1
+#define HEATER_BED_PIN     -1
+#define FAN_PIN             2
 
-#define E1_STEP_PIN        8 //  6
-#define E1_DIR_PIN         9 //  7
-#define E1_ENABLE_PIN      25 // Shared w/x
+#define X_STOP_PIN         24
+#define Y_STOP_PIN         26
+#define Z_STOP_PIN         28
 
-#define HEATER_0_PIN       20 //  21  // Extruder
-#define HEATER_1_PIN       21
-#define HEATER_2_PIN       22
-#define HEATER_BED_PIN     23 // 20  // Bed
-#define FAN_PIN            16 // 22  // Fan
-
-#define X_STOP_PIN          2
-#define Y_STOP_PIN          3
-#define Z_STOP_PIN          4
-
-#define TEMP_0_PIN          3 // Extruder / Analog pin numbering: 3 => A3
-#define TEMP_BED_PIN        2 // Bed / Analog pin numbering
-#define TEMP_1_PIN          4
-#define TEMP_2_PIN          5
+#define TEMP_0_PIN          2 // Extruder / Analog pin numbering: 2 => A2
+#define TEMP_BED_PIN       -1 // Bed / Analog pin numbering
+#define TEMP_1_PIN         -1
+#define TEMP_2_PIN         -1
 
 #define SDPOWER            -1
-#define SD_DETECT_PIN       -1		
-#define SDSS               20 // 8
-#define LED_PIN             6
-#define PS_ON_PIN          27
+#define SD_DETECT_PIN      -1
+#define SDSS               39 // 8
+#define LED_PIN            13
+#define PS_ON_PIN           1
 #define KILL_PIN           -1
 #define ALARM_PIN          -1
 
-#define FILWIDTH_PIN       22
+#define FILWIDTH_PIN       -1
+#define SLED_PIN            5
 
 #ifndef SDSUPPORT
 // these pins are defined in the SD library if building with SD support
-  #define SCK_PIN         13
-  #define MISO_PIN        12
-  #define MOSI_PIN        11
+  #define SCK_PIN          13
+  #define MISO_PIN         12
+  #define MOSI_PIN         11
 #endif
-
+/*
 #ifdef ULTRA_LCD
 #define LCD_PINS_RS         8
 #define LCD_PINS_ENABLE     9
@@ -126,5 +132,5 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define BTN_EN2            39
 #define BTN_ENC            40
 #endif
-
+*/
 #endif  // MOTHERBOARD == 84 (Teensy++2.0 Breadboard)
