@@ -23,7 +23,8 @@
 #ifndef PRINTCOUNTER_H
 #define PRINTCOUNTER_H
 
-#include "macros.h"
+#include "Marlin.h"
+
 #include "language.h"
 #include "stopwatch.h"
 
@@ -49,9 +50,11 @@ class PrintCounter: public Stopwatch {
      * @brief EEPROM address
      * @details Defines the start offset address where the data is stored.
      */
-    #if ENABLED(I2C_EEPROM) || ENABLED(SPI_EEPROM) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+    #if ENABLED(I2C_EEPROM) || ENABLED(SPI_EEPROM)
       // round up address to next page boundary (assuming 32 byte pages)
       const uint32_t address = 0x40;
+    #elif defined(CPU_32_BIT)
+      const uint32_t address = 0x32;
     #else
       const uint16_t address = 0x32;
     #endif

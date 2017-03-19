@@ -31,13 +31,13 @@
  * For ARDUINO_ARCH_AVR
  */
 
-#if defined(ARDUINO_ARCH_AVR)
+#ifdef ARDUINO_ARCH_AVR
 
 // --------------------------------------------------------------------------
 // Includes
 // --------------------------------------------------------------------------
 
-#include "../../../Marlin.h"
+#include "../../../MarlinConfig.h"
 
 // --------------------------------------------------------------------------
 // Public Variables
@@ -136,7 +136,7 @@ void spiBegin (void) {
 #else  // SOFTWARE_SPI
        //------------------------------------------------------------------------------
   /** nop to tune soft SPI timing */
-  #define nop asm volatile ("nop\n\t")
+  #define nop asm volatile ("\tnop\n")
 
   /** Set SPI rate */
   void spiInit(uint8_t spiRate) {

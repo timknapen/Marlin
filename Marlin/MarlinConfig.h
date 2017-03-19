@@ -24,6 +24,7 @@
 #define MARLIN_CONFIG_H
 
 #include "macros.h"
+#include "src/HAL/HAL.h"
 #include "boards.h"
 #include "Version.h"
 #include "Configuration.h"
@@ -35,7 +36,6 @@
     #define HardwareSerial_h // trick to disable the standard HWserial
   #endif
 #endif
-#include "Arduino.h"
 #include "Conditionals_post.h"
 #include "SanityCheck.h"
 

@@ -1,30 +1,30 @@
-/* **************************************************************************
- 
- Marlin 3D Printer Firmware
- Copyright (C) 2016 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
- Copyright (c) 2016 Bob Cousins bobcousins42@googlemail.com
- Copyright (c) 2015-2016 Nico Tonnhofer wurstnase.reprap@gmail.com
-
- This program is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
-****************************************************************************/
+/**
+ * Marlin 3D Printer Firmware
+ *
+ * Copyright (C) 2016 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2016 Bob Cousins bobcousins42@googlemail.com
+ * Copyright (c) 2015-2016 Nico Tonnhofer wurstnase.reprap@gmail.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 
 /**
  * Description: HAL for Arduino Due and compatible (SAM3X8E)
  *
  * For ARDUINO_ARCH_SAM
  */
-
 
 #ifndef _HAL_DUE_H
 #define _HAL_DUE_H
@@ -59,25 +59,6 @@
 #endif
 
 #define _BV(bit) 	(1 << (bit))
-
-#if ENABLED(DELTA_FAST_SQRT)
-  #undef ATAN2
-  #undef FABS
-  #undef POW
-  #undef SQRT
-  #undef CEIL
-  #undef FLOOR
-  #undef LROUND
-  #undef FMOD
-  #define ATAN2(y, x) atan2f(y, x)
-  #define FABS(x) fabsf(x)
-  #define POW(x, y) powf(x, y)
-  #define SQRT(x) sqrtf(x)
-  #define CEIL(x) ceilf(x)
-  #define FLOOR(x) floorf(x)
-  #define LROUND(x) lroundf(x)
-  #define FMOD(x, y) fmodf(x, y)
-#endif
 
 #ifndef analogInputToDigitalPin
   #define analogInputToDigitalPin(p) ((p < 12u) ? (p) + 54u : -1)
@@ -144,7 +125,6 @@ void spiSend(uint32_t chan, byte b);
 void spiSend(uint32_t chan, const uint8_t* buf, size_t n);
 /** Read single byte from specified SPI channel */
 uint8_t spiRec(uint32_t chan);
-
 
 
 // EEPROM

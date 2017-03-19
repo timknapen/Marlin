@@ -78,7 +78,7 @@
   int freeMemory() { return SdFatUtil::FreeRam(); }
 #else
 
-extern "C"{
+extern "C" {
   extern unsigned int __bss_end;
   extern unsigned int __heap_start;
   extern void *__brkval;
@@ -87,10 +87,7 @@ extern "C"{
 int freeMemory() {
   int free_memory;
 
-  if((int)__brkval == 0)
-    free_memory = ((int)&free_memory) - ((int)&__bss_end);
-  else
-    free_memory = ((int)&free_memory) - ((int)__brkval);
+  free_memory = (int)&free_memory - ((int)__brkval ? (int)__brkval : (int)&__bss_end);
 
   return free_memory;
 }

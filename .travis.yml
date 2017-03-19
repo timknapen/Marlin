@@ -1,8 +1,6 @@
 ---
 language: c
   #
-dist: trusty
-sudo: required
 notifications:
   email: false
   #
@@ -20,6 +18,7 @@ before_install:
   - sleep 3
   - export DISPLAY=:1.0
   #
+  # Teensy compiling
   - lsb_release -a
   - sudo apt-get -qq update
   - sudo apt-get install -y binutils-arm-none-eabi
@@ -50,12 +49,16 @@ install:
   - sudo mv U8glib_Arduino /usr/local/share/arduino/libraries/U8glib
   #
   # Install: L6470 Stepper Motor Driver library
-  - git clone https://github.com/ameyer/Arduino-L6470.git
-  - sudo mv Arduino-L6470/L6470 /usr/local/share/arduino/libraries/L6470
+  # - git clone https://github.com/ameyer/Arduino-L6470.git
+  # - sudo mv Arduino-L6470/L6470 /usr/local/share/arduino/libraries/L6470
   #
   # Install: TMC26X Stepper Motor Controller library
-  - git clone https://github.com/trinamic/TMC26XStepper.git
-  - sudo mv TMC26XStepper /usr/local/share/arduino/libraries/TMC26XStepper
+  # - git clone https://github.com/trinamic/TMC26XStepper.git
+  # - sudo mv TMC26XStepper /usr/local/share/arduino/libraries/TMC26XStepper
+  #
+  # Install: TMC2130 Stepper Motor Controller library
+  - git clone https://github.com/teemuatlut/TMC2130Stepper.git
+  - sudo mv TMC2130Stepper /usr/local/share/arduino/libraries/TMC2130Stepper
 
   # Install Teensy stuff
 
@@ -259,10 +262,10 @@ script:
   - opt_enable COREXY
   - build_marlin
   #
-  # Enable COREXZ
+  # Enable COREYX (swapped)
   #
   - restore_configs
-  - opt_enable COREXZ
+  - opt_enable COREYX
   - build_marlin
   #
   # Enable Z_DUAL_STEPPER_DRIVERS, Z_DUAL_ENDSTOPS
@@ -329,6 +332,15 @@ script:
   #
   - restore_configs
   - opt_enable G3D_PANEL SDSUPPORT
+  - build_marlin
+  #
+  # Add SDCARD_SORT_ALPHA, test G3D_PANEL again
+  #
+  - opt_enable_adv SDCARD_SORT_ALPHA
+  - opt_set_adv SDSORT_GCODE true
+  - opt_set_adv SDSORT_USES_RAM true
+  - opt_set_adv SDSORT_USES_STACK true
+  - opt_set_adv SDSORT_CACHE_NAMES true
   - build_marlin
   #
   # REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER
@@ -415,6 +427,14 @@ script:
   #
   - use_example_configs SCARA
   - opt_enable AUTO_BED_LEVELING_BILINEAR FIX_MOUNTED_PROBE USE_ZMIN_PLUG EEPROM_SETTINGS EEPROM_CHITCHAT ULTIMAKERCONTROLLER
+  - build_marlin
+  #
+  # TMC2130 Config
+  #
+  - restore_configs
+  - opt_enable_adv HAVE_TMC2130 X_IS_TMC2130 Y_IS_TMC2130 Z_IS_TMC2130
+  - build_marlin
+  - opt_enable_adv AUTOMATIC_CURRENT_CONTROL STEALTHCHOP
   - build_marlin
   #
   # tvrrug Config need to check board type for sanguino atmega644p

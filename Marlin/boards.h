@@ -71,8 +71,8 @@
 #define BOARD_BRAINWAVE         82   // Brainwave (AT90USB646)
 #define BOARD_SAV_MKI           83   // SAV Mk-I (AT90USB1286)
 #define BOARD_TEENSY2           84   // Teensy++2.0 (AT90USB1286) - CLI compile: DEFINES=AT90USBxx_TEENSYPP_ASSIGNMENTS HARDWARE_MOTHERBOARD=84  make
-#define BOARD_TEENSY35			841  // Teensy3.5
-#define BOARD_TEENSY36			842  // Teensy3.6
+#define BOARD_TEENSY35          841  // Teensy3.5
+#define BOARD_TEENSY36          842  // Teensy3.6
 #define BOARD_BRAINWAVE_PRO     85   // Brainwave Pro (AT90USB1286)
 #define BOARD_GEN3_PLUS         9    // Gen3+
 #define BOARD_GEN3_MONOLITHIC   22   // Gen3 Monolithic Electronics
@@ -118,8 +118,6 @@
 #define BOARD_RAMPS4DUE_EEF    1546  // RAMPS4DUE (Power outputs: Hotend0, Hotend1, Fan)
 #define BOARD_RAMPS4DUE_SF     1548  // RAMPS4DUE (Power outputs: Spindle, Controller Fan)
 #define BOARD_ALLIGATOR        1602  // Alligator Board R2
-
-#define BOARD_99                99   // This is in pins.h but...?
 
 #define MB(board) (MOTHERBOARD==BOARD_##board)
 

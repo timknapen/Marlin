@@ -25,7 +25,7 @@
  * For ARDUINO_ARCH_SAM
  */
 
-#if defined(ARDUINO_ARCH_SAM)
+#ifdef ARDUINO_ARCH_SAM
 
 // --------------------------------------------------------------------------
 // Includes
@@ -74,24 +74,15 @@ uint16_t HAL_adc_result;
 // --------------------------------------------------------------------------
 
 // disable interrupts
-void cli(void)
-{
-	noInterrupts();
-}
+void cli(void) { noInterrupts(); }
 
 // enable interrupts
-void sei(void)
-{
-	interrupts();
-}
+void sei(void) { interrupts(); }
 
-void HAL_clear_reset_source (void)
-{ }
+void HAL_clear_reset_source(void) { }
 
-uint8_t HAL_get_reset_source (void)
-{
-  switch ( (RSTC->RSTC_SR >> 8) & 7)
-  {
+uint8_t HAL_get_reset_source (void) {
+  switch ((RSTC->RSTC_SR >> 8) & 7) {
     case 0: return RST_POWER_ON; break;
     case 1: return RST_BACKUP; break;
     case 2: return RST_WATCHDOG; break;
@@ -102,8 +93,7 @@ uint8_t HAL_get_reset_source (void)
   }
 }
 
-void _delay_ms (int delay_ms)
-{
+void _delay_ms(int delay_ms) {
 	//todo: port for Due?
 	delay (delay_ms);
 }
@@ -113,34 +103,22 @@ extern "C" {
 }
 
 // return free memory between end of heap (or end bss) and whatever is current
-int freeMemory()
-{
-  int free_memory;
-  int heap_end = (int)_sbrk(0);
-
-  if(heap_end == 0)
-    free_memory = ((int)&free_memory) - ((int)&_ebss);
-  else
-    free_memory = ((int)&free_memory) - heap_end;
-
-  return free_memory;
-
+int freeMemory() {
+  int free_memory, heap_end = (int)_sbrk(0);
+  return (int)&free_memory - (heap_end ? heap_end : (int)&_ebss);
 }
 
 // --------------------------------------------------------------------------
 // ADC
 // --------------------------------------------------------------------------
 
-void HAL_adc_start_conversion (uint8_t adc_pin)
-{
-	HAL_adc_result = analogRead (adc_pin);
+void HAL_adc_start_conversion (uint8_t adc_pin) {
+	HAL_adc_result = analogRead(adc_pin);
 }
 
-uint16_t HAL_adc_get_result(void)
-{
+uint16_t HAL_adc_get_result(void) {
 	// nop
 	return HAL_adc_result;
 }
 
 #endif // ARDUINO_ARCH_SAM
-

@@ -432,5 +432,4 @@ pins
 #define DIO100_WPORT PIOC
 
 
-
 #endif	/* _FASTIO_DUE_H */

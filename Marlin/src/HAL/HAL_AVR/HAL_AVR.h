@@ -35,6 +35,8 @@
 
 #include <stdint.h>
 
+#include "Arduino.h"
+
 #include <util/delay.h>
 #include <avr/eeprom.h>
 #include <avr/pgmspace.h>
@@ -43,18 +45,6 @@
 #include "fastio_AVR.h"
 #include "watchdog_AVR.h"
 #include "math_AVR.h"
-
-#ifdef USBCON
-  #include "HardwareSerial.h"
-  #if ENABLED(BLUETOOTH)
-    #define MYSERIAL bluetoothSerial
-  #else
-    #define MYSERIAL Serial
-  #endif // BLUETOOTH
-#else
-  #include "MarlinSerial.h"
-  #define MYSERIAL customizedSerial
-#endif
 
 // --------------------------------------------------------------------------
 // Defines
@@ -65,7 +55,7 @@
 #ifndef CRITICAL_SECTION_START
   #define CRITICAL_SECTION_START  unsigned char _sreg = SREG; cli();
   #define CRITICAL_SECTION_END    SREG = _sreg;
-#endif //CRITICAL_SECTION_START
+#endif
 
 
 // On AVR this is in math.h?
@@ -91,8 +81,8 @@
 
 //void _delay_ms(int delay);
 
-inline void HAL_clear_reset_source (void) { MCUSR=0; }
-inline uint8_t HAL_get_reset_source (void) { return MCUSR; }
+inline void HAL_clear_reset_source(void) { MCUSR = 0; }
+inline uint8_t HAL_get_reset_source(void) { return MCUSR; }
 
 int freeMemory(void);
 
@@ -105,10 +95,14 @@ int freeMemory(void);
 #define STEP_TIMER_NUM OCR1A
 #define TEMP_TIMER_NUM 0
 
-#define HAL_TIMER_RATE 	F_CPU/8.0 
+#define HAL_TIMER_RATE 	((F_CPU) / 8.0)
+#define HAL_STEPPER_TIMER_RATE HAL_TIMER_RATE
 
 #define ENABLE_STEPPER_DRIVER_INTERRUPT()  SBI(TIMSK1, OCIE1A)
 #define DISABLE_STEPPER_DRIVER_INTERRUPT() CBI(TIMSK1, OCIE1A)
+
+#define ENABLE_TEMPERATURE_INTERRUPT()  SBI(TIMSK0, OCIE0B)
+#define DISABLE_TEMPERATURE_INTERRUPT() CBI(TIMSK0, OCIE0B)
 
 //void HAL_timer_start (uint8_t timer_num, uint32_t frequency);
 #define HAL_timer_start (timer_num,frequency)

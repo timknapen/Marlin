@@ -163,7 +163,7 @@
     #define DEFAULT_KEEPALIVE_INTERVAL 2
   #endif
 
-  #if defined(__SAM3X8E__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+  #ifdef CPU_32_BIT
     /**
      * Hidden options for developer
      */
@@ -183,17 +183,17 @@
    * MAX_STEP_FREQUENCY differs for TOSHIBA
    */
   #if ENABLED(CONFIG_STEPPERS_TOSHIBA)
-    #ifdef __SAM3X8E__
+    #ifdef CPU_32_BIT
       #define MAX_STEP_FREQUENCY STEP_DOUBLER_FREQUENCY // Max step frequency for Toshiba Stepper Controllers, 96kHz is close to maximum for an Arduino Due
     #else
-    #define MAX_STEP_FREQUENCY 10000 // Max step frequency for Toshiba Stepper Controllers
+      #define MAX_STEP_FREQUENCY 10000 // Max step frequency for Toshiba Stepper Controllers
     #endif
   #else
-    #ifdef __SAM3X8E__
+    #ifdef CPU_32_BIT
       #define MAX_STEP_FREQUENCY (STEP_DOUBLER_FREQUENCY * 4) // Max step frequency for the Due is approx. 330kHz
-  #else
-    #define MAX_STEP_FREQUENCY 40000 // Max step frequency for Ultimaker (5000 pps / half step)
-  #endif
+    #else
+      #define MAX_STEP_FREQUENCY 40000 // Max step frequency for Ultimaker (5000 pps / half step)
+    #endif
   #endif
 
   // MS1 MS2 Stepper Driver Microstepping mode table
@@ -217,7 +217,7 @@
    */
   #if ENABLED(ADVANCE)
     #define EXTRUSION_AREA (0.25 * (D_FILAMENT) * (D_FILAMENT) * M_PI)
-    #define STEPS_PER_CUBIC_MM_E (axis_steps_per_mm[E_AXIS] / (EXTRUSION_AREA))
+    #define STEPS_PER_CUBIC_MM_E (axis_steps_per_mm[E_AXIS_N] / (EXTRUSION_AREA))
   #endif
 
   #if ENABLED(ULTIPANEL) && DISABLED(ELB_FULL_GRAPHIC_CONTROLLER)
@@ -682,7 +682,7 @@
   #endif
 
   /**
-   * Delta radius/rod trimmers
+   * Delta radius/rod trimmers/angle trimmers
    */
   #if ENABLED(DELTA)
     #ifndef DELTA_RADIUS_TRIM_TOWER_1
@@ -702,6 +702,15 @@
     #endif
     #ifndef DELTA_DIAGONAL_ROD_TRIM_TOWER_3
       #define DELTA_DIAGONAL_ROD_TRIM_TOWER_3 0.0
+    #endif
+    #ifndef DELTA_TOWER_ANGLE_TRIM_1
+      #define DELTA_TOWER_ANGLE_TRIM_1 0.0
+    #endif
+    #ifndef DELTA_TOWER_ANGLE_TRIM_2
+      #define DELTA_TOWER_ANGLE_TRIM_2 0.0
+    #endif
+    #ifndef DELTA_TOWER_ANGLE_TRIM_3
+      #define DELTA_TOWER_ANGLE_TRIM_3 0.0
     #endif
   #endif
 
@@ -769,7 +778,7 @@
 
   // Stepper pulse duration, in cycles
   #define STEP_PULSE_CYCLES ((MINIMUM_STEPPER_PULSE) * CYCLES_PER_MICROSECOND)
-  #ifdef __SAM3X8E__
+  #ifdef CPU_32_BIT
     // Add additional delay for between direction signal and pulse signal of stepper
     #ifndef STEPPER_DIRECTION_DELAY
       #define STEPPER_DIRECTION_DELAY 0 // time in microseconds
@@ -786,6 +795,35 @@
     #undef MOTOR_CURRENT
   #endif
 
+  #if ENABLED(SDCARD_SORT_ALPHA)
+    #define HAS_FOLDER_SORTING (FOLDER_SORTING || ENABLED(SDSORT_GCODE))
+  #endif
+
+  // LCD timeout to status screen default is 15s
+  #ifndef LCD_TIMEOUT_TO_STATUS
+    #define LCD_TIMEOUT_TO_STATUS 15000
+  #endif
+
+  // Use float instead of double. Needs profiling.
+  #if defined(ARDUINO_ARCH_SAM) && ENABLED(DELTA_FAST_SQRT)
+    #undef ATAN2
+    #undef FABS
+    #undef POW
+    #undef SQRT
+    #undef CEIL
+    #undef FLOOR
+    #undef LROUND
+    #undef FMOD
+    #define ATAN2(y, x) atan2f(y, x)
+    #define FABS(x) fabsf(x)
+    #define POW(x, y) powf(x, y)
+    #define SQRT(x) sqrtf(x)
+    #define CEIL(x) ceilf(x)
+    #define FLOOR(x) floorf(x)
+    #define LROUND(x) lroundf(x)
+    #define FMOD(x, y) fmodf(x, y)
+  #endif
+
   #if defined(TEENSYDUINO)
     #undef max
     #define max(a,b) ((a)>(b)?(a):(b))
@@ -794,5 +832,4 @@
 
     #define NOT_A_PIN 0 // For PINS_DEBUGGING
   #endif
-
 #endif // CONDITIONALS_POST_H

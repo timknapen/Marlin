@@ -26,9 +26,8 @@
 /**
  * Math helper functions for 32 bit CPUs
  */
-#if defined(__MK64FX512__) || defined(__MK66FX1M0__)
-	#define MultiU32X32toH32(intRes, longIn1, longIn2) (intRes = ((uint64_t)longIn1 * longIn2 + 0x80000000) >> 24)
-#else
-	#define MultiU32X32toH32(intRes, longIn1, longIn2)  intRes = ((uint64_t)longIn1 * longIn2 + 0x80000000) >> 32
-#endif
+
+#define MultiU32X32toH32(intRes, longIn1, longIn2) intRes = ((uint64_t)longIn1 * longIn2 + 0x80000000) >> 32
+#define MultiU32X24toH32(intRes, longIn1, longIn2) intRes = ((uint64_t)longIn1 * longIn2 + 0x00800000) >> 24
+
 #endif
