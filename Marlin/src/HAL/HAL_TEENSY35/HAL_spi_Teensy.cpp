@@ -3,19 +3,25 @@
 #include "../HAL.h"
 #include <SPI.h>
 #include <pins_arduino.h>
+#include "spi_pins.h"
+#include "../../../macros.h"
 
 static SPISettings spiConfig;
 
 // Standard SPI functions
 /** Initialise SPI bus */
 void spiBegin(void) {
+  #ifndef SS_PIN
+    #error SS_PIN not defined!
+  #endif
   SET_OUTPUT(SS_PIN);
   WRITE(SS_PIN, HIGH);
   SET_OUTPUT(SCK_PIN);
   SET_INPUT(MISO_PIN);
   SET_OUTPUT(MOSI_PIN);
 
-  #if DISABLED(SOFTWARE_SPI)
+  //#if DISABLED(SOFTWARE_SPI)
+  #if false
     // set SS high - may be chip select for another SPI device
     #if SET_SPI_SS_HIGH
       WRITE(SS_PIN, HIGH);
