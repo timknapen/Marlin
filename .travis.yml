@@ -98,6 +98,9 @@ before_script:
   - cat ${TRAVIS_BUILD_DIR}/Marlin/_Version.h
   #
 script:
+  # Revert personal changes before making a backup. This is temporary.
+  - opt_set TEMP_SENSOR_0 1
+  - opt_set MOTHERBOARD BOARD_RAMPS_14_EFB
   #
   # Backup Configuration.h, Configuration_adv.h, and pins_RAMPS.h
   #
