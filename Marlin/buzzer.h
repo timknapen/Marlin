@@ -29,8 +29,6 @@
 
 #include "MarlinConfig.h"
 
-#include "src/HAL/HAL.h"
-
 #define TONE_QUEUE_LENGTH 4
 
 /**
