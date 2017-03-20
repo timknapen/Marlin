@@ -33,8 +33,8 @@ teemuatlut plan for Teensy3.5 and Teensy3.6:
       Y_ENABLE_PIN  SCL0  MOSI0   RX3  PWM  7 |      * * 55   | 18  A4            SDA0        E0_DIR_PIN
       Z_ENABLE_PIN  SDA0  MISO0   TX3  PWM  8 |      * * 54   | 17  A3            SDA0        E0_ENABLE_PIN
                           CS0     RX2  PWM  9 |               | 16  A2            SCL0        TEMP_0_PIN
-                          CS0     TX2  PWM 10 |               | 15  A1      CS0
-      X_STOP_PIN          MOSI0            11 |               | 14  A0 PWM  CS0
+                          CS0     TX2  PWM 10 |               | 15  A1      CS0               TEMP_BED_PIN
+      X_STOP_PIN          MOSI0            11 |               | 14  A0 PWM  CS0               TEMP_1_PIN
       Y_STOP_PIN          MISO0            12 |               | 13 LED            SCK0        LED_PIN
                                          3.3V |               | GND
       Z_STOP_PIN                           24 |   40 * * 53   |    A22 DAC1
@@ -44,18 +44,8 @@ AUX2  Z-PROBE PWR         SCK0    RX1      27 | *  *  *  *  * | 38 A19 PWM      
 AUX2  SLED_PIN            MOSI0            28 |   43 * * 50   | 37 A18 PWM        SCL1
 D10   CONTROLLERFAN_PIN   CAN0TX       PWM 29 |   44 * * 49   | 36 A17 PWM
 D9    HEATER_0_PIN        CAN0RX       PWM 30 |   45 * * 48   | 35 A16 PWM
-                          CS1     RX4  A12 31 |   46 * * 47   | 34 A15 PWM        SDA0  RX5
+D8    HEATER_BED_PIN      CS1     RX4  A12 31 |   46 * * 47   | 34 A15 PWM        SDA0  RX5
                           SCK1    TX4  A13 32 |__GND_*_*_3.3V_| 33 A14 PWM        SCL0  TX5
-
-      Interior E4: 36, INT4
-      Interior E5: 37, INT5
-      Interior PA0-7: 28-35  -- Printrboard and Teensylu use these pins for step & direction:
-             T++ PA Signal  Marlin
-    
-       Z STEP  32 a4  a0 28 X STEP
-       Z DIR   33 a5  a1 29 X DIR
-       E STEP  34 a6  a2 30 Y STEP
-       E DIR   35 a7  a3 31 Y DIR
 
                           Interior pins:          40 * * 53   SCK2
                                                   41 * * 52   MOSI2
@@ -91,7 +81,7 @@ D9    HEATER_0_PIN        CAN0RX       PWM 30 |   45 * * 48   | 35 A16 PWM
 #define HEATER_0_PIN        3
 #define HEATER_1_PIN       -1
 #define HEATER_2_PIN       -1
-#define HEATER_BED_PIN     -1
+#define HEATER_BED_PIN     31
 #define FAN_PIN             2
 
 #define X_STOP_PIN         24
@@ -99,8 +89,8 @@ D9    HEATER_0_PIN        CAN0RX       PWM 30 |   45 * * 48   | 35 A16 PWM
 #define Z_STOP_PIN         28
 
 #define TEMP_0_PIN          2 // Extruder / Analog pin numbering: 2 => A2
-#define TEMP_BED_PIN       -1 // Bed / Analog pin numbering
-#define TEMP_1_PIN         -1
+#define TEMP_BED_PIN        1 // Bed / Analog pin numbering
+#define TEMP_1_PIN          0
 #define TEMP_2_PIN         -1
 
 #define SDPOWER            -1
