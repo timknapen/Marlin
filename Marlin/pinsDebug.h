@@ -41,7 +41,7 @@ bool endstop_monitor_flag = false;
   #define IS_ANALOG(P) ((P) >= analogInputToDigitalPin(0) && ((P) <= analogInputToDigitalPin(15) || (P) <= analogInputToDigitalPin(5)))
 #endif
 
-#if defined(__MK64FX512__)
+#if defined(__MK64FX512__) || defined(__MK66FX1M0__)
   #define FTM0_CH0_PIN 22
   #define FTM0_CH1_PIN 23
   #define FTM0_CH2_PIN  9
@@ -63,26 +63,6 @@ bool endstop_monitor_flag = false;
   #define FTM3_CH6_PIN 37
   #define FTM3_CH7_PIN 38
 #elif defined(__MK66FX1M0__)
-  #define FTM0_CH0_PIN 22
-  #define FTM0_CH1_PIN 23
-  #define FTM0_CH2_PIN  9
-  #define FTM0_CH3_PIN 10
-  #define FTM0_CH4_PIN  6
-  #define FTM0_CH5_PIN 20
-  #define FTM0_CH6_PIN 21
-  #define FTM0_CH7_PIN  5
-  #define FTM1_CH0_PIN  3
-  #define FTM1_CH1_PIN  4
-  #define FTM2_CH0_PIN 29
-  #define FTM2_CH1_PIN 30
-  #define FTM3_CH0_PIN  2
-  #define FTM3_CH1_PIN 14
-  #define FTM3_CH2_PIN  7
-  #define FTM3_CH3_PIN  8
-  #define FTM3_CH4_PIN 35
-  #define FTM3_CH5_PIN 36
-  #define FTM3_CH6_PIN 37
-  #define FTM3_CH7_PIN 38
   #define TPM1_CH0_PIN 16
   #define TPM1_CH1_PIN 17
 #endif
