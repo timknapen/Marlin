@@ -20,9 +20,7 @@
 ****************************************************************************/
 
 /**
- * Description: HAL for Arduino Due and compatible (SAM3X8E)
- *
- * For ARDUINO_ARCH_SAM
+ * Description: HAL for Teensy 3.5 and Teensy 3.6
  */
 
 
@@ -60,25 +58,6 @@
 
 //#define _BV(bit) 	(1 << (bit))
 
-#if ENABLED(DELTA_FAST_SQRT)
-  #undef ATAN2
-  #undef FABS
-  #undef POW
-  #undef SQRT
-  #undef CEIL
-  #undef FLOOR
-  #undef LROUND
-  #undef FMOD
-  #define ATAN2(y, x) atan2f(y, x)
-  #define FABS(x) fabsf(x)
-  #define POW(x, y) powf(x, y)
-  #define SQRT(x) sqrtf(x)
-  #define CEIL(x) ceilf(x)
-  #define FLOOR(x) floorf(x)
-  #define LROUND(x) lroundf(x)
-  #define FMOD(x, y) fmodf(x, y)
-#endif
-
 #ifndef analogInputToDigitalPin
   #define analogInputToDigitalPin(p) ((p < 12u) ? (p) + 54u : -1)
 #endif
@@ -105,30 +84,6 @@
 #define RST_JTAG       16
 #define RST_SOFTWARE   32
 #define RST_BACKUP     64
-
-// --------------------------------------------------------------------------
-// Types
-// --------------------------------------------------------------------------
-
-
-// --------------------------------------------------------------------------
-// Public Variables
-// --------------------------------------------------------------------------
-
-/** result of last ADC conversion */
-//extern uint16_t HAL_adc_result;
-
-// --------------------------------------------------------------------------
-// Public functions
-// --------------------------------------------------------------------------
-
-// Disable interrupts
-//void cli(void);
-//void cli();
-
-// Enable interrupts
-//void sei(void);
-//void sei();
 
 /** clear reset reason */
 void HAL_clear_reset_source (void);

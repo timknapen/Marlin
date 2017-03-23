@@ -26,9 +26,7 @@
 */
 
 /**
- * Description: Fast IO functions for Arduino Due and compatible (SAM3X8E)
- *
- * For ARDUINO_ARCH_SAM
+ * Description: Fast IO functions for Teensy 3.5 and Teensy 3.6
  */
 
 #ifndef	_FASTIO_TEENSY_H

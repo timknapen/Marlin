@@ -20,7 +20,7 @@
  *
  */
 
-#if defined(__MK66FX1M0__)
+#if defined(__MK64FX512__) || defined(__MK66FX1M0__)
  
   #include "../../../Marlin.h"
 

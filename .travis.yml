@@ -455,7 +455,7 @@ script:
   # Backup Configuration.h, Configuration_adv.h, and pins_RAMPS.h
   #
   - restore_configs
-  - opt_set MOTHERBOARD BOARD_TEENSY35
+  - opt_set MOTHERBOARD BOARD_TEENSY35_36
   - cp Marlin/Configuration.h Marlin/Configuration.h.backup
   - cp Marlin/Configuration_adv.h Marlin/Configuration_adv.h.backup
   - cp Marlin/pins_RAMPS.h Marlin/pins_RAMPS.h.backup

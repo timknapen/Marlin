@@ -130,8 +130,8 @@
 // The following define selects which electronics board you have.
 // Please choose the name from boards.h that matches your setup
 #ifndef MOTHERBOARD
-  #if defined(__MK64FX512__)
-    #define MOTHERBOARD BOARD_TEENSY35
+  #if defined(__MK64FX512__) || defined(__MK66FX1M0__)
+    #define MOTHERBOARD BOARD_TEENSY35_36
   #else
     #define MOTHERBOARD BOARD_RAMPS_14_EFB
   #endif
