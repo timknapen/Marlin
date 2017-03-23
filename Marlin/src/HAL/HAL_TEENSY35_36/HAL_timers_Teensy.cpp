@@ -20,10 +20,11 @@
 
 
 /**
+ * Teensy3.5 __MK64FX512__
  * Teensy3.6 __MK66FX1M0__
  */
 
-#if defined(__MK66FX1M0__)
+#if defined(__MK64FX512__) || defined(__MK66FX1M0__)
 
 #include "../HAL.h"
 #include "HAL_timers_Teensy.h"
@@ -91,4 +92,4 @@ void HAL_timer_isr_prologue(uint8_t timer_num) {
   }
 }
 
-#endif // ARDUINO_ARCH_SAM
+#endif // Teensy3.5 or Teensy3.6

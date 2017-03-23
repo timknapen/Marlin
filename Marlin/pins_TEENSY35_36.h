@@ -1,19 +1,22 @@
 /****************************************************************************************
-* Teensy 3.1 Breadboard pin assignments (MK20DX256)
-* Requires the Teensyduino software with Teensy 3.1 selected in Arduino IDE!
-  http://www.pjrc.com/teensy/teensyduino.html
-* CLI build: HARDWARE_MOTHERBOARD=85  make
+* Teensy 3.5 (MK64FX512) and Teensy 3.6 (MK66FX1M0) Breadboard pin assignments
+* Requires the Teensyduino software with Teensy 3.5 or Teensy 3.6 selected in Arduino IDE!
+* http://www.pjrc.com/teensy/teensyduino.html
 * 
 ****************************************************************************************/
-#if MOTHERBOARD == 841
+#if MOTHERBOARD == 841 // BOARD_TEENSY35_36
 #define KNOWN_BOARD 1
 #define AT90USB 1286  // Disable MarlinSerial etc.
 
-#ifndef __MK64FX512__
-  #error Oops!  Make sure you have 'Teensy 3.5' selected from the 'Tools -> Boards' menu.
+#if !defined(__MK64FX512__) && !defined(__MK66FX1M0__)
+  #error Oops!  Make sure you have 'Teensy 3.5' or 'Teensy 3.6' selected from the 'Tools -> Boards' menu.
 #endif
 
-#define BOARD_NAME "Teensy3.5"
+#if defined(__MK64FX512__)
+  #define BOARD_NAME "Teensy3.5"
+#elif defined(__MK66FX1M0__)
+  #define BOARD_NAME "Teensy3.6"
+#endif
 
 #define LARGE_FLASH        true
 #define USBCON //1286  // Disable MarlinSerial etc.
@@ -124,4 +127,4 @@ D8    HEATER_BED_PIN      CS1     RX4  A12 31 |   46 * * 47   | 34 A15 PWM      
   #define BTN_ENC            48
 #endif
 
-#endif  // MOTHERBOARD == 84 (Teensy++2.0 Breadboard)
+#endif  // MOTHERBOARD == 841 (Teensy3.5 and Teensy3.6)
