@@ -25,7 +25,7 @@
 
 void safe_delay(millis_t ms);
 
-#if ENABLED(ULTRA_LCD)
+#if ENABLED(ULTRA_LCD) || ENABLED(SIMPLE_LCD)
 
   // Convert unsigned int to string with 12 format
   char* itostr2(const uint8_t& x);

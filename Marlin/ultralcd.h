@@ -148,6 +148,19 @@
     #define LCD_CLICKED false
   #endif
 
+#elif ENABLED(SIMPLE_LCD)
+  #include "simple_LCD.h"
+  inline bool lcd_hasstatus() { return false; }
+  inline void lcd_setstatus(const char* const message, const bool persist=false) { UNUSED(message); UNUSED(persist); }
+  inline void lcd_setstatuspgm(const char* const message, const uint8_t level=0) { UNUSED(message); UNUSED(level); }
+  inline void lcd_status_printf_P(const uint8_t level, const char * const fmt, ...) { UNUSED(level); UNUSED(fmt); }
+  inline void lcd_buttons_update() {}
+  inline void lcd_reset_alert_level() {}
+  inline bool lcd_detected() { return true; }
+
+  #define LCD_MESSAGEPGM(x) NOOP
+  #define LCD_ALERTMESSAGEPGM(x) NOOP
+
 #else //no LCD
   inline void lcd_update() {}
   inline void lcd_init() {}
