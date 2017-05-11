@@ -3,9 +3,14 @@
 #include "MarlinConfig.h"
 #include "TRAMS.h"
 
+#include "endstops.h"
+
 #if ENABLED(IS_TRAMS)
   Trams stepper; // Singleton
 #endif
+
+#define ENABLE_STEPPER_DRIVER_INTERRUPT()  SBI(TIMSK1, OCIE1A)
+#define DISABLE_STEPPER_DRIVER_INTERRUPT() CBI(TIMSK1, OCIE1A)
 
 /**
  * @brief Send a byte via SPI and read the received
@@ -209,7 +214,6 @@ void Trams::TMC5130_init(uint8_t csPin, uint8_t irun, uint8_t ihold, uint8_t ste
  * @return	none
  */
 void Trams::TMC5130_enableDriver(uint8_t axis) {
-
 	// low activ
 	switch(axis){
 		case X_AXIS:	DRV_EN_X_PORT	&= ~(1<<DRV_EN_X);
@@ -234,7 +238,6 @@ void Trams::TMC5130_enableDriver(uint8_t axis) {
  * @return	none
  */
 void Trams::TMC5130_disableDriver(uint8_t axis) {
-
 	// low activ
 	switch(axis){
 		case X_AXIS:	DRV_EN_X_PORT	|= (1<<DRV_EN_X);
@@ -258,6 +261,7 @@ void Trams::TMC5130_disableDriver(uint8_t axis) {
  * @return	none
  */
 void Trams::TMC5130_homing(int axis) {
+  SERIAL_ECHOLN("TMC homing");
 	unsigned int sw_register;
 	uint8_t motor_direction;
 	uint32_t stallguardthreshold;
@@ -857,11 +861,62 @@ void Trams::isr() {
 }
 
 void Trams::init() {
+  spi_init();
   TMC5130_init( TRAMS_XAXIS,  X_CURRENT_RUN,  X_CURRENT_HOLD,  STEPPER_DIRECTION_X);
   TMC5130_init( TRAMS_YAXIS,  Y_CURRENT_RUN,  Y_CURRENT_HOLD,  STEPPER_DIRECTION_Y);
   TMC5130_init( TRAMS_ZAXIS,  Z_CURRENT_RUN,  Z_CURRENT_HOLD,  STEPPER_DIRECTION_Z);
   TMC5130_init(TRAMS_E0AXIS, E0_CURRENT_RUN, E0_CURRENT_HOLD,  STEPPER_DIRECTION_E0);
-  Stepper::init();
+
+  // Init Enable Pins - steppers default to disabled.
+  #if HAS_X_ENABLE
+    X_ENABLE_INIT;
+    if (!X_ENABLE_ON) X_ENABLE_WRITE(HIGH);
+  #endif
+  #if HAS_Y_ENABLE
+    Y_ENABLE_INIT;
+    if (!Y_ENABLE_ON) Y_ENABLE_WRITE(HIGH);
+  #endif
+  #if HAS_Z_ENABLE
+    Z_ENABLE_INIT;
+    if (!Z_ENABLE_ON) Z_ENABLE_WRITE(HIGH);
+  #endif
+  #if HAS_E0_ENABLE
+    E0_ENABLE_INIT;
+    if (!E_ENABLE_ON) E0_ENABLE_WRITE(HIGH);
+  #endif
+
+  // Init endstops and pullups
+  endstops.init();
+
+  // waveform generation = 0100 = CTC
+  SET_WGM(1, CTC_OCRnA);
+
+  // output mode = 00 (disconnected)
+  SET_COMA(1, NORMAL);
+
+  // Set the timer pre-scaler
+  // Generally we use a divider of 8, resulting in a 2MHz timer
+  // frequency on a 16MHz MCU. If you are going to change this, be
+  // sure to regenerate speed_lookuptable.h with
+  // create_speed_lookuptable.py
+  SET_CS(1, PRESCALER_8);  //  CS 2 = 1/8 prescaler
+
+  // Init Stepper ISR to 122 Hz for quick starting
+  OCR1A = 0x4000;
+  TCNT1 = 0;
+  ENABLE_STEPPER_DRIVER_INTERRUPT();
+
+  #if ENABLED(ADVANCE) || ENABLED(LIN_ADVANCE)
+    for (uint8_t i = 0; i < COUNT(e_steps); i++) e_steps[i] = 0;
+    #if ENABLED(LIN_ADVANCE)
+      ZERO(current_adv_steps);
+    #endif
+  #endif // ADVANCE || LIN_ADVANCE
+
+  endstops.enable(true); // Start with endstops active. After homing they can be disabled
+  sei();
+
+  set_directions(); // Init directions to last_direction_bits = 0
 }
 
 void Trams::set_position(const long &a, const long &b, const long &c, const long &e) {

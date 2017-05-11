@@ -1235,7 +1235,6 @@ void Stepper::set_position(const long &a, const long &b, const long &c, const lo
   #endif
 
   count_position[E_AXIS] = e;
-
   CRITICAL_SECTION_END;
 }
 
