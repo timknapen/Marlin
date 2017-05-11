@@ -58,10 +58,7 @@
   #include <SPI.h>
 #endif
 
-#if ENABLED(IS_TRAMS)
-  #include "TRAMS.h"
-  Trams stepper; // Singleton
-#else
+#if DISABLED(IS_TRAMS)
   Stepper stepper; // Singleton
 #endif
 
@@ -330,13 +327,13 @@ void Stepper::set_directions() {
     SET_STEP_DIR(Z); // C
   #endif
 
-  #if DISABLED(ADVANCE) && DISABLED(LIN_ADVANCE)
+  #if DISABLED(ADVANCE) && DISABLED(LIN_ADVANCE) && DISABLED(IS_TRAMS)
     if (motor_direction(E_AXIS)) {
-      //REV_E_DIR();
+      REV_E_DIR();
       count_direction[E_AXIS] = -1;
     }
     else {
-      //NORM_E_DIR();
+      NORM_E_DIR();
       count_direction[E_AXIS] = 1;
     }
   #endif // !ADVANCE && !LIN_ADVANCE
@@ -646,7 +643,9 @@ void Stepper::isr() {
           if (counter_m[j] > 0) En_STEP_WRITE(j, !INVERT_E_STEP_PIN);
         }
       #else // !MIXING_EXTRUDER
-        //PULSE_START(E);
+        #if HAS_E0_STEP
+          PULSE_START(E);
+        #endif
       #endif
     #endif // !ADVANCE && !LIN_ADVANCE
 
@@ -682,7 +681,9 @@ void Stepper::isr() {
           }
         }
       #else // !MIXING_EXTRUDER
-        //PULSE_STOP(E);
+        #if HAS_E0_STEP
+          PULSE_STOP(E);
+        #endif
       #endif
     #endif // !ADVANCE && !LIN_ADVANCE
 

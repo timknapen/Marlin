@@ -3,6 +3,10 @@
 #include "MarlinConfig.h"
 #include "TRAMS.h"
 
+#if ENABLED(IS_TRAMS)
+  Trams stepper; // Singleton
+#endif
+
 /**
  * @brief Send a byte via SPI and read the received
  * @param	data		to transmitted byte
