@@ -58,7 +58,12 @@
   #include <SPI.h>
 #endif
 
-Stepper stepper; // Singleton
+#if ENABLED(IS_TRAMS)
+  #include "TRAMS.h"
+  Trams stepper; // Singleton
+#else
+  Stepper stepper; // Singleton
+#endif
 
 // public:
 
@@ -327,11 +332,11 @@ void Stepper::set_directions() {
 
   #if DISABLED(ADVANCE) && DISABLED(LIN_ADVANCE)
     if (motor_direction(E_AXIS)) {
-      REV_E_DIR();
+      //REV_E_DIR();
       count_direction[E_AXIS] = -1;
     }
     else {
-      NORM_E_DIR();
+      //NORM_E_DIR();
       count_direction[E_AXIS] = 1;
     }
   #endif // !ADVANCE && !LIN_ADVANCE
@@ -356,7 +361,9 @@ void Stepper::set_directions() {
  *  4000   500  Hz - init rate
  */
 ISR(TIMER1_COMPA_vect) {
-  #if ENABLED(ADVANCE) || ENABLED(LIN_ADVANCE)
+  #if ENABLED(IS_TRAMS)
+    Trams::isr();
+  #elif ENABLED(ADVANCE) || ENABLED(LIN_ADVANCE)
     Stepper::advance_isr_scheduler();
   #else
     Stepper::isr();
@@ -639,7 +646,7 @@ void Stepper::isr() {
           if (counter_m[j] > 0) En_STEP_WRITE(j, !INVERT_E_STEP_PIN);
         }
       #else // !MIXING_EXTRUDER
-        PULSE_START(E);
+        //PULSE_START(E);
       #endif
     #endif // !ADVANCE && !LIN_ADVANCE
 
@@ -675,7 +682,7 @@ void Stepper::isr() {
           }
         }
       #else // !MIXING_EXTRUDER
-        PULSE_STOP(E);
+        //PULSE_STOP(E);
       #endif
     #endif // !ADVANCE && !LIN_ADVANCE
 
@@ -990,7 +997,6 @@ void Stepper::isr() {
 #endif // ADVANCE or LIN_ADVANCE
 
 void Stepper::init() {
-
   // Init Digipot Motor Current
   #if HAS_DIGIPOTSS || HAS_MOTOR_CURRENT_PWM
     digipot_init();
@@ -1228,6 +1234,7 @@ void Stepper::set_position(const long &a, const long &b, const long &c, const lo
   #endif
 
   count_position[E_AXIS] = e;
+
   CRITICAL_SECTION_END;
 }
 

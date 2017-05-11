@@ -312,6 +312,10 @@
   #include "endstop_interrupts.h"
 #endif
 
+#if ENABLED(IS_TRAMS)
+  #include "TRAMS.h"
+#endif
+
 #if ENABLED(M100_FREE_MEMORY_WATCHER)
   void gcode_M100();
   void M100_dump_routine(const char * const title, const char *start, const char *end);
@@ -12860,6 +12864,10 @@ void idle(
 
   #if HAS_BUZZER && DISABLED(LCD_USE_I2C_BUZZER)
     buzzer.tick();
+  #endif
+
+  #if ENABLED(IS_TRAMS)
+    stepper.calculate();
   #endif
 
   #if ENABLED(I2C_POSITION_ENCODERS)

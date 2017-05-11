@@ -87,6 +87,9 @@
 #elif MB(RAMPS_14_SF)
   #define IS_RAMPS_SF
   #include "pins_RAMPS.h"
+#elif MB(TRAMS)
+  #define IS_TRAMS
+  #include "pins_TRAMS.h"
 #elif MB(GEN6)
   #include "pins_GEN6.h"
 #elif MB(GEN6_DELUXE)

@@ -49,8 +49,10 @@
 #include "language.h"
 #include "types.h"
 
-class Stepper;
-extern Stepper stepper;
+#if DISABLED(IS_TRAMS)
+  class Stepper;
+  extern Stepper stepper;
+#endif
 
 // intRes = intIn1 * intIn2 >> 16
 // uses:
@@ -98,7 +100,7 @@ class Stepper {
       static uint32_t motor_current_setting[3];
     #endif
 
-  private:
+  protected:
 
     static uint8_t last_direction_bits;        // The next stepping-bits to be output
     static uint16_t cleaning_buffer_counter;
@@ -283,7 +285,7 @@ class Stepper {
       static void refresh_motor_power();
     #endif
 
-  private:
+  protected:
 
     static FORCE_INLINE unsigned short calc_timer(unsigned short step_rate) {
       unsigned short timer;
@@ -393,5 +395,9 @@ class Stepper {
     #endif
 
 };
+
+#if ENABLED(IS_TRAMS)
+  #include "TRAMS.h"
+#endif
 
 #endif // STEPPER_H
