@@ -2,6 +2,7 @@
 #include <avr/io.h>
 #include "MarlinConfig.h"
 #include "TRAMS.h"
+#include <SPI.h>
 
 #include "endstops.h"
 
@@ -14,26 +15,6 @@
 #define DISABLE_STEPPER_DRIVER_INTERRUPT() CBI(TIMSK1, OCIE1A)
 
 /**
- * @brief Send a byte via SPI and read the received
- * @param	data		to transmitted byte
- * @return	received byte
- */
-uint8_t TramsSPI::spi_readWriteByte(uint8_t data) {
-  SPDR = data;
-  while(!(SPSR & (1<<SPIF))); // polling the SPI Interrupt Flag
-  return SPDR;	// return the received byte
-}
-
-/**
- * @brief Send a byte via SPI
- * @param		data		to be transmitted byte
- */
-void TramsSPI::spi_writeByte(uint8_t data) {
-  SPDR = data;
-  while(!(SPSR & (1<<SPIF)));
-}
-
-/**
  * @brief Initialize the SPI
  * SPI Master
  * 4Mhz(CPU_CLOCK / 4)
@@ -42,6 +23,7 @@ void TramsSPI::spi_writeByte(uint8_t data) {
  * no interrupt
  */
 void TramsSPI::spi_init(void) {
+  SPI.begin();
 	//Initialize the SPI interface
 	//outputs
 	DDR_SPI |= ((1<<SPI_MOSI) | (1<<SPI_SCK) | (1<<SPI_CS));
@@ -80,14 +62,15 @@ uint32_t TramsSPI::spi_readRegister(uint8_t address, uint8_t slave) {
   uint8_t buf[4];
   uint32_t register_value = 0;
 
+  SPI.beginTransaction(SPISettings(SPI_SPEED, MSBFIRST, SPI_MODE3));
   SPI_CS_PORT &= ~(1 << slave); 	// enable slave, low activ
 
   // first read cycle to address the register
-  spi_readWriteByte(address);
-  spi_readWriteByte(0x00);
-  spi_readWriteByte(0x00);
-  spi_readWriteByte(0x00);
-  spi_readWriteByte(0x00);
+  SPI.transfer(address);
+  SPI.transfer(0x00);
+  SPI.transfer(0x00);
+  SPI.transfer(0x00);
+  SPI.transfer(0x00);
 
   PORTL |= (1 << slave);			// disable slave, low activ
 
@@ -96,13 +79,14 @@ uint32_t TramsSPI::spi_readRegister(uint8_t address, uint8_t slave) {
   SPI_CS_PORT &= ~(1 << slave); 	// select slave, low activ
 
   // second read cycle to get the register value
-  spi_readWriteByte(address);
-  buf[3] = spi_readWriteByte(0x00);
-  buf[2] = spi_readWriteByte(0x00);
-  buf[1] = spi_readWriteByte(0x00);
-  buf[0] = spi_readWriteByte(0x00);
+  SPI.transfer(address);
+  buf[3] = SPI.transfer(0x00);
+  buf[2] = SPI.transfer(0x00);
+  buf[1] = SPI.transfer(0x00);
+  buf[0] = SPI.transfer(0x00);
 
   SPI_CS_PORT |= (1 << slave);	// disable slave, low activ
+  SPI.endTransaction();
 
   register_value |= buf[3];
   register_value = register_value << 8;
@@ -131,17 +115,19 @@ uint8_t TramsSPI::spi_writeRegister(uint8_t address, uint32_t data, uint8_t slav
   buf[2] = (data & 0xFF0000) >> 16;
   buf[3] = (data & 0xFF000000) >> 24;
 
+  SPI.beginTransaction(SPISettings(SPI_SPEED, MSBFIRST, SPI_MODE3));
   SPI_CS_PORT &= ~(1 << slave); 	// enable slave, low activ
 
   // address register
-  spi_writeByte(address | READ_ACCESS);
+  SPI.transfer(address | READ_ACCESS);
   // send new register value
-  spi_writeByte(buf[3]);
-  spi_writeByte(buf[2]);
-  spi_writeByte(buf[1]);
-  spi_writeByte(buf[0]);
+  SPI.transfer(buf[3]);
+  SPI.transfer(buf[2]);
+  SPI.transfer(buf[1]);
+  SPI.transfer(buf[0]);
 
   SPI_CS_PORT |= (1 << slave);	// disable slave, low activ
+  SPI.endTransaction();
 
   return status;
 }
@@ -155,17 +141,19 @@ uint8_t TramsSPI::spi_writeRegister(uint8_t address, uint32_t data, uint8_t slav
 uint8_t TramsSPI::spi_readStatus(uint8_t slave) {
   uint8_t status;
 
+  SPI.beginTransaction(SPISettings(SPI_SPEED, MSBFIRST, SPI_MODE3));
   SPI_CS_PORT &= ~(1 << slave); 	// enable slave, low activ
 
   // send adress and read the status from FPGA
-  status = spi_readWriteByte(GCONF);	// addressing any register int the tmc5130
+  status = SPI.transfer(GCONF);	// addressing any register int the tmc5130
   // send data, msb first
-  spi_readWriteByte(0x00);
-  spi_readWriteByte(0x00);
-  spi_readWriteByte(0x00);
-  spi_readWriteByte(0x00);
+  SPI.transfer(0x00);
+  SPI.transfer(0x00);
+  SPI.transfer(0x00);
+  SPI.transfer(0x00);
 
   SPI_CS_PORT |= (1 << slave);	// disable slave, low activ
+  SPI.endTransaction();
 
   return status;
 }

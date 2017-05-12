@@ -184,6 +184,8 @@ extern TramsEndstops endstops;
 
 #define VZERO                 0x400 // flag in RAMP_STAT, 1: signals that the actual velocity is 0.
 
+#define SPI_SPEED             16000000/8
+
 class TramsSPI {
   protected:
     static void spi_init(void);
@@ -195,7 +197,7 @@ class TramsSPI {
     static void spi_writeByte(uint8_t data);
 };
 
-class Trams: public Stepper {
+class Trams: public Stepper, public TramsSPI {
   public:
     static void init();
     static void set_position(const long &a, const long &b, const long &c, const long &e);
