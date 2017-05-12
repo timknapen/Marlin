@@ -1241,6 +1241,12 @@ static_assert(1 >= 0
   #endif
 #endif
 
+#if ENABLED(IS_TRAMS)
+  #if (ENABLED(USE_XMIN_PLUG) && ENABLED(USE_XMAX_PLUG)) || (ENABLED(USE_YMIN_PLUG) && ENABLED(USE_YMAX_PLUG)) || (ENABLED(USE_ZMIN_PLUG) && ENABLED(USE_ZMAX_PLUG))
+    #error Use only min OR max endstop with TRAMS
+  #endif
+#endif
+
 /**
  * Require 4 or more elements in per-axis initializers
  */

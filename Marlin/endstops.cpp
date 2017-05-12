@@ -34,7 +34,9 @@
 // TEST_ENDSTOP: test the old and the current status of an endstop
 #define TEST_ENDSTOP(ENDSTOP) (TEST(current_endstop_bits & old_endstop_bits, ENDSTOP))
 
-Endstops endstops;
+#if DISABLED(IS_TRAMS)
+  Endstops endstops;
+#endif
 
 // public:
 

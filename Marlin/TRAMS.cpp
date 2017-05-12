@@ -6,7 +6,8 @@
 #include "endstops.h"
 
 #if ENABLED(IS_TRAMS)
-  Trams stepper; // Singleton
+  Trams stepper;
+  TramsEndstops endstops;
 #endif
 
 #define ENABLE_STEPPER_DRIVER_INTERRUPT()  SBI(TIMSK1, OCIE1A)
@@ -167,45 +168,6 @@ uint8_t Trams::spi_readStatus(uint8_t slave) {
   SPI_CS_PORT |= (1 << slave);	// disable slave, low activ
 
   return status;
-}
-
-/**
- * @brief Initialize the Trinamic Drivers(TMC5130)
- * @param	csPin				chip select for spi (XAXIS,YAXIS,ZAXIS,E0AXIS)
- * @param	irun				Motor run current (0..31)
- * @param	ihold				Standstill current (0..31)
- * @param	stepper_direction	inverse/ not inverse
- * @return	none
- */
-void Trams::TMC5130_init(uint8_t csPin, uint8_t irun, uint8_t ihold, uint8_t stepper_direction) {
-	uint32_t value;
-	value = SET_IHOLD(ihold) | SET_IRUN(irun) | SET_IHOLDDELAY(7);
-	spi_writeRegister(IHOLD_IRUN, value, csPin);		//IHOLD and IRUN current
-	spi_writeRegister(RAMPMODE, 0x0, csPin);			//select position mode
-	spi_writeRegister(V_1, 0x0, csPin);					//Disables A1 and D1 in position mode, amax and vmax only
-	spi_writeRegister(D_1, 0x10, csPin);				//D1 not zero
-	spi_writeRegister(AMAX, 0xFFFF, csPin);				//Acceleration
-	spi_writeRegister(VMAX, 0xFFFF, csPin);				//Velocity
-	spi_writeRegister(CHOPCONF, 0x140101D5, csPin);		//Chopper Configuration
-	spi_writeRegister(GCONF, 0x1084 | stepper_direction, csPin);	//General Configuration
-
-	// initialize enable pin for given axis
-	// set as output
-	// default disable, low activ
-	switch(csPin){
-		case XAXIS_CS:	DRV_EN_X_DDR	|= (1<<DRV_EN_X);
-						TMC5130_disableDriver(X_AXIS);
-						break;
-		case YAXIS_CS:	DRV_EN_Y_DDR	|= (1<<DRV_EN_Y);
-						TMC5130_disableDriver(Y_AXIS);
-						break;
-		case ZAXIS_CS:	DRV_EN_Z_DDR	|= (1<<DRV_EN_Z);
-						TMC5130_disableDriver(Z_AXIS);
-						break;
-		case E0AXIS_CS:	DRV_EN_E0_DDR	|= (1<<DRV_EN_E0);
-						TMC5130_disableDriver(E_AXIS);
-						break;
-	}
 }
 
 /**
@@ -860,12 +822,52 @@ void Trams::isr() {
   }
 }
 
+/**
+ * @brief Initialize the Trinamic Drivers(TMC5130)
+ * @param	csPin				chip select for spi (XAXIS,YAXIS,ZAXIS,E0AXIS)
+ * @param	irun				Motor run current (0..31)
+ * @param	ihold				Standstill current (0..31)
+ * @param	stepper_direction	inverse/ not inverse
+ * @return	none
+ */
+void Trams::TMC5130_init(uint8_t csPin, uint8_t irun, uint8_t ihold, uint8_t stepper_direction, uint16_t sw_register) {
+	uint32_t value;
+	value = SET_IHOLD(ihold) | SET_IRUN(irun) | SET_IHOLDDELAY(7);
+	spi_writeRegister(IHOLD_IRUN, value, csPin);		//IHOLD and IRUN current
+	spi_writeRegister(RAMPMODE, 0x0, csPin);			//select position mode
+	spi_writeRegister(V_1, 0x0, csPin);					//Disables A1 and D1 in position mode, amax and vmax only
+	spi_writeRegister(D_1, 0x10, csPin);				//D1 not zero
+	spi_writeRegister(AMAX, 0xFFFF, csPin);				//Acceleration
+	spi_writeRegister(VMAX, 0xFFFF, csPin);				//Velocity
+	spi_writeRegister(CHOPCONF, 0x140101D5, csPin);		//Chopper Configuration
+	spi_writeRegister(GCONF, 0x1084 | stepper_direction, csPin);	//General Configuration
+	spi_writeRegister(SW_MODE, sw_register, csPin);
+
+	// initialize enable pin for given axis
+	// set as output
+	// default disable, low activ
+	switch(csPin){
+		case XAXIS_CS:	DRV_EN_X_DDR	|= (1<<DRV_EN_X);
+						TMC5130_disableDriver(X_AXIS);
+						break;
+		case YAXIS_CS:	DRV_EN_Y_DDR	|= (1<<DRV_EN_Y);
+						TMC5130_disableDriver(Y_AXIS);
+						break;
+		case ZAXIS_CS:	DRV_EN_Z_DDR	|= (1<<DRV_EN_Z);
+						TMC5130_disableDriver(Z_AXIS);
+						break;
+		case E0AXIS_CS:	DRV_EN_E0_DDR	|= (1<<DRV_EN_E0);
+						TMC5130_disableDriver(E_AXIS);
+						break;
+	}
+}
+
 void Trams::init() {
   spi_init();
-  TMC5130_init( TRAMS_XAXIS,  X_CURRENT_RUN,  X_CURRENT_HOLD,  STEPPER_DIRECTION_X);
-  TMC5130_init( TRAMS_YAXIS,  Y_CURRENT_RUN,  Y_CURRENT_HOLD,  STEPPER_DIRECTION_Y);
-  TMC5130_init( TRAMS_ZAXIS,  Z_CURRENT_RUN,  Z_CURRENT_HOLD,  STEPPER_DIRECTION_Z);
-  TMC5130_init(TRAMS_E0AXIS, E0_CURRENT_RUN, E0_CURRENT_HOLD,  STEPPER_DIRECTION_E0);
+  TMC5130_init( TRAMS_XAXIS,  X_CURRENT_RUN,  X_CURRENT_HOLD,  STEPPER_DIRECTION_X,  SWITCH_POSITION_X | SWITCH_POLARITY_X);
+  TMC5130_init( TRAMS_YAXIS,  Y_CURRENT_RUN,  Y_CURRENT_HOLD,  STEPPER_DIRECTION_Y,  SWITCH_POSITION_Y | SWITCH_POLARITY_Y);
+  TMC5130_init( TRAMS_ZAXIS,  Z_CURRENT_RUN,  Z_CURRENT_HOLD,  STEPPER_DIRECTION_Z,  SWITCH_POSITION_Z | SWITCH_POLARITY_Z);
+  TMC5130_init(TRAMS_E0AXIS, E0_CURRENT_RUN, E0_CURRENT_HOLD,  STEPPER_DIRECTION_E0, false);
 
   // Init Enable Pins - steppers default to disabled.
   #if HAS_X_ENABLE
@@ -1037,3 +1039,39 @@ void Trams::set_directions() {
   #endif // !ADVANCE && !LIN_ADVANCE
 }
 
+// TRAMS endstops
+void TramsEndstops::M119() {
+  SERIAL_PROTOCOLLNPGM(MSG_M119_REPORT);
+  #if ENABLED(USE_XMIN_PLUG)
+    SERIAL_PROTOCOLPGM(MSG_X_MIN);
+    SERIAL_PROTOCOLLN( ((spi_readRegister(RAMP_STAT, TRAMS_XAXIS)&STATUS_STOP_L_bm)>>STATUS_STOP_L_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
+  #endif
+  #if ENABLED(USE_XMAX_PLUG)
+    SERIAL_PROTOCOLPGM(MSG_X_MAX);
+    SERIAL_PROTOCOLLN( ((spi_readRegister(RAMP_STAT, TRAMS_XAXIS)&STATUS_STOP_R_bm)>>STATUS_STOP_R_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
+  #endif
+  #if ENABLED(USE_YMIN_PLUG)
+    SERIAL_PROTOCOLPGM(MSG_Y_MIN);
+    SERIAL_PROTOCOLLN( ((spi_readRegister(RAMP_STAT, TRAMS_YAXIS)&STATUS_STOP_L_bm)>>STATUS_STOP_L_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
+  #endif
+  #if ENABLED(USE_YMAX_PLUG)
+    SERIAL_PROTOCOLPGM(MSG_Y_MAX);
+    SERIAL_PROTOCOLLN( ((spi_readRegister(RAMP_STAT, TRAMS_YAXIS)&STATUS_STOP_R_bm)>>STATUS_STOP_R_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
+  #endif
+  #if ENABLED(USE_ZMIN_PLUG)
+    SERIAL_PROTOCOLPGM(MSG_Z_MIN);
+    SERIAL_PROTOCOLLN( ((spi_readRegister(RAMP_STAT, TRAMS_ZAXIS)&STATUS_STOP_L_bm)>>STATUS_STOP_L_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
+  #endif
+  #if ENABLED(USE_ZMAX_PLUG)
+    SERIAL_PROTOCOLPGM(MSG_Z_MAX);
+    SERIAL_PROTOCOLLN( ((spi_readRegister(RAMP_STAT, TRAMS_ZAXIS)&STATUS_STOP_R_bm)>>STATUS_STOP_R_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
+  #endif
+  #if ENABLED(Z_MIN_PROBE_ENDSTOP)
+    SERIAL_PROTOCOLPGM(MSG_Z_PROBE);
+    SERIAL_PROTOCOLLN(((READ(Z_MIN_PROBE_PIN)^Z_MIN_PROBE_ENDSTOP_INVERTING) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN));
+  #endif
+  #if ENABLED(FILAMENT_RUNOUT_SENSOR)
+    SERIAL_PROTOCOLPGM(MSG_FILAMENT_RUNOUT_SENSOR);
+    SERIAL_PROTOCOLLN(((READ(FIL_RUNOUT_PIN)^FIL_RUNOUT_INVERTING) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN));
+  #endif
+}

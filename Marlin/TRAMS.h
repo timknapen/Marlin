@@ -3,11 +3,14 @@
 #include <stdbool.h>
 #include "Marlin.h"
 #include "Stepper.h"
+#include "endstops.h"
 
 #define nop() asm volatile("nop")
 
 class Trams;
 extern Trams stepper;
+class TramsEndstops;
+extern TramsEndstops endstops;
 
 /**
  * Current configuration
@@ -27,33 +30,57 @@ extern Trams stepper;
 
 /*
  * Reference switch configuration
+ *
+ * switch position, select right or left reference switch (not both)
+ * switch polarity, select high or low activ (not both)
  */
-// x-axis
-// switch position, select right or left reference switch (not both)
-//#define SWITCH_POSITION_X	0x21		// left
-#define SWITCH_POSITION_X	0x11		// right
+#if ENABLED(USE_XMIN_PLUG)
+  #define SWITCH_POSITION_X	0x21                  // left
+  #if X_MIN_ENDSTOP_INVERTING
+    #define SWITCH_POLARITY_X REF_SW_LOW_ACTIV    // low activ
+  #else
+    #define SWITCH_POLARITY_X REF_SW_HIGH_ACTIV   // high activ
+  #endif
+#else
+  #define SWITCH_POSITION_X	0x11                  // right
+  #if X_MAX_ENDSTOP_INVERTING
+    #define SWITCH_POLARITY_X REF_SW_LOW_ACTIV    // low activ
+  #else
+    #define SWITCH_POLARITY_X REF_SW_HIGH_ACTIV   // high activ
+  #endif
+#endif
 
-// switch polarity, select high or low activ (not both)
-#define SWITCH_POLARITY_X	REF_SW_LOW_ACTIV		// low activ
-//#define SWITCH_POLARITY_X	REF_SW_HIGH_ACTIV		// high activ
+#if ENABLED(USE_YMIN_PLUG)
+  #define SWITCH_POSITION_Y 0x21                  // left
+  #if Y_MIN_ENDSTOP_INVERTING
+    #define SWITCH_POLARITY_Y REF_SW_LOW_ACTIV    // low activ
+  #else
+    #define SWITCH_POLARITY_Y REF_SW_HIGH_ACTIV   // high activ
+  #endif
+#else
+  #define SWITCH_POSITION_Y 0x11                  // right
+  #if Y_MAX_ENDSTOP_INVERTING
+    #define SWITCH_POLARITY_Y REF_SW_LOW_ACTIV    // low activ
+  #else
+    #define SWITCH_POLARITY_Y REF_SW_HIGH_ACTIV   // high activ
+  #endif
+#endif
 
-// y-axis
-// switch position, select right or left reference switch (not both)
-#define SWITCH_POSITION_Y	0x21		// left
-//#define SWITCH_POSITION_Y	0x11		// right
-
-// switch polarity, select high or low activ (not both)
-#define SWITCH_POLARITY_Y	REF_SW_LOW_ACTIV		// low activ
-//#define SWITCH_POLARITY_Y	REF_SW_HIGH_ACTIV		// high activ
-
-// z-axis
-// switch position, select right or left reference switch (not both)
-#define SWITCH_POSITION_Z	0x21		// left
-//#define SWITCH_POSITION_Z	0x11		// right
-
-// switch polarity, select high or low activ (not both)
-#define SWITCH_POLARITY_Z	REF_SW_LOW_ACTIV		// low activ
-//#define SWITCH_POLARITY_Z	REF_SW_HIGH_ACTIV		// high activ
+#if ENABLED(USE_ZMIN_PLUG)
+  #define SWITCH_POSITION_Z 0x21                  // left
+  #if Z_MIN_ENDSTOP_INVERTING
+    #define SWITCH_POLARITY_Z REF_SW_LOW_ACTIV    // low activ
+  #else
+    #define SWITCH_POLARITY_Z REF_SW_HIGH_ACTIV   // high activ
+  #endif
+#else
+  #define SWITCH_POSITION_Z 0x11                  // right
+  #if Z_MAZ_ENDSTOP_INVERTING
+    #define SWITCH_POLARITY_Z REF_SW_LOW_ACTIV    // low activ
+  #else
+    #define SWITCH_POLARITY_Z REF_SW_HIGH_ACTIV   // high activ
+  #endif
+#endif
 
 /**
  * Stepper direction
@@ -131,9 +158,11 @@ extern Trams stepper;
 #define REF_SW_HIGH_ACTIV	0x00 	// non-inverted, high active: a high level on REFL stops the motor
 #define REF_SW_LOW_ACTIV	0x0C	// inverted, low active: a low level on REFL stops the motor
 
-// Motor direction
-#define NORMAL_MOTOR_DIRECTION	0x00	// Normal motor direction
-#define INVERSE_MOTOR_DIRECTION	0x10	// Inverse motor direction
+// Stop switch bits in RAMP_STAT register
+#define STATUS_STOP_R_bp      1
+#define STATUS_STOP_R_bm      0x2
+#define STATUS_STOP_L_bp      0
+#define STATUS_STOP_L_bm      0x1
 
 // Modes for RAMPMODE register
 #define POSITIONING_MODE	0x00		// using all A, D and V parameters)
@@ -175,8 +204,13 @@ class Trams: public Stepper {
     static void TMC5130_enableDriver(uint8_t axis);
     static void TMC5130_disableDriver(uint8_t axis);
     static void TMC5130_homing(int axis);
-    static void TMC5130_init(uint8_t csPin, uint8_t irun, uint8_t ihold, uint8_t stepper_direction);
     static uint32_t spi_readRegister(uint8_t address, uint8_t slave);
     static uint8_t spi_writeRegister(uint8_t address, uint32_t data, uint8_t slave);
     static uint8_t spi_readStatus(uint8_t slave);
+    static void TMC5130_init(uint8_t csPin, uint8_t irun, uint8_t ihold, uint8_t stepper_direction, uint16_t sw_register);
+
+class TramsEndstops: public Endstops, public TramsSPI {
+  public:
+    void M119();
+  private:
 };

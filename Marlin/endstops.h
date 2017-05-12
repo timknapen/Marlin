@@ -90,7 +90,11 @@ class Endstops {
     #endif
 };
 
-extern Endstops endstops;
+#if ENABLED(IS_TRAMS)
+  #include "TRAMS.h"
+#else
+  extern Endstops endstops;
+#endif
 
 #if HAS_BED_PROBE
   #define ENDSTOPS_ENABLED  (endstops.enabled || endstops.z_probe_enabled)

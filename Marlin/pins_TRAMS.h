@@ -118,16 +118,6 @@
 #define SERVO3_PIN          4
 
 //
-// Limit Switches
-//
-#define X_MIN_PIN           3
-#define X_MAX_PIN           2
-#define Y_MIN_PIN          14
-#define Y_MAX_PIN          15
-#define Z_MIN_PIN          18
-#define Z_MAX_PIN          19
-
-//
 // Z Probe (when not Z_MIN_PIN)
 //
 #ifndef Z_MIN_PROBE_PIN
@@ -152,6 +142,10 @@
 #define E0_STEP_PIN        -1
 #define E0_DIR_PIN         -1
 #define E0_ENABLE_PIN      24
+
+#define X_MIN_PIN 1
+#define Y_MIN_PIN 1
+#define Z_MIN_PIN 1
 
 //
 // Temperature Sensors
