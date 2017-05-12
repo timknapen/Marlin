@@ -18,7 +18,7 @@
  * @param	data		to transmitted byte
  * @return	received byte
  */
-uint8_t Trams::spi_readWriteByte(uint8_t data) {
+uint8_t TramsSPI::spi_readWriteByte(uint8_t data) {
   SPDR = data;
   while(!(SPSR & (1<<SPIF))); // polling the SPI Interrupt Flag
   return SPDR;	// return the received byte
@@ -28,7 +28,7 @@ uint8_t Trams::spi_readWriteByte(uint8_t data) {
  * @brief Send a byte via SPI
  * @param		data		to be transmitted byte
  */
-void Trams::spi_writeByte(uint8_t data) {
+void TramsSPI::spi_writeByte(uint8_t data) {
   SPDR = data;
   while(!(SPSR & (1<<SPIF)));
 }
@@ -41,7 +41,7 @@ void Trams::spi_writeByte(uint8_t data) {
  * CPHA = 0
  * no interrupt
  */
-void Trams::spi_init(void) {
+void TramsSPI::spi_init(void) {
 	//Initialize the SPI interface
 	//outputs
 	DDR_SPI |= ((1<<SPI_MOSI) | (1<<SPI_SCK) | (1<<SPI_CS));
@@ -76,7 +76,7 @@ void Trams::spi_init(void) {
  * @param		csPin		chip select
  * @return		status
  */
-uint32_t Trams::spi_readRegister(uint8_t address, uint8_t slave) {
+uint32_t TramsSPI::spi_readRegister(uint8_t address, uint8_t slave) {
   uint8_t buf[4];
   uint32_t register_value = 0;
 
@@ -122,7 +122,7 @@ uint32_t Trams::spi_readRegister(uint8_t address, uint8_t slave) {
  * @param		csPin		chip select
  * @return	status
  */
-uint8_t Trams::spi_writeRegister(uint8_t address, uint32_t data, uint8_t slave) {
+uint8_t TramsSPI::spi_writeRegister(uint8_t address, uint32_t data, uint8_t slave) {
   uint8_t buf[4];
   uint8_t status = 0;
 
@@ -152,7 +152,7 @@ uint8_t Trams::spi_writeRegister(uint8_t address, uint32_t data, uint8_t slave) 
  * @param		csPin		chip select
  * @return	status
  */
-uint8_t Trams::spi_readStatus(uint8_t slave) {
+uint8_t TramsSPI::spi_readStatus(uint8_t slave) {
   uint8_t status;
 
   SPI_CS_PORT &= ~(1 << slave); 	// enable slave, low activ

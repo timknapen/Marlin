@@ -171,6 +171,16 @@ extern TramsEndstops endstops;
 #define HOLD_MODE			0x03		// velocity remains unchanged, unless stop event occurs
 
 #define VZERO				0x400		// flag in RAMP_STAT, 1: signals that the actual velocity is 0.
+class TramsSPI {
+  protected:
+    static void spi_init(void);
+    static uint32_t spi_readRegister(uint8_t address, uint8_t slave);
+    static uint8_t spi_writeRegister(uint8_t address, uint32_t data, uint8_t slave);
+    static uint8_t spi_readStatus(uint8_t slave);
+  private:
+    static uint8_t spi_readWriteByte(uint8_t data);
+    static void spi_writeByte(uint8_t data);
+};
 
 class Trams: public Stepper {
   public:
@@ -198,15 +208,9 @@ class Trams: public Stepper {
     static FORCE_INLINE void append_motion_block(void);
     static unsigned char blocks_in_motion_queue();
     static void set_directions();
-    static void spi_init(void);
-    static uint8_t spi_readWriteByte(uint8_t data);
-    static void spi_writeByte(uint8_t data);
     static void TMC5130_enableDriver(uint8_t axis);
     static void TMC5130_disableDriver(uint8_t axis);
     static void TMC5130_homing(int axis);
-    static uint32_t spi_readRegister(uint8_t address, uint8_t slave);
-    static uint8_t spi_writeRegister(uint8_t address, uint32_t data, uint8_t slave);
-    static uint8_t spi_readStatus(uint8_t slave);
     static void TMC5130_init(uint8_t csPin, uint8_t irun, uint8_t ihold, uint8_t stepper_direction, uint16_t sw_register);
 
 class TramsEndstops: public Endstops, public TramsSPI {
