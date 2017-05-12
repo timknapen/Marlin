@@ -184,7 +184,7 @@ extern TramsEndstops endstops;
 
 #define VZERO                 0x400 // flag in RAMP_STAT, 1: signals that the actual velocity is 0.
 
-#define SPI_SPEED             16000000/8
+#define SPI_SPEED             16000000/2
 
 class TramsSPI {
   protected:
