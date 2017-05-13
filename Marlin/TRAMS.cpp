@@ -24,32 +24,15 @@
  */
 void TramsSPI::spi_init(void) {
   SPI.begin();
-	//Initialize the SPI interface
-	//outputs
-	DDR_SPI |= ((1<<SPI_MOSI) | (1<<SPI_SCK) | (1<<SPI_CS));
-	//inputs
-	DDR_SPI &= ~(1<<SPI_MISO);
 
-	//Initialize chip select pins
-	SPI_CS_DDR	|= (1<<XAXIS_CS);
-	SPI_CS_DDR	|= (1<<YAXIS_CS);
-	SPI_CS_DDR	|= (1<<ZAXIS_CS);
-	SPI_CS_DDR	|= (1<<E0AXIS_CS);
-
-	//all cs high
-	SPI_CS_PORT	|= (1<<XAXIS_CS);
-	SPI_CS_PORT	|= (1<<YAXIS_CS);
-	SPI_CS_PORT	|= (1<<ZAXIS_CS);
-	SPI_CS_PORT	|= (1<<E0AXIS_CS);
-
-
-	SPCR = ((1<<SPE )|              // SPI Enable
-          (0<<SPIE)|              // SPI Interupt Enable
-          (0<<DORD)|              // Data Order (0:MSB first / 1:LSB first)
-          (1<<MSTR)|              // Master/Slave select
-          (0<<SPR1)|(0<<SPR0)|    // SPI Clock Rate(fcpu/4 = 4Mhz)
-          (0<<CPOL)|              // Clock Polarity (0:SCK low / 1:SCK hi when idle)
-          (0<<CPHA));             // Clock Phase (0:leading / 1:trailing edge sampling)
+  SET_OUTPUT(X_CS_PIN);
+  SET_OUTPUT(Y_CS_PIN);
+  SET_OUTPUT(Z_CS_PIN);
+  SET_OUTPUT(E0_CS_PIN);
+  WRITE(X_CS_PIN, HIGH);
+  WRITE(Y_CS_PIN, HIGH);
+  WRITE(Z_CS_PIN, HIGH);
+  WRITE(E0_CS_PIN, HIGH);
 }
 
 /**
@@ -830,24 +813,6 @@ void Trams::TMC5130_init(uint8_t csPin, uint8_t irun, uint8_t ihold, uint8_t ste
 	spi_writeRegister(CHOPCONF, 0x140101D5, csPin);		//Chopper Configuration
 	spi_writeRegister(GCONF, 0x1084 | stepper_direction, csPin);	//General Configuration
 	spi_writeRegister(SW_MODE, sw_register, csPin);
-
-	// initialize enable pin for given axis
-	// set as output
-	// default disable, low activ
-	switch(csPin){
-		case XAXIS_CS:	DRV_EN_X_DDR	|= (1<<DRV_EN_X);
-						TMC5130_disableDriver(X_AXIS);
-						break;
-		case YAXIS_CS:	DRV_EN_Y_DDR	|= (1<<DRV_EN_Y);
-						TMC5130_disableDriver(Y_AXIS);
-						break;
-		case ZAXIS_CS:	DRV_EN_Z_DDR	|= (1<<DRV_EN_Z);
-						TMC5130_disableDriver(Z_AXIS);
-						break;
-		case E0AXIS_CS:	DRV_EN_E0_DDR	|= (1<<DRV_EN_E0);
-						TMC5130_disableDriver(E_AXIS);
-						break;
-	}
 }
 
 void Trams::init() {
@@ -856,6 +821,8 @@ void Trams::init() {
   TMC5130_init( TRAMS_YAXIS,  Y_CURRENT_RUN,  Y_CURRENT_HOLD,  STEPPER_DIRECTION_Y,  SWITCH_POSITION_Y | SWITCH_POLARITY_Y);
   TMC5130_init( TRAMS_ZAXIS,  Z_CURRENT_RUN,  Z_CURRENT_HOLD,  STEPPER_DIRECTION_Z,  SWITCH_POSITION_Z | SWITCH_POLARITY_Z);
   TMC5130_init(TRAMS_E0AXIS, E0_CURRENT_RUN, E0_CURRENT_HOLD,  STEPPER_DIRECTION_E0, false);
+
+  disable_all_steppers();
 
   // Init Enable Pins - steppers default to disabled.
   #if HAS_X_ENABLE
