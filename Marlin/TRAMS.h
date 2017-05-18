@@ -189,9 +189,9 @@ extern TramsEndstops endstops;
 class TramsSPI {
   protected:
     static void spi_init(void);
-    static uint32_t spi_readRegister(uint8_t address, uint8_t slave);
-    static uint8_t spi_writeRegister(uint8_t address, uint32_t data, uint8_t slave);
-    static uint8_t spi_readStatus(uint8_t slave);
+    static uint32_t spi_readRegister(uint8_t address, const AxisEnum &axis);
+    static uint8_t spi_writeRegister(uint8_t address, uint32_t data, const AxisEnum &axis);
+    static uint8_t spi_readStatus(const AxisEnum &axis);
   private:
     static uint8_t spi_readWriteByte(uint8_t data);
     static void spi_writeByte(uint8_t data);
@@ -205,6 +205,7 @@ class Trams: public Stepper, public TramsSPI {
     static void set_e_position(const long &e);
     static void calculate(void);
     static void isr();
+    static void TMC5130_homing(const AxisEnum &axis);
     typedef struct {
       uint32_t  initial_speed[NUM_AXIS],
                 nominal_speed[NUM_AXIS],
@@ -223,10 +224,9 @@ class Trams: public Stepper, public TramsSPI {
     static FORCE_INLINE void append_motion_block(void);
     static unsigned char blocks_in_motion_queue();
     static void set_directions();
-    static void TMC5130_enableDriver(uint8_t axis);
-    static void TMC5130_disableDriver(uint8_t axis);
-    static void TMC5130_homing(int axis);
-    static void TMC5130_init(uint8_t csPin, uint8_t irun, uint8_t ihold, uint8_t stepper_direction, uint16_t sw_register);
+    static void TMC5130_enableDriver(const AxisEnum &axis);
+    static void TMC5130_disableDriver(const AxisEnum &axis);
+    static void TMC5130_init(const AxisEnum &axis, uint8_t irun, uint8_t ihold, uint8_t stepper_direction, uint16_t sw_register);
 };
 
 class TramsEndstops: public Endstops, public TramsSPI {

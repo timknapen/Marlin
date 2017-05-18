@@ -172,11 +172,6 @@
 #define SDSS               53
 #define LED_PIN            13
 
-#define TRAMS_XAXIS 3   //Bit in PORTL which function as Slave Select PIN for X Axis
-#define TRAMS_YAXIS 0   //Bit in PORTL which function as Slave Select PIN for Y Axis
-#define TRAMS_ZAXIS 1   //Bit in PORTL which function as Slave Select PIN for Z Axis
-#define TRAMS_E0AXIS 2  //Bit in PORTL which function as Slave Select PIN for E1 Axis
-
 //
 // LCD / Controller
 //
