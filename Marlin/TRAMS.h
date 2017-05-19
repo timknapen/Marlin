@@ -119,11 +119,11 @@ extern TramsEndstops endstops;
  * STALLGUARD
  */
 // x-axis
-#define STALLGUARD_X                // if selected, stallguard is active
+//#define STALLGUARD_X                // if selected, stallguard is active
 #define STALLGUARDTHRESHOLD_X	0x08  // range 0x00..0x7F
 
 // y-axis
-#define STALLGUARD_Y                // if selected, stallguard is active
+//#define STALLGUARD_Y                // if selected, stallguard is active
 #define STALLGUARDTHRESHOLD_Y	0x80  // range 0x00..0x7F
 
 // z-axis

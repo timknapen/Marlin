@@ -2907,8 +2907,11 @@ static void do_homing_move(const AxisEnum axis, const float distance, const floa
  * Kinematic robots should wait till all axes are homed
  * before updating the current position.
  */
-
-#define HOMEAXIS(LETTER) homeaxis(LETTER##_AXIS)
+#if ENABLED(IS_TRAMS)
+  #define HOMEAXIS(LETTER) Trams::TMC5130_homing(LETTER##_AXIS)
+#else
+  #define HOMEAXIS(LETTER) homeaxis(LETTER##_AXIS)
+#endif
 
 static void homeaxis(const AxisEnum axis) {
 

@@ -158,16 +158,11 @@ uint8_t TramsSPI::spi_readStatus(const AxisEnum &axis) {
 void Trams::TMC5130_enableDriver(const AxisEnum &axis) {
 	// low activ
 	switch(axis){
-		case X_AXIS:	DRV_EN_X_PORT	&= ~(1<<DRV_EN_X);
-						break;
-		case Y_AXIS:	DRV_EN_Y_PORT	&= ~(1<<DRV_EN_Y);
-						break;
-		case Z_AXIS:	DRV_EN_Z_PORT	&= ~(1<<DRV_EN_Z);
-						break;
-		case E_AXIS:	DRV_EN_E0_PORT	&= ~(1<<DRV_EN_E0);
-						break;
-		default:
-					break;
+		case X_AXIS: enable_X(); break;
+		case Y_AXIS: enable_Y(); break;
+		case Z_AXIS: enable_Z(); break;
+		case E_AXIS: enable_E0(); break;
+		default: break;
 	}
 
 	return;
@@ -178,25 +173,27 @@ void Trams::TMC5130_enableDriver(const AxisEnum &axis) {
  * @param	axis		axis to home
  * @return	none
  */
-void Trams::TMC5130_homing(int axis) {
-  SERIAL_ECHOLN("TMC homing");
-	unsigned int sw_register;
-	uint8_t motor_direction;
-	uint32_t stallguardthreshold;
-	int homing_retract;
-	int homing_speed;
-	int axis_to_home;
+void Trams::TMC5130_homing(const AxisEnum &axis) {
+  AxisEnum axis_to_home;
+  uint8_t motor_direction;
+	uint16_t sw_register;
+	uint32_t stallguardthreshold,
+           stall_speed;
+	int homing_retract,
+	    homing_speed,
+      homing_bump_speed;
 	bool sg_active = false;
-	uint32_t stall_speed;
 
-	float STEPS_PER_UNIT_TMP[]=DEFAULT_AXIS_STEPS_PER_UNIT; // configuraton.h
-	float HOMING_FEEDRATE_TMP[]={ HOMING_FEEDRATE_XY, HOMING_FEEDRATE_XY, HOMING_FEEDRATE_Z };
+	float STEPS_PER_UNIT_TMP[] = DEFAULT_AXIS_STEPS_PER_UNIT; // configuraton.h
+	float HOMING_FEEDRATE_TMP[] = { HOMING_FEEDRATE_XY, HOMING_FEEDRATE_XY, HOMING_FEEDRATE_Z };
+  uint8_t bump_divisor[] = HOMING_BUMP_DIVISOR;
 
 	switch(axis) {
 		case X_AXIS:
-			axis_to_home = XAXIS_CS;
-			homing_retract = X_HOME_BUMP_MM * STEPS_PER_UNIT_TMP[0]; // configuraton_adv.h
-			homing_speed = HOMING_FEEDRATE_TMP[0];
+			axis_to_home = X_AXIS;
+			homing_retract = X_HOME_BUMP_MM * STEPS_PER_UNIT_TMP[X_AXIS]; // configuraton_adv.h
+			homing_speed = HOMING_FEEDRATE_TMP[X_AXIS];
+      homing_bump_speed = homing_speed / bump_divisor[X_AXIS];
 			sw_register = SWITCH_POSITION_X | SWITCH_POLARITY_X; // TMC_TRAMS_CONFIGURATION
 
 			#ifdef STALLGUARD_X
@@ -207,9 +204,10 @@ void Trams::TMC5130_homing(int axis) {
 
 			break;
 		case Y_AXIS:
-			axis_to_home = YAXIS_CS;
-			homing_retract = Y_HOME_BUMP_MM * STEPS_PER_UNIT_TMP[1];
-			homing_speed = HOMING_FEEDRATE_TMP[1];
+			axis_to_home = Y_AXIS;
+			homing_retract = Y_HOME_BUMP_MM * STEPS_PER_UNIT_TMP[Y_AXIS];
+			homing_speed = HOMING_FEEDRATE_TMP[Y_AXIS];
+      homing_bump_speed = homing_speed / bump_divisor[Y_AXIS];
 			sw_register = SWITCH_POSITION_Y | SWITCH_POLARITY_Y;
 
 			#ifdef STALLGUARD_Y
@@ -220,9 +218,10 @@ void Trams::TMC5130_homing(int axis) {
 
 			break;
 		case Z_AXIS:
-			axis_to_home = ZAXIS_CS;
-			homing_retract = Z_HOME_BUMP_MM * STEPS_PER_UNIT_TMP[2];
-			homing_speed = HOMING_FEEDRATE_TMP[2];
+			axis_to_home = Z_AXIS;
+			homing_retract = Z_HOME_BUMP_MM * STEPS_PER_UNIT_TMP[Z_AXIS];
+			homing_speed = HOMING_FEEDRATE_TMP[Z_AXIS];
+      homing_bump_speed = homing_speed / bump_divisor[Z_AXIS];
 			sw_register = SWITCH_POSITION_Z | SWITCH_POLARITY_Z;
 
 			#ifdef STALLGUARD_Z
@@ -304,14 +303,13 @@ void Trams::TMC5130_homing(int axis) {
 		spi_writeRegister(SW_MODE, sw_register, axis_to_home);		//SWITCH REGISTER
 
 		//While motor is still moving (vzero != 1)
-		while((spi_readRegister(RAMP_STAT, axis_to_home) & VZERO) != VZERO);
+		while((spi_readRegister(RAMP_STAT, axis_to_home) & VZERO) != VZERO) { idle(); }
 
-		// Endstop reached. Reset and retract
 		spi_writeRegister(RAMPMODE, HOLD_MODE, axis_to_home);		//HOLD Mode
 		spi_writeRegister(XACTUAL, 0x0, axis_to_home);				//XACTUAL = 0
 		spi_writeRegister(XTARGET, 0x0, axis_to_home);				//XTARGET = 0
-		spi_writeRegister(SW_MODE, 0x0, axis_to_home);				//SWITCH REGISTER
-		spi_writeRegister(RAMPMODE, POSITIONING_MODE, axis_to_home);//Position MODE
+    spi_writeRegister(SW_MODE, 0x0, axis_to_home);				//SWITCH REGISTER
+    spi_writeRegister(RAMPMODE, POSITIONING_MODE, axis_to_home);//Position MODE
 		spi_writeRegister(VMAX, homing_speed, axis_to_home);		//Homing Speed in VMAX
 		spi_writeRegister(DMAX, 0xFFFF, axis_to_home);				//DMAX
 		spi_writeRegister(XTARGET, homing_retract, axis_to_home);	//XTARGET = homing_retract
@@ -319,7 +317,7 @@ void Trams::TMC5130_homing(int axis) {
 		_delay_ms(200);
 
 		//While motor is still moving (vzero != 1)
-		while((spi_readRegister(RAMP_STAT, axis_to_home) & VZERO) != VZERO);
+		while((spi_readRegister(RAMP_STAT, axis_to_home) & VZERO) != VZERO) { idle(); }
 
 		//Retract finished
 		spi_writeRegister(SW_MODE, sw_register, axis_to_home);		//SWITCH REGISTER
@@ -976,27 +974,27 @@ void TramsEndstops::M119() {
   SERIAL_PROTOCOLLNPGM(MSG_M119_REPORT);
   #if ENABLED(USE_XMIN_PLUG)
     SERIAL_PROTOCOLPGM(MSG_X_MIN);
-    SERIAL_PROTOCOLLN( ((spi_readRegister(RAMP_STAT, TRAMS_XAXIS)&STATUS_STOP_L_bm)>>STATUS_STOP_L_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
+    SERIAL_PROTOCOLLN( ((spi_readRegister(RAMP_STAT, X_AXIS)&STATUS_STOP_L_bm)>>STATUS_STOP_L_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
   #endif
   #if ENABLED(USE_XMAX_PLUG)
     SERIAL_PROTOCOLPGM(MSG_X_MAX);
-    SERIAL_PROTOCOLLN( ((spi_readRegister(RAMP_STAT, TRAMS_XAXIS)&STATUS_STOP_R_bm)>>STATUS_STOP_R_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
+    SERIAL_PROTOCOLLN( ((spi_readRegister(RAMP_STAT, X_AXIS)&STATUS_STOP_R_bm)>>STATUS_STOP_R_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
   #endif
   #if ENABLED(USE_YMIN_PLUG)
     SERIAL_PROTOCOLPGM(MSG_Y_MIN);
-    SERIAL_PROTOCOLLN( ((spi_readRegister(RAMP_STAT, TRAMS_YAXIS)&STATUS_STOP_L_bm)>>STATUS_STOP_L_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
+    SERIAL_PROTOCOLLN( ((spi_readRegister(RAMP_STAT, Y_AXIS)&STATUS_STOP_L_bm)>>STATUS_STOP_L_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
   #endif
   #if ENABLED(USE_YMAX_PLUG)
     SERIAL_PROTOCOLPGM(MSG_Y_MAX);
-    SERIAL_PROTOCOLLN( ((spi_readRegister(RAMP_STAT, TRAMS_YAXIS)&STATUS_STOP_R_bm)>>STATUS_STOP_R_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
+    SERIAL_PROTOCOLLN( ((spi_readRegister(RAMP_STAT, Y_AXIS)&STATUS_STOP_R_bm)>>STATUS_STOP_R_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
   #endif
   #if ENABLED(USE_ZMIN_PLUG)
     SERIAL_PROTOCOLPGM(MSG_Z_MIN);
-    SERIAL_PROTOCOLLN( ((spi_readRegister(RAMP_STAT, TRAMS_ZAXIS)&STATUS_STOP_L_bm)>>STATUS_STOP_L_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
+    SERIAL_PROTOCOLLN( ((spi_readRegister(RAMP_STAT, Z_AXIS)&STATUS_STOP_L_bm)>>STATUS_STOP_L_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
   #endif
   #if ENABLED(USE_ZMAX_PLUG)
     SERIAL_PROTOCOLPGM(MSG_Z_MAX);
-    SERIAL_PROTOCOLLN( ((spi_readRegister(RAMP_STAT, TRAMS_ZAXIS)&STATUS_STOP_R_bm)>>STATUS_STOP_R_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
+    SERIAL_PROTOCOLLN( ((spi_readRegister(RAMP_STAT, Z_AXIS)&STATUS_STOP_R_bm)>>STATUS_STOP_R_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
   #endif
   #if ENABLED(Z_MIN_PROBE_ENDSTOP)
     SERIAL_PROTOCOLPGM(MSG_Z_PROBE);
