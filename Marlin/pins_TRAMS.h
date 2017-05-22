@@ -147,10 +147,6 @@
 #define E0_ENABLE_PIN      24
 #define E0_CS_PIN          47
 
-#define X_MIN_PIN 1
-#define Y_MIN_PIN 1
-#define Z_MIN_PIN 1
-
 //
 // Temperature Sensors
 //

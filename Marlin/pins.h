@@ -437,6 +437,19 @@
   #endif
 #endif
 
+/**
+ * Trinamic TRAMS
+ * Disable all _MIN_PIN definitions
+ */
+#if ENABLED(IS_TRAMS)
+  #define X_MIN_PIN -1
+  #define Y_MIN_PIN -1
+  #define Z_MIN_PIN -1
+  #define X_MAX_PIN -1
+  #define Y_MAX_PIN -1
+  #define Z_MAX_PIN -1
+#endif
+
 //
 // Disable unused endstop / probe pins
 //
