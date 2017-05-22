@@ -123,6 +123,8 @@
   #include "pins_SAV_MKI.h"
 #elif MB(TEENSY2)
   #include "pins_TEENSY2.h"
+#elif MB(TEENSY35_36)
+  #include "pins_TEENSY35_36.h"
 #elif MB(GEN3_PLUS)
   #include "pins_GEN3_PLUS.h"
 #elif MB(GEN3_MONOLITHIC)
@@ -235,6 +237,8 @@
   #include "pins_MKS_13.h"
 #elif MB(SAINSMART_2IN1)
   #include "pins_SAINSMART_2IN1.h"
+#elif MB(RAMPS_FD_V1) || MB(RAMPS_FD_V2)
+  #include "pins_RAMPS_FD_v1.h"
 #elif MB(ZRIB_V20)
   #include "pins_ZRIB_V20.h"
 #else

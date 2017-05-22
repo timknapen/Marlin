@@ -20,6 +20,8 @@
  *
  */
 
+#include "macros.h"
+#include "src/HAL/HAL_pinsDebug.h"
 
 bool endstop_monitor_flag = false;
 
@@ -461,7 +463,7 @@ inline void report_pin_state_extended(int8_t pin, bool ignore, bool extended = t
     SERIAL_ECHO(buffer);
     print_port(pin);
     if (IS_ANALOG(pin)) {
-      sprintf(buffer, " (A%2d)  ", int(pin - analogInputToDigitalPin(0)));    // analog pin number
+      HAL_analog_pin_state(buffer, pin);
       SERIAL_ECHO(buffer);
     }
     else

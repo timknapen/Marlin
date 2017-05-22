@@ -1621,7 +1621,9 @@ void Temperature::isr() {
 
   // Allow UART and stepper ISRs
   DISABLE_TEMPERATURE_INTERRUPT(); //Disable Temperature ISR
-  sei();
+  #if !defined(CPU_32_BIT)
+    sei();
+  #endif
 
   static int8_t temp_count = -1;
   static ADCSensorState adc_sensor_state = StartupDelay;
@@ -2102,7 +2104,9 @@ void Temperature::isr() {
     }
   #endif
 
-  cli();
+  #if !defined(CPU_32_BIT)
+    cli();
+  #endif
   in_temp_isr = false;
   ENABLE_TEMPERATURE_INTERRUPT(); //re-enable Temperature ISR
 }
