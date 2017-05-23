@@ -40,8 +40,6 @@
   #endif
 #endif
 
-#include "MarlinConfig.h"
-
 extern const char echomagic[] PROGMEM;
 extern const char errormagic[] PROGMEM;
 

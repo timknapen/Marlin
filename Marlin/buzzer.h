@@ -24,6 +24,7 @@
 #define __BUZZER_H__
 
 #include "types.h"
+#include "fastio.h"
 #include "circularqueue.h"
 #include "temperature.h"
 

@@ -371,10 +371,6 @@ void Stepper::isr() {
     if (current_block) {
       trapezoid_generator_reset();
 
-      #if STEPPER_DIRECTION_DELAY > 0
-        delayMicroseconds(STEPPER_DIRECTION_DELAY);
-      #endif
-
       // Initialize Bresenham counters to 1/2 the ceiling
       counter_X = counter_Y = counter_Z = counter_E = -(current_block->step_event_count >> 1);
 

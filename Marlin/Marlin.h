@@ -423,7 +423,6 @@ void do_blocking_move_to_xy(const float &x, const float &y, const float &fr_mm_s
   bool axis_unhomed_error(const bool x=true, const bool y=true, const bool z=true);
 #endif
 
-<<<<<<< ef802b03471f68d2dedcd0a8e72e6df46790f22f
 /**
  * position_is_reachable family of functions
  */
@@ -483,6 +482,3 @@ FORCE_INLINE bool position_is_reachable_xy(const float &lx, const float &ly) {
 }
 
 #endif // MARLIN_H
-=======
-#endif //MARLIN_H
->>>>>>> Apply HAL to hardware-related code
