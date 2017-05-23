@@ -39,6 +39,7 @@
 #include "watchdog_Teensy.h"
 
 #include "HAL_timers_Teensy.h"
+#include <util/delay.h>
 
 // --------------------------------------------------------------------------
 // Defines

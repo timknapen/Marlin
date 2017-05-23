@@ -28,9 +28,7 @@
 #include <string.h>
 #include <inttypes.h>
 
-#include <util/delay.h>
 #include <avr/pgmspace.h>
-#include <avr/eeprom.h>
 #include <avr/interrupt.h>
 
 #include "MarlinConfig.h"
@@ -42,7 +40,6 @@
 
 #include "enum.h"
 #include "types.h"
-//#include "fastio.h"
 #include "utility.h"
 #include "serial.h"
 
