@@ -1,9 +1,7 @@
 #if defined(__MK64FX512__) || defined(__MK66FX1M0__)
 
-
 #include "HAL_Servo_Teensy.h"
 #include "../../../MarlinConfig.h"
-
 
 int8_t libServo::attach(int pin) {
 	if (this->servoIndex >= MAX_SERVOS) return -1;
@@ -23,6 +21,5 @@ void libServo::move(int value) {
     #endif
   }
 }
-
 
 #endif

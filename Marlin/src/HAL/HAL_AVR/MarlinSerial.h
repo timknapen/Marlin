@@ -34,8 +34,6 @@
 
 #include "../../../MarlinConfig.h"
 
-#include <WString.h>
-
 #ifndef SERIAL_PORT
   #define SERIAL_PORT 0
 #endif

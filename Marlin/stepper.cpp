@@ -95,18 +95,17 @@ long Stepper::counter_X = 0,
 volatile uint32_t Stepper::step_events_completed = 0; // The number of step events executed in the current block
 
 #if ENABLED(ADVANCE) || ENABLED(LIN_ADVANCE)
-
-#ifdef CPU_32_BIT
-  constexpr uint32_t ADV_NEVER = 0xFFFFFFFF;
-  uint32_t Stepper::nextMainISR = 0,
-           Stepper::nextAdvanceISR = ADV_NEVER,
-           Stepper::eISR_Rate = ADV_NEVER;
+  #ifdef CPU_32_BIT
+    constexpr uint32_t ADV_NEVER = 0xFFFFFFFF;
+    uint32_t Stepper::nextMainISR = 0,
+             Stepper::nextAdvanceISR = ADV_NEVER,
+             Stepper::eISR_Rate = ADV_NEVER;
   #else
-  constexpr uint16_t ADV_NEVER = 65535;
+    constexpr uint16_t ADV_NEVER = 65535;
 
-  uint16_t Stepper::nextMainISR = 0,
-           Stepper::nextAdvanceISR = ADV_NEVER,
-           Stepper::eISR_Rate = ADV_NEVER;
+    uint16_t Stepper::nextMainISR = 0,
+             Stepper::nextAdvanceISR = ADV_NEVER,
+             Stepper::eISR_Rate = ADV_NEVER;
   #endif
 
   #if ENABLED(LIN_ADVANCE)
@@ -123,7 +122,6 @@ volatile uint32_t Stepper::step_events_completed = 0; // The number of step even
   #endif
 
   #define ADV_RATE(T, L) (e_steps[TOOL_E_INDEX] ? (T) * (L) / abs(e_steps[TOOL_E_INDEX]) : ADV_NEVER)
-
 #endif
 
 long Stepper::acceleration_time, Stepper::deceleration_time;

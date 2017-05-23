@@ -105,4 +105,3 @@ void HAL_timer_disable_interrupt (uint8_t timer_num);
 void HAL_timer_isr_prologue(uint8_t timer_num);
 
 #endif // _HAL_TIMERS_TEENSY_H
-

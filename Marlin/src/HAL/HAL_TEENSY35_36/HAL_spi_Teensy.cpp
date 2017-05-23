@@ -100,5 +100,4 @@ void spiSendBlock(uint8_t token, const uint8_t* buf) {
   SPI.endTransaction();
 }
 
-
 #endif
