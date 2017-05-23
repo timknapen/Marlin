@@ -1077,16 +1077,6 @@ void Temperature::init() {
     HAL_ANALOG_SELECT(FILWIDTH_PIN);
   #endif
 
-  #if defined(ARDUINO_ARCH_AVR)
-    // Use timer0 for temperature measurement
-    // Interleave temperature interrupt with millies interrupt
-    OCR0B = 128;
-    SBI(TIMSK0, OCIE0B);
-  #else
-    HAL_timer_start (TEMP_TIMER_NUM, TEMP_TIMER_FREQUENCY);
-    HAL_timer_enable_interrupt (TEMP_TIMER_NUM);
-  #endif
-
   #if HAS_AUTO_FAN_0
     #if E0_AUTO_FAN_PIN == FAN1_PIN
       SET_OUTPUT(E0_AUTO_FAN_PIN);
@@ -1138,10 +1128,15 @@ void Temperature::init() {
     #endif
   #endif
 
-  // Use timer0 for temperature measurement
-  // Interleave temperature interrupt with millies interrupt
-  OCR0B = 128;
-  SBI(TIMSK0, OCIE0B);
+  #if defined(ARDUINO_ARCH_AVR)
+    // Use timer0 for temperature measurement
+    // Interleave temperature interrupt with millies interrupt
+    OCR0B = 128;
+    SBI(TIMSK0, OCIE0B);
+  #else
+    HAL_timer_start (TEMP_TIMER_NUM, TEMP_TIMER_FREQUENCY);
+    HAL_timer_enable_interrupt (TEMP_TIMER_NUM);
+  #endif
 
   // Wait for temperature measurement to settle
   delay(250);

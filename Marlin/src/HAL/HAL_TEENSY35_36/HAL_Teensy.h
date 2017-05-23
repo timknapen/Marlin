@@ -81,9 +81,8 @@
   #define strncpy_P(dest, src, num) strncpy((dest), (src), (num))
 #endif
 
-// Fix bug in pgm_read_ptr
-#undef pgm_read_ptr
-#define pgm_read_ptr(addr) (*(addr))
+#undef pgm_read_word
+#define pgm_read_word(_addr) (*(_addr))
 
 #define RST_POWER_ON   1
 #define RST_EXTERNAL   2
@@ -98,8 +97,6 @@ void HAL_clear_reset_source (void);
 
 /** reset reason */
 uint8_t HAL_get_reset_source (void);
-
-void _delay_ms(int delay);
 
 extern "C" {
   int freeMemory(void);

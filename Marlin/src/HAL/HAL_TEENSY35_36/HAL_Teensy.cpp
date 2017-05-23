@@ -85,11 +85,6 @@ uint8_t HAL_get_reset_source (void)
   }
 }
 
-void _delay_ms (int delay_ms)
-{
-	delay (delay_ms);
-}
-
 extern "C" {
   extern char __bss_end;
   extern char __heap_start;

@@ -23,7 +23,7 @@
 #ifndef __SERIAL_H__
 #define __SERIAL_H__
 
-#include "src/HAL/HAL.h"
+#include "Marlin.h"
 
 // For AVR only, define a serial interface based on configuration
 #ifdef ARDUINO_ARCH_AVR
