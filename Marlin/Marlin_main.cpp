@@ -262,7 +262,7 @@
 #endif
 
 #if ENABLED(USE_WATCHDOG)
-  #include "watchdog.h"
+  //#include "watchdog.h"
 #endif
 
 #if ENABLED(BLINKM)
@@ -758,7 +758,7 @@ inline void sync_plan_position_e() { planner.set_e_position_mm(current_position[
   #define SYNC_PLAN_POSITION_KINEMATIC() sync_plan_position()
 
 #endif
-
+/*
 #if ENABLED(SDSUPPORT)
   #include "SdFatUtil.h"
   int freeMemory() { return SdFatUtil::FreeRam(); }
@@ -778,7 +778,7 @@ extern "C" {
   }
 }
 #endif // !SDSUPPORT
-
+*/
 #if ENABLED(DIGIPOT_I2C)
   extern void digipot_i2c_set_current(int channel, float current);
   extern void digipot_i2c_init();

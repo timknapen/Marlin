@@ -42,7 +42,7 @@
 
 #include "enum.h"
 #include "types.h"
-#include "fastio.h"
+//#include "fastio.h"
 #include "utility.h"
 #include "serial.h"
 

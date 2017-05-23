@@ -44,7 +44,7 @@
 #endif
 
 #if ENABLED(USE_WATCHDOG)
-  #include "watchdog.h"
+  //#include "watchdog.h"
 #endif
 
 #ifdef K1 // Defined in Configuration.h in the PID settings
