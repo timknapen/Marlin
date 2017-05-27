@@ -23,9 +23,23 @@
 #ifndef SIMPLE_LCD_H
 #define SIMPLE_LCD_H
 
-#define LCD_CS 53
-#define LCD_RST 49
-#define LCD_DC 19
+#define LCD_CS 		53
+#define LCD_RST 	49
+#define LCD_DC 		19
+#define CLK 			31 // 31 or 33 // 2
+#define DT 				33 // 31 or 33 // 3
+#define SW 				35 //5
+#define CLK_port	PINC
+#define CLK_bp		6
+#define CLK_bm		0x40
+#define DT_port		PINC
+#define DT_bp			4
+#define DT_bm			0x10
+#define SW_port		PINC
+#define SW_bp			2
+#define SW_bm			0x4
+
+constexpr uint8_t column2_x = 100;
 
 //#define LCD_CONSTRUCTOR U8G2_ST7920_128X64_F_SW_SPI u8g2(U8G2_R0, /* clock=*/ 23, /* data=*/ 17, /* CS=*/ 16, /* reset=*/ 4);
 //#define LCD_CONSTRUCTOR U8G2_SSD1306_128X64_NONAME_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 53, /* dc=*/ 49, /* reset=*/ 32);
@@ -33,6 +47,12 @@
 //#define LCD_CONSTRUCTOR U8G2_UC1608_ERC24064_F_4W_HW_SPI u8g2(U8G2_R0, SCK, MOSI, LCD_CS, LCD_DC, LCD_RST);
 #define LCD_CONSTRUCTOR U8G2_UC1608_ERC24064_F_4W_HW_SPI u8g2(U8G2_R0, LCD_CS, LCD_DC, LCD_RST);
 #define LCD_FONT u8g2_font_ncenR08_tr // https://github.com/olikraus/u8g2/wiki/fntgrp
+#define FONT_SIZE 12
+#define LCD_TIMEOUT 30000
+
+
+#define HAS_SUB_ITEM_4
+//#define HAS_MAIN_ITEM_3
 
 #define SHOW_XYZ_POS_H
 //#define SHOW_XYZ_POS_V
