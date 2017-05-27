@@ -11937,7 +11937,10 @@ void idle(
     bool no_stepper_sleep/*=false*/
   #endif
 ) {
+  millis_t frameTime = millis();
   lcd_update();
+  millis_t _frameTime = millis() - frameTime;
+  if (_frameTime > 2) { SERIAL_ECHO("Frame time "); SERIAL_ECHOLN(_frameTime); }
 
   host_keepalive();
 
