@@ -255,8 +255,7 @@ void lcd_update() {
 	if (ms - next_lcd_update_ms >= 1000) {
 		next_lcd_update_ms = ms;
 		blink = !blink;
-		u8g2.firstPage();
-		do {
+		u8g2.clearBuffer();
 			#if defined(E0_XY)
 			{
 				uint16_t T = thermalManager.degHotend(0);
@@ -404,8 +403,7 @@ void lcd_update() {
 				u8g2.print("lcd_status_message");
 			}
 			#endif
-
-		} while ( u8g2.nextPage() );
+		u8g2.sendBuffer();
 	}
 }
 
