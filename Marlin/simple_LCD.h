@@ -41,13 +41,13 @@
 
 constexpr uint8_t column2_x = 100;
 
-//#define LCD_CONSTRUCTOR U8G2_ST7920_128X64_F_SW_SPI u8g2(U8G2_R0, /* clock=*/ 23, /* data=*/ 17, /* CS=*/ 16, /* reset=*/ 4);
+#define LCD_CONSTRUCTOR U8G2_ST7920_128X64_F_SW_SPI u8g2(U8G2_R0, /* clock=*/ 23, /* data=*/ 17, /* CS=*/ 16, /* reset=*/ 4);
 //#define LCD_CONSTRUCTOR U8G2_SSD1306_128X64_NONAME_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 53, /* dc=*/ 49, /* reset=*/ 32);
 //#define LCD_CONSTRUCTOR U8G2_UC1608_ERC24064_F_3W_SW_SPI u8g2(U8G2_R0, /*clock*/ 34, /*data*/ 36, /*cs*/ 53, /*[, reset]*/ 49);
 //#define LCD_CONSTRUCTOR U8G2_UC1608_ERC24064_F_4W_HW_SPI u8g2(U8G2_R0, SCK, MOSI, LCD_CS, LCD_DC, LCD_RST);
-#define LCD_CONSTRUCTOR U8G2_UC1608_ERC24064_F_4W_HW_SPI u8g2(U8G2_R0, LCD_CS, LCD_DC, LCD_RST);
+//#define LCD_CONSTRUCTOR U8G2_UC1608_ERC24064_F_4W_HW_SPI u8g2(U8G2_R0, LCD_CS, LCD_DC, LCD_RST);
 #define LCD_FONT u8g2_font_ncenR08_tr // https://github.com/olikraus/u8g2/wiki/fntgrp
-#define FONT_SIZE 12
+#define FONT_SIZE 8
 #define LCD_TIMEOUT 30000
 
 
