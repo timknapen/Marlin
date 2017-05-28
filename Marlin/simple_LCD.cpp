@@ -683,10 +683,10 @@ void lcd_update() {
 	if (ms - next_lcd_update_ms >= 1000) {
 		next_lcd_update_ms = ms;
 		SERIAL_ECHO("Total "); SERIAL_ECHO(clearBufferTime + drawListTime + uiFunctionTime + sendBufferTime);
-		SERIAL_ECHO("\tclearBufferTime "); SERIAL_ECHO(clearBufferTime);
-		SERIAL_ECHO("\tdrawListTime"); 		SERIAL_ECHO(drawListTime);
-		SERIAL_ECHO("\tuiFunctionTime"); 	SERIAL_ECHO(uiFunctionTime);
-		SERIAL_ECHO("\tsendBufferTime"); 	SERIAL_ECHO(sendBufferTime);
+		SERIAL_ECHO("\tclearBufferTime "); 	SERIAL_ECHO(clearBufferTime);
+		SERIAL_ECHO("\tdrawListTime "); 		SERIAL_ECHO(drawListTime);
+		SERIAL_ECHO("\tuiFunctionTime "); 	SERIAL_ECHO(uiFunctionTime);
+		SERIAL_ECHO("\tsendBufferTime "); 	SERIAL_ECHO(sendBufferTime);
 		SERIAL_EOL;
 	}
 }
