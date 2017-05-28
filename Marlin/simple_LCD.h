@@ -69,7 +69,6 @@ constexpr uint8_t column2_x = 100;
 #define BED_DIM1    9
 #define BED_DIM2   20
 
-#define SHOW_PROGRESS
 #define PROGRESS_XY 64, 32
 #define PROGRESS_STYLE 1 // 0, 1
 #define BAR_H 8
