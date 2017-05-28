@@ -608,8 +608,12 @@ void drawList() {
 	uint8_t pos_x = 2,
 					pos_y = MIDDLE_Y+7;
 	printListItem(*frame, 		 	 12, pos_y);
-	printListItem((*frame)->prev, 8, pos_y-18);
-	printListItem((*frame)->next, 8, pos_y+18);
+	printListItem((*frame)->prev, 8, pos_y-FONT_SIZE-2);
+	printListItem((*frame)->next, 8, pos_y+FONT_SIZE+2);
+	node *tmp = (*frame)->next;
+	if (tmp != NULL) printListItem(tmp->next, 8, pos_y+2*(FONT_SIZE+2));
+	tmp = (*frame)->prev;
+	if (tmp != NULL) printListItem(tmp->prev, 8, pos_y-2*(FONT_SIZE+2));
 	if ((*frame)->uiFunction == NULL)
 		u8g2.drawTriangle(pos_x,pos_y+size+y_offset, pos_x,pos_y-size+y_offset, pos_x+size,pos_y+y_offset);
 	//u8g2.setCursor(10, 10);	u8g2.print("test");
