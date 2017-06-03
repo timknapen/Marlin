@@ -173,7 +173,7 @@ void Trams::TMC5130_enableDriver(const AxisEnum &axis) {
  * @param	axis		axis to home
  * @return	none
  */
-void Trams::TMC5130_homing(const AxisEnum &axis) {
+void Trams::TMC5130_homing(const AxisEnum &axis, const float homing_feedrate_mm_s) {
   AxisEnum axis_to_home;
   uint8_t motor_direction;
 	uint16_t sw_register;
@@ -184,16 +184,16 @@ void Trams::TMC5130_homing(const AxisEnum &axis) {
       homing_bump_speed;
 	bool sg_active = false;
 
-	float STEPS_PER_UNIT_TMP[] = DEFAULT_AXIS_STEPS_PER_UNIT; // configuraton.h
-	float HOMING_FEEDRATE_TMP[] = { HOMING_FEEDRATE_XY, HOMING_FEEDRATE_XY, HOMING_FEEDRATE_Z };
+	//float STEPS_PER_UNIT_TMP[] = DEFAULT_AXIS_STEPS_PER_UNIT; // configuraton.h
+	//float HOMING_FEEDRATE_TMP[] = { HOMING_FEEDRATE_XY, HOMING_FEEDRATE_XY, HOMING_FEEDRATE_Z };
   uint8_t bump_divisor[] = HOMING_BUMP_DIVISOR;
 
 	switch(axis) {
 		case X_AXIS:
 			axis_to_home = X_AXIS;
-			homing_retract = X_HOME_BUMP_MM * STEPS_PER_UNIT_TMP[X_AXIS]; // configuraton_adv.h
-			homing_speed = HOMING_FEEDRATE_TMP[X_AXIS];
-      homing_bump_speed = homing_speed / bump_divisor[X_AXIS];
+			homing_retract = X_HOME_BUMP_MM * planner.axis_steps_per_mm[axis]; // configuraton_adv.h
+			homing_speed = (int)homing_feedrate_mm_s * planner.axis_steps_per_mm[axis];
+			homing_bump_speed = homing_speed / bump_divisor[axis];
 			sw_register = SWITCH_POSITION_X | SWITCH_POLARITY_X; // TMC_TRAMS_CONFIGURATION
 
 			#ifdef STALLGUARD_X
@@ -205,9 +205,9 @@ void Trams::TMC5130_homing(const AxisEnum &axis) {
 			break;
 		case Y_AXIS:
 			axis_to_home = Y_AXIS;
-			homing_retract = Y_HOME_BUMP_MM * STEPS_PER_UNIT_TMP[Y_AXIS];
-			homing_speed = HOMING_FEEDRATE_TMP[Y_AXIS];
-      homing_bump_speed = homing_speed / bump_divisor[Y_AXIS];
+			homing_retract = Y_HOME_BUMP_MM * planner.axis_steps_per_mm[axis];
+			homing_speed = (int)homing_feedrate_mm_s * planner.axis_steps_per_mm[axis];
+			homing_bump_speed = homing_speed / bump_divisor[axis];
 			sw_register = SWITCH_POSITION_Y | SWITCH_POLARITY_Y;
 
 			#ifdef STALLGUARD_Y
@@ -219,9 +219,9 @@ void Trams::TMC5130_homing(const AxisEnum &axis) {
 			break;
 		case Z_AXIS:
 			axis_to_home = Z_AXIS;
-			homing_retract = Z_HOME_BUMP_MM * STEPS_PER_UNIT_TMP[Z_AXIS];
-			homing_speed = HOMING_FEEDRATE_TMP[Z_AXIS];
-      homing_bump_speed = homing_speed / bump_divisor[Z_AXIS];
+			homing_retract = Z_HOME_BUMP_MM * planner.axis_steps_per_mm[axis];
+			homing_speed = (int)homing_feedrate_mm_s * planner.axis_steps_per_mm[axis];
+			homing_bump_speed = homing_speed / bump_divisor[Z_AXIS];
 			sw_register = SWITCH_POSITION_Z | SWITCH_POLARITY_Z;
 
 			#ifdef STALLGUARD_Z
@@ -235,17 +235,26 @@ void Trams::TMC5130_homing(const AxisEnum &axis) {
 			return;
 	}
 
+  #if ENABLED(DEBUG_LEVELING_FEATURE)
+    if (DEBUGGING(LEVELING)) {
+      SERIAL_ECHOLN("TMC HOMING:");
+      SERIAL_ECHOLNPAIR("> axis_to_home = ", axis_to_home);
+      SERIAL_ECHOLNPAIR("> homing_retract = ", homing_retract);
+      SERIAL_ECHOLNPAIR("> homing_speed = ", homing_speed);
+      SERIAL_ECHOLNPAIR("> homing_bump_speed = ", homing_bump_speed);
+      SERIAL_ECHOLNPAIR("> sw_register = ", sw_register);
 
-	//Retract axis before homing so it doesn't crash into the printing bed
-	if(axis == Z_AXIS) {
-		spi_writeRegister(RAMPMODE, VELOCITY_MODE_POS, axis_to_home);	//VELOCITY MODE positive Direction
-		spi_writeRegister(VMAX, homing_speed, axis_to_home);			//Homing Speed in VMAX
-		_delay_ms(3000);
-	}
+      #ifdef STALLGUARD_Y
+        SERIAL_ECHOLNPAIR("> sg_active = ", sg_active);
+        SERIAL_ECHOLNPAIR("> stallguardthreshold = ", stallguardthreshold);
+        SERIAL_ECHOLNPAIR("> motor_direction = ", motor_direction);
+      #endif
+      SERIAL_EOL;
+    }
+  #endif
 
 	// Homing Procedure:
 	// Enable Trinamic Drivers to start homing movement
-
 
 	if(sg_active == true) {
 		spi_writeRegister(SW_MODE, 0x00, axis_to_home);	//SWITCH REGISTER
@@ -305,14 +314,14 @@ void Trams::TMC5130_homing(const AxisEnum &axis) {
 		//While motor is still moving (vzero != 1)
 		while((spi_readRegister(RAMP_STAT, axis_to_home) & VZERO) != VZERO) { idle(); }
 
-		spi_writeRegister(RAMPMODE, HOLD_MODE, axis_to_home);		//HOLD Mode
-		spi_writeRegister(XACTUAL, 0x0, axis_to_home);				//XACTUAL = 0
-		spi_writeRegister(XTARGET, 0x0, axis_to_home);				//XTARGET = 0
-    spi_writeRegister(SW_MODE, 0x0, axis_to_home);				//SWITCH REGISTER
-    spi_writeRegister(RAMPMODE, POSITIONING_MODE, axis_to_home);//Position MODE
-		spi_writeRegister(VMAX, homing_speed, axis_to_home);		//Homing Speed in VMAX
-		spi_writeRegister(DMAX, 0xFFFF, axis_to_home);				//DMAX
-		spi_writeRegister(XTARGET, homing_retract, axis_to_home);	//XTARGET = homing_retract
+		spi_writeRegister(RAMPMODE, HOLD_MODE,        axis_to_home); // HOLD Mode
+		spi_writeRegister(XACTUAL,  0x0,              axis_to_home); // XACTUAL = 0
+		spi_writeRegister(XTARGET,  0x0,              axis_to_home); // XTARGET = 0
+    spi_writeRegister(SW_MODE,  0x0,              axis_to_home); // SWITCH REGISTER
+    spi_writeRegister(RAMPMODE, POSITIONING_MODE, axis_to_home); // Position MODE
+		spi_writeRegister(VMAX,     homing_speed,     axis_to_home); // Homing Speed in VMAX
+		spi_writeRegister(DMAX,     0xFFFF,           axis_to_home); // DMAX
+		spi_writeRegister(XTARGET,  homing_retract,   axis_to_home); // XTARGET = homing_retract
 
 		_delay_ms(200);
 
@@ -320,11 +329,11 @@ void Trams::TMC5130_homing(const AxisEnum &axis) {
 		while((spi_readRegister(RAMP_STAT, axis_to_home) & VZERO) != VZERO) { idle(); }
 
 		//Retract finished
-		spi_writeRegister(SW_MODE, sw_register, axis_to_home);		//SWITCH REGISTER
-		spi_writeRegister(RAMPMODE, HOLD_MODE, axis_to_home);		//HOLD Mode
-		spi_writeRegister(XACTUAL, 0x0, axis_to_home);				//XACTUAL = 0
-		spi_writeRegister(XTARGET, 0x0, axis_to_home);				//XTARGET = 0
-		spi_writeRegister(RAMPMODE, POSITIONING_MODE, axis_to_home);//Position MODE
+		spi_writeRegister(SW_MODE,  sw_register,      axis_to_home); // SWITCH REGISTER
+		spi_writeRegister(RAMPMODE, HOLD_MODE,        axis_to_home); // HOLD Mode
+		spi_writeRegister(XACTUAL,  0x0,              axis_to_home); // XACTUAL = 0
+		spi_writeRegister(XTARGET,  0x0,              axis_to_home); // XTARGET = 0
+		spi_writeRegister(RAMPMODE, POSITIONING_MODE, axis_to_home); // Position MODE
 	}
 }
 

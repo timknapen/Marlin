@@ -205,7 +205,7 @@ class Trams: public Stepper, public TramsSPI {
     static void set_e_position(const long &e);
     static void calculate(void);
     static void isr();
-    static void TMC5130_homing(const AxisEnum &axis);
+    static void TMC5130_homing(const AxisEnum &axis, const float homing_feedrate_mm_s);
     typedef struct {
       uint32_t  initial_speed[NUM_AXIS],
                 nominal_speed[NUM_AXIS],

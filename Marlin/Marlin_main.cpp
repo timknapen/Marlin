@@ -2848,6 +2848,10 @@ static void do_homing_move(const AxisEnum axis, const float distance, const floa
     current_position[axis] = distance;
     inverse_kinematics(current_position);
     planner.buffer_line(delta[A_AXIS], delta[B_AXIS], delta[C_AXIS], current_position[E_AXIS], fr_mm_s ? fr_mm_s : homing_feedrate(axis), active_extruder);
+  #elif ENABLED(IS_TRAMS)
+    sync_plan_position();
+    current_position[axis] = distance;
+    Trams::TMC5130_homing(axis, fr_mm_s ? fr_mm_s : homing_feedrate_mm_s[axis]);
   #else
     sync_plan_position();
     current_position[axis] = distance;
@@ -2907,18 +2911,14 @@ static void do_homing_move(const AxisEnum axis, const float distance, const floa
  * Kinematic robots should wait till all axes are homed
  * before updating the current position.
  */
-#if ENABLED(IS_TRAMS)
-  #define HOMEAXIS(LETTER) Trams::TMC5130_homing(LETTER##_AXIS)
-#else
-  #define HOMEAXIS(LETTER) homeaxis(LETTER##_AXIS)
-#endif
+#define HOMEAXIS(LETTER) homeaxis(LETTER##_AXIS)
 
 static void homeaxis(const AxisEnum axis) {
 
   #if IS_SCARA
     // Only Z homing (with probe) is permitted
     if (axis != Z_AXIS) { BUZZ(100, 880); return; }
-  #else
+  #elif DISABLED(IS_TRAMS)
     #define CAN_HOME(A) \
       (axis == A##_AXIS && ((A##_MIN_PIN > -1 && A##_HOME_DIR < 0) || (A##_MAX_PIN > -1 && A##_HOME_DIR > 0)))
     if (!CAN_HOME(X) && !CAN_HOME(Y) && !CAN_HOME(Z)) return;
@@ -2977,14 +2977,16 @@ static void homeaxis(const AxisEnum axis) {
     // Move away from the endstop by the axis HOME_BUMP_MM
     #if ENABLED(DEBUG_LEVELING_FEATURE)
       if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPGM("Move Away:");
+    #elif DISABLED(IS_TRAMS)
+      do_homing_move(axis, -bump);
     #endif
-    do_homing_move(axis, -bump);
 
     // Slow move towards endstop until triggered
     #if ENABLED(DEBUG_LEVELING_FEATURE)
       if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPGM("Home 2 Slow:");
+    #elif DISABLED(IS_TRAMS)
+      do_homing_move(axis, 2 * bump, get_homing_bump_feedrate(axis));
     #endif
-    do_homing_move(axis, 2 * bump, get_homing_bump_feedrate(axis));
   }
 
   #if ENABLED(Z_DUAL_ENDSTOPS)
