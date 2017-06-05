@@ -978,6 +978,14 @@ void Trams::set_directions() {
   #endif // !ADVANCE && !LIN_ADVANCE
 }
 
+void Trams::synchronize() {
+  while (planner.blocks_queued()) idle();
+  while (motion_blocks_queued()) idle();
+  while ((spi_readRegister(RAMP_STAT, X_AXIS) & VZERO) != VZERO) idle();
+  while ((spi_readRegister(RAMP_STAT, Y_AXIS) & VZERO) != VZERO) idle();
+  while ((spi_readRegister(RAMP_STAT, Z_AXIS) & VZERO) != VZERO) idle();
+}
+
 // TRAMS endstops
 void TramsEndstops::M119() {
   SERIAL_PROTOCOLLNPGM(MSG_M119_REPORT);
