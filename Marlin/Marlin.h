@@ -28,20 +28,15 @@
 #include <string.h>
 #include <inttypes.h>
 
-#include <util/delay.h>
-#include <avr/pgmspace.h>
-#include <avr/eeprom.h>
-#include <avr/interrupt.h>
-
 #include "MarlinConfig.h"
 
 #ifdef DEBUG_GCODE_PARSER
   #include "gcode.h"
 #endif
+#include "src/HAL/HAL.h"
 
 #include "enum.h"
 #include "types.h"
-#include "fastio.h"
 #include "utility.h"
 #include "serial.h"
 
@@ -210,7 +205,7 @@ inline void refresh_cmd_timeout() { previous_cmd_ms = millis(); }
 /**
  * Feedrate scaling and conversion
  */
-extern int feedrate_percentage;
+extern int16_t feedrate_percentage;
 
 #define MMM_TO_MMS(MM_M) ((MM_M)/60.0)
 #define MMS_TO_MMM(MM_S) ((MM_S)*60.0)
@@ -218,7 +213,7 @@ extern int feedrate_percentage;
 
 extern bool axis_relative_modes[];
 extern bool volumetric_enabled;
-extern int flow_percentage[EXTRUDERS]; // Extrusion factor for each extruder
+extern int16_t flow_percentage[EXTRUDERS]; // Extrusion factor for each extruder
 extern float filament_size[EXTRUDERS]; // cross-sectional area of filament (in millimeters), typically around 1.75 or 2.85, 0 disables the volumetric calculations for the extruder.
 extern float volumetric_multiplier[EXTRUDERS]; // reciprocal of cross-sectional area of filament (in square millimeters), stored this way to reduce computational burden in planner
 extern bool axis_known_position[XYZ];
