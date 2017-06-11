@@ -23,12 +23,7 @@ before_install:
   # Teensy compiling
   - lsb_release -a
   - sudo apt-get -qq update
-  - sudo apt-get install -y binutils-arm-none-eabi
-  # - wget http://mirrors.kernel.org/ubuntu/pool/universe/b/binutils-arm-none-eabi/binutils-arm-none-eabi_2.24-2ubuntu2+4_amd64.deb
-  # - sudo dpkg -i binutils-arm-none-eabi_2.24-2ubuntu2+4_amd64.deb
-  - sudo apt-get install -y gcc-arm-none-eabi
-  # - wget http://mirrors.kernel.org/ubuntu/pool/universe/g/gcc-arm-none-eabi/gcc-arm-none-eabi_4.8.2-14ubuntu1+6_amd64.deb
-  # - sudo dpkg -i gcc-arm-none-eabi_4.8.2-14ubuntu1+6_amd64.deb
+  - sudo apt-get install -y binutils-arm-none-eabi gcc-arm-none-eabi lib32ncurses5 lib32z1
   #
 install:
   #
@@ -64,8 +59,13 @@ install:
 
   # Install Teensy stuff
 
-  - git clone https://github.com/ARM-software/CMSIS.git
-  - sudo cp CMSIS/CMSIS/Lib/GCC/*.a /usr/lib/arm-none-eabi/lib/
+  - wget https://developer.arm.com/-/media/Files/downloads/gnu-rm/5_4-2016q2/gccarmnoneeabi542016q220160622linuxtar.bz2
+  - tar xf gccarmnoneeabi542016q220160622linuxtar.bz2
+  - sudo mkdir -p /usr/local/share/arduino/hardware/tools/arm
+  - sudo mv gcc-arm-none-eabi-5_4-2016q2/* /usr/local/share/arduino/hardware/tools/arm/
+
+  - wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Lib/ARM/arm_cortexM4lf_math.lib
+  - sudo mv arm_cortexM4lf_math.lib /usr/local/share/arduino/hardware/tools/arm/arm-none-eabi/lib/libarm_cortexM4lf_math.a
 
   - git clone https://github.com/teemuatlut/teensyfiles_for_marlin.git
   - sudo mkdir -p /usr/local/share/arduino/hardware/teensy/avr
