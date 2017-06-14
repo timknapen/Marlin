@@ -175,8 +175,8 @@
     st.begin();
     st.setCurrent(st.getCurrent(), R_SENSE, HOLD_MULTIPLIER);
     st.microsteps(microsteps);
-    st.blank_time(36);
-    st.off_time(5); // Only enables the driver if used with stealthChop
+    //st.blank_time(36);
+    //st.off_time(5); // Only enables the driver if used with stealthChop
     st.interpolate(INTERPOLATE);
     st.power_down_delay(128); // ~2s until driver lowers to hold current
     st.hysterisis_start(0); // HSTRT = 1
@@ -194,6 +194,7 @@
     #elif ENABLED(SENSORLESS_HOMING)
       st.coolstep_min_speed(1024UL * 1024UL - 1UL);
     #endif
+    st.GSTAT(); // Clear GSTAT
   }
 
   #define _TMC2130_INIT(ST, SPMM) tmc2130_init(stepper##ST, ST##_MICROSTEPS, ST##_HYBRID_THRESHOLD, SPMM)
@@ -241,6 +242,7 @@
     #endif
 
     TMC2130_ADV()
+    delay(500);
   }
 #endif // HAVE_TMC2130
 

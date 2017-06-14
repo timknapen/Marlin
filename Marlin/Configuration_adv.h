@@ -1071,6 +1071,7 @@
     #define CURRENT_STEP          50  // [mA]
     #define AUTO_ADJUST_MAX     1300  // [mA], 1300mA_rms = 1840mA_peak
     #define REPORT_CURRENT_CHANGE
+    #define STOP_ON_ERROR
   #endif
 
   /**
