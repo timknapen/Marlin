@@ -2851,7 +2851,7 @@ static void do_homing_move(const AxisEnum axis, const float distance, const floa
   #elif ENABLED(IS_TRAMS)
     sync_plan_position();
     current_position[axis] = distance;
-    Trams::TMC5130_homing(axis, fr_mm_s ? fr_mm_s : homing_feedrate_mm_s[axis]);
+    Trams::TMC5130_homing(axis, fr_mm_s ? fr_mm_s : homing_feedrate(axis));
   #else
     sync_plan_position();
     current_position[axis] = distance;
