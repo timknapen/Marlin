@@ -249,7 +249,7 @@ void Trams::TMC5130_homing(const AxisEnum &axis, const float homing_feedrate_mm_
         SERIAL_ECHOLNPAIR("> stallguardthreshold = ", stallguardthreshold);
         SERIAL_ECHOLNPAIR("> motor_direction = ", motor_direction);
       #endif
-      SERIAL_EOL;
+      SERIAL_EOL();
     }
   #endif
 
