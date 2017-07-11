@@ -181,7 +181,6 @@ class Trams: public Stepper, public TramsSPI {
     static void isr();
     static void TMC5130_homing(const AxisEnum &axis, const float homing_feedrate_mm_s);
     static void synchronize();
-    static uint32_t getRAMP_STAT(AxisEnum axis) { return spi_readRegister(RAMP_STAT, axis); };
     typedef struct {
       uint32_t  initial_speed[NUM_AXIS],
                 nominal_speed[NUM_AXIS],

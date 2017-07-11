@@ -9631,20 +9631,13 @@ inline void gcode_M502() {
 #if ENABLED(IS_TRAMS)
   inline void gcode_M122() {
     SERIAL_ECHO("X axis RAMP_STAT = 0x");
-    MYSERIAL.println(stepper.getRAMP_STAT(X_AXIS), HEX);
+    MYSERIAL.println(stepperX.RAMP_STAT(X_AXIS), HEX);
     SERIAL_ECHO("Y axis RAMP_STAT = 0x");
-    MYSERIAL.println(stepper.getRAMP_STAT(Y_AXIS), HEX);
+    MYSERIAL.println(stepperY.RAMP_STAT(Y_AXIS), HEX);
     SERIAL_ECHO("Z axis RAMP_STAT = 0x");
-    MYSERIAL.println(stepper.getRAMP_STAT(Z_AXIS), HEX);
+    MYSERIAL.println(stepperZ.RAMP_STAT(Z_AXIS), HEX);
     SERIAL_ECHO("E0 RAMP_STAT = 0x");
-    MYSERIAL.println(stepper.getRAMP_STAT(E_AXIS), HEX);
-    uint16_t reading = analogRead(11);
-    uint16_t mV = reading/1023.0 * 5000;
-    float A = (float)(mV-2490) / 100.0;
-    SERIAL_ECHOPAIR("Current sensor reading (A11) = ", reading);
-    SERIAL_ECHOPAIR("/", reading/1023.0 * 5000);
-    SERIAL_ECHOPAIR("mV = ", A);
-    SERIAL_ECHOLN("A");
+    MYSERIAL.println(stepperE0.RAMP_STAT(E_AXIS), HEX);
   }
 #endif
 
