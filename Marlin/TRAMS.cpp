@@ -394,18 +394,18 @@ void Trams::TMC5130_homing(const AxisEnum &axis, const float homing_feedrate_mm_
 #define MOTION_BUFFER_SIZE 16
 // Conversion of units between TMC5130 and Arduino
 #define TMC5130clockFrequency (double)16000000
-#define TMC5130_a_divisor (long)128
+#define TMC5130_a_divisor (int32_t)128
 #define TMC5130_t_factor (double)1.048576
 
 static Trams::motion_block_t motion_buffer[MOTION_BUFFER_SIZE],  // A ring buffer for motion movements
                       motion_buffer_block_old;
-static volatile unsigned char motion_buffer_head = 0,           // Index of the next block to be pushed
+static volatile uint8_t motion_buffer_head = 0,           // Index of the next block to be pushed
                               motion_buffer_tail = 0;
 static volatile bool motion_buffer_full = false;
-static unsigned char out_bits;        // The next stepping-bits to be output
-volatile long pos[NUM_AXIS] = { 0 };
-static volatile long timerClk, nextTimerClk;
-static volatile double TEMPtimerClk;
+static uint8_t out_bits;        // The next stepping-bits to be output
+volatile int32_t pos[NUM_AXIS] = { 0 };
+static volatile int32_t timerClk, nextTimerClk;
+static volatile float TEMPtimerClk;
 
 /**
  * @brief Called when the current block is no longer needed. Discards the block and makes the memory
@@ -471,7 +471,7 @@ FORCE_INLINE void Trams::append_motion_block(void) {
  * @brief  Returns the number of queued blocks
  * @return  number of queued blocks
  */
-unsigned char Trams::blocks_in_motion_queue() {
+uint8_t Trams::blocks_in_motion_queue() {
   char temp = motion_buffer_head - motion_buffer_tail;
   if(temp < 0)
     temp += MOTION_BUFFER_SIZE;
@@ -484,7 +484,7 @@ unsigned char Trams::blocks_in_motion_queue() {
  * @return none
  */
 void Trams::calculate(void) {
-  unsigned long scale_axis; // scale factor
+  uint32_t scale_axis; // scale factor
   Trams::motion_block_t *current_motion_block = get_next_free_motion_block();
 
   // block in motion_block available?
@@ -503,7 +503,7 @@ void Trams::calculate(void) {
   // If there is any movement in the x-axis
   if(current_block->steps[X_AXIS] != 0) {
     //accel[X_AXIS] = current_block->steps[X_AXIS] * current_block->acceleration_steps_per_s2 / current_block->step_event_count
-    scale_axis = (((unsigned long)current_block->steps[X_AXIS])<<16) / current_block->step_event_count;
+    scale_axis = (((uint32_t)current_block->steps[X_AXIS])<<16) / current_block->step_event_count;
     current_motion_block->accel[X_AXIS] = (scale_axis>>7) * current_block->acceleration_steps_per_s2;
     current_motion_block->accel[X_AXIS] = (current_motion_block->accel[X_AXIS]>>16);
 
@@ -558,7 +558,7 @@ void Trams::calculate(void) {
   // If there is any movement in the y-axis
   if(current_block->steps[Y_AXIS] != 0) {
     //accel[Y_AXIS] = current_block->steps[Y_AXIS] * current_block->acceleration_steps_per_s2 / current_block->step_event_count;
-    scale_axis = (((unsigned long)current_block->steps[Y_AXIS])<<16) / current_block->step_event_count;
+    scale_axis = (((uint32_t)current_block->steps[Y_AXIS])<<16) / current_block->step_event_count;
     current_motion_block->accel[Y_AXIS] = (scale_axis>>7) * current_block->acceleration_steps_per_s2;
     current_motion_block->accel[Y_AXIS] = (current_motion_block->accel[Y_AXIS]>>16);
 
@@ -612,7 +612,7 @@ void Trams::calculate(void) {
   // If there is any movement in the z-axis
   if(current_block->steps[Z_AXIS] != 0) {
     //accel[Z_AXIS] = current_block->steps[Z_AXIS] * current_block->acceleration_steps_per_s2 / current_block->step_event_count;
-    scale_axis = (((unsigned long)current_block->steps[Z_AXIS])<<16) / current_block->step_event_count;
+    scale_axis = (((uint32_t)current_block->steps[Z_AXIS])<<16) / current_block->step_event_count;
     current_motion_block->accel[Z_AXIS] = (scale_axis>>7) * current_block->acceleration_steps_per_s2;
     current_motion_block->accel[Z_AXIS] = (current_motion_block->accel[Z_AXIS]>>16);
 
@@ -658,7 +658,7 @@ void Trams::calculate(void) {
   // If there is any movement in the e-axis
   if(current_block->steps[E_AXIS] != 0) {
     //accel[E_AXIS] = current_block->steps[E_AXIS] * current_block->acceleration_steps_per_s2 / current_block->step_event_count;
-    scale_axis = (((unsigned long)current_block->steps[E_AXIS])<<16) / current_block->step_event_count;
+    scale_axis = (((uint32_t)current_block->steps[E_AXIS])<<16) / current_block->step_event_count;
     current_motion_block->accel[E_AXIS] = (scale_axis>>7) * current_block->acceleration_steps_per_s2;
     current_motion_block->accel[E_AXIS] = (current_motion_block->accel[E_AXIS]>>16);
 
@@ -712,10 +712,10 @@ void Trams::calculate(void) {
 
   // Calculate duration of the movement
   // I - Acceleration phase
-  double temp;
+  float temp;
   //timerClk = (current_block->nominal_rate - current_block->initial_rate) / current_block->acceleration_steps_per_s2;
   nextTimerClk = current_block->nominal_rate - current_block->initial_rate;
-  temp = (double) nextTimerClk /  current_block->acceleration_steps_per_s2;
+  temp = (float)nextTimerClk / current_block->acceleration_steps_per_s2;
   nextTimerClk = temp * 2000000;
 
   // II - Plateau / Constant speed phase (if applies)
@@ -757,7 +757,7 @@ void Trams::calculate(void) {
  * @return none
  */
 void Trams::isr() {
-  unsigned long temp_timer;
+  uint32_t temp_timer;
   motion_block_t *current_motion_block;
 
   if (timerClk == 0) {
