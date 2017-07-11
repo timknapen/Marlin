@@ -4,6 +4,7 @@
 #include "Marlin.h"
 #include "Stepper.h"
 #include "endstops.h"
+#include <TMCStepper.h>
 
 #define nop() asm volatile("nop")
 
@@ -185,6 +186,12 @@ extern TramsEndstops endstops;
 #define VZERO                 0x400 // flag in RAMP_STAT, 1: signals that the actual velocity is 0.
 
 #define SPI_SPEED             16000000/8
+
+// TRAMS steppers
+extern TMC5130Stepper stepperX;
+extern TMC5130Stepper stepperY;
+extern TMC5130Stepper stepperZ;
+extern TMC5130Stepper stepperE0;
 
 class TramsSPI {
   protected:

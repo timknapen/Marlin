@@ -1018,6 +1018,11 @@ void Stepper::init() {
     tmc2130_init();
   #endif
 
+  // Init TRAMS and TMC5130 Steppers
+  #if ENABLED(IS_TRAMS)
+    stepper.init();
+  #endif
+
   // Init L6470 Steppers
   #if ENABLED(HAVE_L6470DRIVER)
     L6470_init();
