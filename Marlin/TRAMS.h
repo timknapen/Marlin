@@ -201,7 +201,7 @@ class Trams: public Stepper, public TramsSPI {
     static void set_directions();
     static void TMC5130_enableDriver(const AxisEnum &axis);
     static void TMC5130_disableDriver(const AxisEnum &axis);
-    static void TMC5130_init(const AxisEnum &axis, uint8_t irun, uint8_t ihold, uint8_t stepper_direction, uint16_t sw_register);
+    static void Trams::TMC5130_init(TMC5130Stepper &st, uint8_t stepper_direction, uint16_t sw_register);
 };
 
 class TramsEndstops: public Endstops, public TramsSPI {

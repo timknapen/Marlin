@@ -2,6 +2,7 @@
 #include <avr/io.h>
 #include "MarlinConfig.h"
 #include "TRAMS.h"
+#include <TMCStepper_REGDEFS.h>
 #include <SPI.h>
 
 #include "endstops.h"
@@ -9,6 +10,11 @@
 #if ENABLED(IS_TRAMS)
   Trams stepper;
   TramsEndstops endstops;
+  // Stepper objects of TMC5130 steppers used
+  TMC5130Stepper stepperX(  X_ENABLE_PIN,  X_CS_PIN);
+  TMC5130Stepper stepperY(  Y_ENABLE_PIN,  Y_CS_PIN);
+  TMC5130Stepper stepperZ(  Z_ENABLE_PIN,  Z_CS_PIN);
+  TMC5130Stepper stepperE0(E0_ENABLE_PIN, E0_CS_PIN);
 #endif
 
 #define ENABLE_STEPPER_DRIVER_INTERRUPT()  SBI(TIMSK1, OCIE1A)
@@ -175,6 +181,7 @@ void Trams::TMC5130_enableDriver(const AxisEnum &axis) {
  */
 void Trams::TMC5130_homing(const AxisEnum &axis, const float homing_feedrate_mm_s) {
   AxisEnum axis_to_home;
+  TMC5130Stepper *st;
   uint8_t motor_direction;
 	uint16_t sw_register;
 	uint32_t stallguardthreshold,
@@ -190,6 +197,7 @@ void Trams::TMC5130_homing(const AxisEnum &axis, const float homing_feedrate_mm_
 
 	switch(axis) {
 		case X_AXIS:
+      st = &stepperX;
 			axis_to_home = X_AXIS;
 			homing_retract = X_HOME_BUMP_MM * planner.axis_steps_per_mm[axis]; // configuraton_adv.h
 			homing_speed = (int)homing_feedrate_mm_s * planner.axis_steps_per_mm[axis];
@@ -204,6 +212,7 @@ void Trams::TMC5130_homing(const AxisEnum &axis, const float homing_feedrate_mm_
 
 			break;
 		case Y_AXIS:
+      st = &stepperY;
 			axis_to_home = Y_AXIS;
 			homing_retract = Y_HOME_BUMP_MM * planner.axis_steps_per_mm[axis];
 			homing_speed = (int)homing_feedrate_mm_s * planner.axis_steps_per_mm[axis];
@@ -218,6 +227,7 @@ void Trams::TMC5130_homing(const AxisEnum &axis, const float homing_feedrate_mm_
 
 			break;
 		case Z_AXIS:
+      st = &stepperZ;
 			axis_to_home = Z_AXIS;
 			homing_retract = Z_HOME_BUMP_MM * planner.axis_steps_per_mm[axis];
 			homing_speed = (int)homing_feedrate_mm_s * planner.axis_steps_per_mm[axis];
@@ -257,83 +267,126 @@ void Trams::TMC5130_homing(const AxisEnum &axis, const float homing_feedrate_mm_
 	// Enable Trinamic Drivers to start homing movement
 
 	if(sg_active == true) {
-		spi_writeRegister(SW_MODE, 0x00, axis_to_home);	//SWITCH REGISTER
+		//spi_writeRegister(REG_SW_MODE, 0x00, axis_to_home);	//SWITCH REGISTER
+    st->SW_MODE(0);
 
 		stall_speed = 16777216 / homing_speed;
 		stall_speed = stall_speed / 16;  // match homing speed to actual microstep speed (at 1/16 microstep)
 		stall_speed = stall_speed * 1.10; // Activate stallGuard sligthly below desired homing velocity (provide 10% tolerance)
 
-		spi_writeRegister(GCONF, 0x1080 | motor_direction, axis_to_home);	//stealthchop off for stallguard homing
-		spi_writeRegister(COOLCONF, ((stallguardthreshold & 0x7F)<<16),axis_to_home);//sgt <-- Entry the value determined for SGT: lower value=higher sensitivity (lower force for stall detection)
-		spi_writeRegister(TCOOLTHRS, stall_speed  ,axis_to_home);//TCOOLTHRS
-		spi_writeRegister(SW_MODE, 0x400, axis_to_home);	//SWITCH REGISTER
-		spi_writeRegister(AMAX, 100, axis_to_home);	//AMAX for stallGuard homing shall be significantly lower than AMAX for printing
+		//spi_writeRegister(REG_GCONF, 0x1080 | motor_direction, axis_to_home);	//stealthchop off for stallguard homing
+    //spi_writeRegister(REG_COOLCONF, ((stallguardthreshold & 0x7F)<<16),axis_to_home);//sgt <-- Entry the value determined for SGT: lower value=higher sensitivity (lower force for stall detection)
+    //spi_writeRegister(REG_TCOOLTHRS, stall_speed  ,axis_to_home);//TCOOLTHRS
+    //spi_writeRegister(REG_SW_MODE, 0x400, axis_to_home);  //SWITCH REGISTER
+    //spi_writeRegister(REG_AMAX, 100, axis_to_home); //AMAX for stallGuard homing shall be significantly lower than AMAX for printing
+    st->GCONF(0x1080 | motor_direction);
+    st->COOLCONF((stallguardthreshold & 0x7F)<<16);
+    st->TCOOLTHRS(stall_speed);
+    st->SW_MODE(0x400);
+    st->AMAX(100);
 
 		// Set velocity mode in direction to the endstop
-		spi_writeRegister(RAMPMODE, VELOCITY_MODE_NEG, axis_to_home);	//VELOCITY MODE, direction to the endstop
-		spi_writeRegister(VMAX, homing_speed, axis_to_home);	//Homing Speed in VMAX
+		//spi_writeRegister(REG_RAMPMODE, VELOCITY_MODE_NEG, axis_to_home);	//VELOCITY MODE, direction to the endstop
+    st->RAMPMODE(VELOCITY_MODE_NEG);
+
+		//spi_writeRegister(REG_VMAX, homing_speed, axis_to_home);	//Homing Speed in VMAX
+    st->VMAX(homing_speed);
 
 		_delay_ms(20);
 
 		//While motor is still moving (vzero != 1)
-		while((spi_readRegister(RAMP_STAT, axis_to_home) & VZERO) != VZERO);
+		//while((spi_readRegister(REG_RAMP_STAT, axis_to_home) & VZERO) != VZERO);
+    while((st->RAMP_STAT() & VZERO) != VZERO);
 
 		// Endstop reached. Reset and retract
-		spi_writeRegister(RAMPMODE, HOLD_MODE, axis_to_home);		//HOLD Mode
-		spi_writeRegister(XACTUAL, 0x0, axis_to_home);				//XACTUAL = 0
-		spi_writeRegister(XTARGET, 0x0, axis_to_home);				//XTARGET = 0
-		spi_writeRegister(SW_MODE, 0x0, axis_to_home);				//SWITCH REGISTER
-		spi_writeRegister(RAMPMODE, POSITIONING_MODE, axis_to_home);//Position MODE
-		spi_writeRegister(VMAX, homing_speed, axis_to_home);	//Homing Speed in VMAX
-		spi_writeRegister(DMAX, 0xFFFF, axis_to_home);				//DMAX
-		spi_writeRegister(XTARGET, homing_retract, axis_to_home);	//XTARGET = homing_retract
+		//spi_writeRegister(REG_RAMPMODE, HOLD_MODE, axis_to_home);		//HOLD Mode
+    //spi_writeRegister(REG_XACTUAL, 0x0, axis_to_home);        //XACTUAL = 0
+    //spi_writeRegister(REG_XTARGET, 0x0, axis_to_home);        //XTARGET = 0
+    //spi_writeRegister(REG_SW_MODE, 0x0, axis_to_home);        //SWITCH REGISTER
+    //spi_writeRegister(REG_RAMPMODE, POSITIONING_MODE, axis_to_home);//Position MODE
+    //spi_writeRegister(REG_VMAX, homing_speed, axis_to_home);  //Homing Speed in VMAX
+    //spi_writeRegister(REG_DMAX, 0xFFFF, axis_to_home);        //DMAX
+    //spi_writeRegister(REG_XTARGET, homing_retract, axis_to_home); //XTARGET = homing_retract
+    st->RAMPMODE(HOLD_MODE);
+    st->XACTUAL(0);
+    st->XTARGET(0);
+    st->SW_MODE(0);
+    st->RAMPMODE(POSITIONING_MODE);
+    st->VMAX(homing_speed);
+    st->DMAX(0xFFFF);
+    st->XTARGET(homing_retract);
 
 		_delay_ms(20);
 
 		//While motor is still moving (vzero != 1)
-		while((spi_readRegister(RAMP_STAT, axis_to_home) & VZERO) != VZERO);
+		//while((spi_readRegister(REG_RAMP_STAT, axis_to_home) & VZERO) != VZERO);
+    while((st->RAMP_STAT() & VZERO) != VZERO) { idle(); }
 
 		// Endstop reached. Reset and retract
-		spi_writeRegister(SW_MODE, 0x0, axis_to_home);	//SWITCH REGISTER
-		spi_writeRegister(RAMPMODE, 0x3, axis_to_home);	//HOLD Mode
-		spi_writeRegister(GCONF, 0x1080 | motor_direction, axis_to_home);//Turn on stealthchop again
-		spi_writeRegister(XACTUAL, 0x0, axis_to_home);	//XACTUAL = 0
-		spi_writeRegister(XTARGET, 0x0, axis_to_home);	//XTARGET = 0
-		spi_writeRegister(RAMPMODE, 0x0, axis_to_home);	//Position MODE
+		//spi_writeRegister(REG_SW_MODE, 0x0, axis_to_home);	//SWITCH REGISTER
+		//spi_writeRegister(REG_RAMPMODE, 0x3, axis_to_home);	//HOLD Mode
+		//spi_writeRegister(REG_GCONF, 0x1080 | motor_direction, axis_to_home);//Turn on stealthchop again
+		//spi_writeRegister(REG_XACTUAL, 0x0, axis_to_home);	//XACTUAL = 0
+		//spi_writeRegister(REG_XTARGET, 0x0, axis_to_home);	//XTARGET = 0
+		//spi_writeRegister(REG_RAMPMODE, 0x0, axis_to_home);	//Position MODE
+    st->SW_MODE(0);
+    st->RAMPMODE(HOLD_MODE);
+    st->GCONF(0x1080 | motor_direction);
+    st->XACTUAL(0);
+    st->XTARGET(0);
+    st->RAMPMODE(POSITIONING_MODE);
 		_delay_ms(200);
 	} else {
 		TMC5130_enableDriver(axis);
 
 		// Set velocity mode in direction to the endstop
-		spi_writeRegister(RAMPMODE, VELOCITY_MODE_NEG, axis_to_home);	//VELOCITY MODE negative Direction
-		spi_writeRegister(VMAX, homing_speed, axis_to_home);			//Homing Speed in VMAX
+		//spi_writeRegister(REG_RAMPMODE, VELOCITY_MODE_NEG, axis_to_home);	//VELOCITY MODE negative Direction
+    //spi_writeRegister(REG_VMAX, homing_speed, axis_to_home);			//Homing Speed in VMAX
+    st->RAMPMODE(VELOCITY_MODE_NEG);
+    st->VMAX(homing_speed);
 
 		//Config switch register of TMC5130
-		spi_writeRegister(SW_MODE, sw_register, axis_to_home);		//SWITCH REGISTER
+		//spi_writeRegister(REG_SW_MODE, sw_register, axis_to_home);		//SWITCH REGISTER
+    st->SW_MODE(sw_register);
 
 		//While motor is still moving (vzero != 1)
-		while((spi_readRegister(RAMP_STAT, axis_to_home) & VZERO) != VZERO) { idle(); }
+		//while((spi_readRegister(REG_RAMP_STAT, axis_to_home) & VZERO) != VZERO) { idle(); }
+    while((st->RAMP_STAT() & VZERO) != VZERO) { idle(); }
 
-		spi_writeRegister(RAMPMODE, HOLD_MODE,        axis_to_home); // HOLD Mode
-		spi_writeRegister(XACTUAL,  0x0,              axis_to_home); // XACTUAL = 0
-		spi_writeRegister(XTARGET,  0x0,              axis_to_home); // XTARGET = 0
-    spi_writeRegister(SW_MODE,  0x0,              axis_to_home); // SWITCH REGISTER
-    spi_writeRegister(RAMPMODE, POSITIONING_MODE, axis_to_home); // Position MODE
-		spi_writeRegister(VMAX,     homing_speed,     axis_to_home); // Homing Speed in VMAX
-		spi_writeRegister(DMAX,     0xFFFF,           axis_to_home); // DMAX
-		spi_writeRegister(XTARGET,  homing_retract,   axis_to_home); // XTARGET = homing_retract
+		//spi_writeRegister(REG_RAMPMODE, HOLD_MODE,        axis_to_home); // HOLD Mode
+		//spi_writeRegister(REG_XACTUAL,  0x0,              axis_to_home); // XACTUAL = 0
+		//spi_writeRegister(REG_XTARGET,  0x0,              axis_to_home); // XTARGET = 0
+    //spi_writeRegister(REG_SW_MODE,  0x0,              axis_to_home); // SWITCH REGISTER
+    //spi_writeRegister(REG_RAMPMODE, POSITIONING_MODE, axis_to_home); // Position MODE
+		//spi_writeRegister(REG_VMAX,     homing_speed,     axis_to_home); // Homing Speed in VMAX
+		//spi_writeRegister(REG_DMAX,     0xFFFF,           axis_to_home); // DMAX
+		//spi_writeRegister(REG_XTARGET,  homing_retract,   axis_to_home); // XTARGET = homing_retract
+    st->RAMPMODE(HOLD_MODE);
+    st->XACTUAL(0);
+    st->XTARGET(0);
+    st->SW_MODE(0);
+    st->RAMPMODE(POSITIONING_MODE);
+    st->VMAX(homing_speed);
+    st->DMAX(0xFFFF);
+    st->XTARGET(homing_retract);
 
 		_delay_ms(200);
 
 		//While motor is still moving (vzero != 1)
-		while((spi_readRegister(RAMP_STAT, axis_to_home) & VZERO) != VZERO) { idle(); }
+		//while((spi_readRegister(REG_RAMP_STAT, axis_to_home) & VZERO) != VZERO) { idle(); }
+    while((st->RAMP_STAT() & VZERO) != VZERO) { idle(); }
 
 		//Retract finished
-		spi_writeRegister(SW_MODE,  sw_register,      axis_to_home); // SWITCH REGISTER
-		spi_writeRegister(RAMPMODE, HOLD_MODE,        axis_to_home); // HOLD Mode
-		spi_writeRegister(XACTUAL,  0x0,              axis_to_home); // XACTUAL = 0
-		spi_writeRegister(XTARGET,  0x0,              axis_to_home); // XTARGET = 0
-		spi_writeRegister(RAMPMODE, POSITIONING_MODE, axis_to_home); // Position MODE
+		//spi_writeRegister(REG_SW_MODE,  sw_register,      axis_to_home); // SWITCH REGISTER
+		//spi_writeRegister(REG_RAMPMODE, HOLD_MODE,        axis_to_home); // HOLD Mode
+		//spi_writeRegister(REG_XACTUAL,  0x0,              axis_to_home); // XACTUAL = 0
+		//spi_writeRegister(REG_XTARGET,  0x0,              axis_to_home); // XTARGET = 0
+		//spi_writeRegister(REG_RAMPMODE, POSITIONING_MODE, axis_to_home); // Position MODE
+    st->SW_MODE(sw_register);
+    st->RAMPMODE(HOLD_MODE);
+    st->XACTUAL(0);
+    st->XTARGET(0);
+    st->RAMPMODE(POSITIONING_MODE);
 	}
 }
 
@@ -711,53 +764,78 @@ void Trams::isr() {
     current_motion_block =  get_current_motion_block();
     if ((current_motion_block->calcready == true) && (current_motion_block != NULL)) {
       // Send accel and nominal speed SPI datagrams
-      spi_writeRegister(VMAX, current_motion_block->nominal_speed[X_AXIS],  X_AXIS);  //Velocity of X
-      spi_writeRegister(AMAX, current_motion_block->accel[X_AXIS],          X_AXIS);  //ACC of X
-      spi_writeRegister(DMAX, current_motion_block->accel[X_AXIS],          X_AXIS);  //DEC of X
-      spi_writeRegister(VMAX, current_motion_block->nominal_speed[Y_AXIS],  Y_AXIS);  //Velocity of Y
-      spi_writeRegister(AMAX, current_motion_block->accel[Y_AXIS],          Y_AXIS);  //ACC of Y
-      spi_writeRegister(DMAX, current_motion_block->accel[Y_AXIS],          Y_AXIS);  //DEC of Y
+      //spi_writeRegister(REG_VMAX, current_motion_block->nominal_speed[X_AXIS],  X_AXIS);  //Velocity of X
+      //spi_writeRegister(REG_AMAX, current_motion_block->accel[X_AXIS],          X_AXIS);  //ACC of X
+      //spi_writeRegister(REG_DMAX, current_motion_block->accel[X_AXIS],          X_AXIS);  //DEC of X
+      stepperX.VMAX(current_motion_block->nominal_speed[X_AXIS]);
+      stepperX.AMAX(current_motion_block->accel[X_AXIS]);
+      stepperX.DMAX(current_motion_block->accel[X_AXIS]);
+      //spi_writeRegister(REG_VMAX, current_motion_block->nominal_speed[Y_AXIS],  Y_AXIS);  //Velocity of Y
+      //spi_writeRegister(REG_AMAX, current_motion_block->accel[Y_AXIS],          Y_AXIS);  //ACC of Y
+      //spi_writeRegister(REG_DMAX, current_motion_block->accel[Y_AXIS],          Y_AXIS);  //DEC of Y
+      stepperY.VMAX(current_motion_block->nominal_speed[X_AXIS]);
+      stepperY.AMAX(current_motion_block->accel[X_AXIS]);
+      stepperY.DMAX(current_motion_block->accel[X_AXIS]);
 
       // only send if there is any movement in the z-axis
       if (current_motion_block->pos_change_z == true) {
-        spi_writeRegister(VMAX, current_motion_block->nominal_speed[Z_AXIS],  Z_AXIS); //Velocity of ZAXIS
-        spi_writeRegister(AMAX, current_motion_block->accel[Z_AXIS],          Z_AXIS); //ACC of ZAXIS
-        spi_writeRegister(DMAX, current_motion_block->accel[Z_AXIS],          Z_AXIS); //DEC of ZAXIS
+        //spi_writeRegister(REG_VMAX, current_motion_block->nominal_speed[Z_AXIS],  Z_AXIS); //Velocity of ZAXIS
+        //spi_writeRegister(REG_AMAX, current_motion_block->accel[Z_AXIS],          Z_AXIS); //ACC of ZAXIS
+        //spi_writeRegister(REG_DMAX, current_motion_block->accel[Z_AXIS],          Z_AXIS); //DEC of ZAXIS
+        stepperZ.VMAX(current_motion_block->nominal_speed[Z_AXIS]);
+        stepperZ.AMAX(current_motion_block->accel[Z_AXIS]);
+        stepperZ.DMAX(current_motion_block->accel[Z_AXIS]);
       }
 
       //check if new data receive
       //st_check_UART_rx();
 
-      spi_writeRegister(VMAX, current_motion_block->nominal_speed[E_AXIS],  E_AXIS);  //Velocity of E0AXIS
-      spi_writeRegister(AMAX, current_motion_block->accel[E_AXIS],          E_AXIS);  //ACC of E0AXIS
-      spi_writeRegister(DMAX, current_motion_block->accel[E_AXIS],          E_AXIS);  //DEC of E0AXIS
+      //spi_writeRegister(REG_VMAX, current_motion_block->nominal_speed[E_AXIS],  E_AXIS);  //Velocity of E0AXIS
+      //spi_writeRegister(REG_AMAX, current_motion_block->accel[E_AXIS],          E_AXIS);  //ACC of E0AXIS
+      //spi_writeRegister(REG_DMAX, current_motion_block->accel[E_AXIS],          E_AXIS);  //DEC of E0AXIS
+      stepperE0.VMAX(current_motion_block->nominal_speed[E_AXIS]);
+      stepperE0.AMAX(current_motion_block->accel[E_AXIS]);
+      stepperE0.DMAX(current_motion_block->accel[E_AXIS]);
 
       // Send initial and final speeed SPI datagrams
-      spi_writeRegister(VSTART, current_motion_block->initial_speed[X_AXIS],  X_AXIS); //Initial vel of X
-      spi_writeRegister(VSTOP, current_motion_block->final_speed[X_AXIS],     X_AXIS); //Final vel of X
-      spi_writeRegister(VSTART, current_motion_block->initial_speed[Y_AXIS],  Y_AXIS); //Initial vel of Y
-      spi_writeRegister(VSTOP, current_motion_block->final_speed[Y_AXIS],     Y_AXIS); //Final vel of Y
+      //spi_writeRegister(REG_VSTART, current_motion_block->initial_speed[X_AXIS],  X_AXIS); //Initial vel of X
+      //spi_writeRegister( REG_VSTOP, current_motion_block->final_speed[X_AXIS],    X_AXIS); //Final vel of X
+      stepperX.VSTART(current_motion_block->initial_speed[X_AXIS]);
+      stepperX.VSTOP(current_motion_block->final_speed[X_AXIS]);
+      //spi_writeRegister(REG_VSTART, current_motion_block->initial_speed[Y_AXIS],  Y_AXIS); //Initial vel of Y
+      //spi_writeRegister( REG_VSTOP, current_motion_block->final_speed[Y_AXIS],    Y_AXIS); //Final vel of Y
+      stepperY.VSTART(current_motion_block->initial_speed[Y_AXIS]);
+      stepperY.VSTOP(current_motion_block->final_speed[Y_AXIS]);
 
       // only send if there is any movement in the z-axis
       if (current_motion_block->pos_change_z == true) {
-        spi_writeRegister(VSTART, current_motion_block->initial_speed[Z_AXIS],  Z_AXIS);//Initial vel of Z
-        spi_writeRegister(VSTOP, current_motion_block->final_speed[Z_AXIS],     Z_AXIS);//Final vel of Z
+        //spi_writeRegister(REG_VSTART, current_motion_block->initial_speed[Z_AXIS],  Z_AXIS);//Initial vel of Z
+        //spi_writeRegister(REG_VSTOP, current_motion_block->final_speed[Z_AXIS],     Z_AXIS);//Final vel of Z
+        stepperZ.VSTART(current_motion_block->initial_speed[Z_AXIS]);
+        stepperZ.VSTOP(current_motion_block->final_speed[Z_AXIS]);
       }
 
       //check if new data receive
       //st_check_UART_rx();
 
-      spi_writeRegister(VSTART, current_motion_block->initial_speed[E_AXIS],  E_AXIS); //Initial vel of E0
-      spi_writeRegister(VSTOP, current_motion_block->final_speed[E_AXIS],     E_AXIS);    //Final vel of E0
+      //spi_writeRegister(REG_VSTART, current_motion_block->initial_speed[E_AXIS],  E_AXIS); //Initial vel of E0
+      //spi_writeRegister(REG_VSTOP, current_motion_block->final_speed[E_AXIS],     E_AXIS);    //Final vel of E0
+      stepperE0.VSTART(current_motion_block->initial_speed[E_AXIS]);
+      stepperE0.VSTOP(current_motion_block->final_speed[E_AXIS]);
 
       // Send target positions, movement starts immediately
       // only send if there is any movement in the z-axis
-      if (current_motion_block->pos_change_z == true)
-        spi_writeRegister(XTARGET, current_motion_block->pos[Z_AXIS], Z_AXIS);   // target
+      if (current_motion_block->pos_change_z == true) {
+        //spi_writeRegister(REG_XTARGET, current_motion_block->pos[Z_AXIS], Z_AXIS);   // target
+        stepperZ.XTARGET(current_motion_block->pos[Z_AXIS]);
+      }
 
-      spi_writeRegister(XTARGET, current_motion_block->pos[X_AXIS],   X_AXIS);   // target
-      spi_writeRegister(XTARGET, current_motion_block->pos[Y_AXIS],   Y_AXIS);   // target
-      spi_writeRegister(XTARGET, current_motion_block->pos[E_AXIS],   E_AXIS);  // target
+      //spi_writeRegister(REG_XTARGET, current_motion_block->pos[X_AXIS],   X_AXIS);   // target
+      stepperX.XTARGET(current_motion_block->pos[X_AXIS]);
+      //spi_writeRegister(REG_XTARGET, current_motion_block->pos[Y_AXIS],   Y_AXIS);   // target
+      stepperY.XTARGET(current_motion_block->pos[Y_AXIS]);
+      //spi_writeRegister(REG_XTARGET, current_motion_block->pos[E_AXIS],   E_AXIS);  // target
+      stepperE0.XTARGET(current_motion_block->pos[E_AXIS]);
       
       // Let's wake up back when this movement is over
       timerClk = current_motion_block->nextTimerClk;
@@ -793,26 +871,62 @@ void Trams::isr() {
  * @param	stepper_direction	inverse/ not inverse
  * @return	none
  */
-void Trams::TMC5130_init(const AxisEnum &axis, uint8_t irun, uint8_t ihold, uint8_t stepper_direction, uint16_t sw_register) {
-	uint32_t value;
-	value = SET_IHOLD(ihold) | SET_IRUN(irun) | SET_IHOLDDELAY(7);
-	spi_writeRegister(IHOLD_IRUN, value, axis);		//IHOLD and IRUN current
-	spi_writeRegister(RAMPMODE, 0x0, axis);			//select position mode
-	spi_writeRegister(V_1, 0x0, axis);					//Disables A1 and D1 in position mode, amax and vmax only
-	spi_writeRegister(D_1, 0x10, axis);				//D1 not zero
-	spi_writeRegister(AMAX, 0xFFFF, axis);				//Acceleration
-	spi_writeRegister(VMAX, 0xFFFF, axis);				//Velocity
-	spi_writeRegister(CHOPCONF, 0x140101D5, axis);		//Chopper Configuration
-	spi_writeRegister(GCONF, 0x1084 | stepper_direction, axis);	//General Configuration
-	spi_writeRegister(SW_MODE, sw_register, axis);
+void Trams::TMC5130_init(TMC5130Stepper &st, uint8_t stepper_direction, uint16_t sw_register) {
+	//uint32_t value;
+	//value = SET_IHOLD(ihold) | SET_IRUN(irun) | SET_IHOLDDELAY(7);
+	//spi_writeRegister(IHOLD_IRUN, value, axis);		//IHOLD and IRUN current
+	//spi_writeRegister(RAMPMODE, 0x0, axis);			//select position mode
+	//spi_writeRegister(V_1, 0x0, axis);					//Disables A1 and D1 in position mode, amax and vmax only
+	//spi_writeRegister(D_1, 0x10, axis);				//D1 not zero
+	//spi_writeRegister(AMAX, 0xFFFF, axis);				//Acceleration
+	//spi_writeRegister(VMAX, 0xFFFF, axis);				//Velocity
+	//spi_writeRegister(CHOPCONF, 0x140101D5, axis);		//Chopper Configuration
+	//spi_writeRegister(GCONF, 0x1084 | stepper_direction, axis);	//General Configuration
+	//spi_writeRegister(SW_MODE, sw_register, axis);
+  
+  st.begin();
+  st.setCurrent(st.getCurrent(), R_SENSE, HOLD_MULTIPLIER);
+  st.blank_time(2);
+  st.off_time(3); // Only enables the driver if used with stealthChop
+  st.power_down_delay(128); // ~2s until driver lowers to hold current
+  st.hysterisis_start(0); // HSTRT = 1
+  st.hysterisis_low(1); // HEND = -2
+  st.diag1_active_high(1); // For sensorless homing
+  #if ENABLED(STEALTHCHOP)
+    st.stealth_freq(1); // f_pwm = 2/683 f_clk
+    st.stealth_autoscale(1);
+    st.stealth_gradient(5);
+    st.stealth_amplitude(255);
+    st.stealthChop(1);
+  #endif
+  st.RAMPMODE(0);
+  st.V1(0);
+  st.D1(10);
+  st.AMAX(0xFFFF);
+  st.VMAX(0xFFFF);
+  st.CHOPCONF(0x140101D5);
+  st.GCONF(0x1084 | stepper_direction);
+  st.SW_MODE(sw_register);
+  st.XACTUAL(0);
 }
 
 void Trams::init() {
   spi_init();
-  TMC5130_init( X_AXIS,  X_CURRENT_RUN,  X_CURRENT_HOLD,  STEPPER_DIRECTION_X,  SWITCH_POSITION_X | SWITCH_POLARITY_X);
-  TMC5130_init( Y_AXIS,  Y_CURRENT_RUN,  Y_CURRENT_HOLD,  STEPPER_DIRECTION_Y,  SWITCH_POSITION_Y | SWITCH_POLARITY_Y);
-  TMC5130_init( Z_AXIS,  Z_CURRENT_RUN,  Z_CURRENT_HOLD,  STEPPER_DIRECTION_Z,  SWITCH_POSITION_Z | SWITCH_POLARITY_Z);
-  TMC5130_init(E_AXIS, E0_CURRENT_RUN, E0_CURRENT_HOLD,  STEPPER_DIRECTION_E0, false);
+  TMC5130_init( stepperX,  STEPPER_DIRECTION_X, SWITCH_POSITION_X | SWITCH_POLARITY_X);
+  TMC5130_init( stepperY,  STEPPER_DIRECTION_Y, SWITCH_POSITION_Y | SWITCH_POLARITY_Y);
+  TMC5130_init( stepperZ,  STEPPER_DIRECTION_Z, SWITCH_POSITION_Z | SWITCH_POLARITY_Z);
+  TMC5130_init(stepperE0, STEPPER_DIRECTION_E0, false);
+
+  /*
+  #define _TMC5130_INIT(ST, SPMM) tmc5130_init(stepper##ST, ST##_HYBRID_THRESHOLD, SPMM)
+  constexpr uint16_t steps_per_mm[] = DEFAULT_AXIS_STEPS_PER_UNIT;
+  _TMC5130_INIT( X, steps_per_mm[X_AXIS]);
+  _TMC5130_INIT( Y, steps_per_mm[Y_AXIS]);
+  _TMC5130_INIT( Z, steps_per_mm[Z_AXIS]);
+  _TMC5130_INIT(E0, steps_per_mm[E_AXIS]);
+  */
+
+  TMC5130_ADV();
 
   disable_all_steppers();
 
@@ -878,53 +992,80 @@ void Trams::set_position(const long &a, const long &b, const long &c, const long
     count_position[X_AXIS] = pos[X_AXIS] = a;
     motion_buffer_block_old.pos[X_AXIS] = a;
     // Update position in the driver
-    spi_writeRegister(RAMPMODE, HOLD_MODE, X_AXIS);  //HOLD Mode
-    spi_writeRegister(XTARGET, a, X_AXIS);
-    spi_writeRegister(XACTUAL, a, X_AXIS);
-    spi_writeRegister(RAMPMODE, POSITIONING_MODE, X_AXIS); //Position MODE
+    //spi_writeRegister(REG_RAMPMODE,        HOLD_MODE, X_AXIS);  //HOLD Mode
+    //spi_writeRegister( REG_XTARGET,                a, X_AXIS);
+    //spi_writeRegister( REG_XACTUAL,                a, X_AXIS);
+    //spi_writeRegister(REG_RAMPMODE, POSITIONING_MODE, X_AXIS); //Position MODE
+    stepperX.RAMPMODE(HOLD_MODE);
+    stepperX.XTARGET(a);
+    stepperX.XACTUAL(a);
+    stepperX.RAMPMODE(POSITIONING_MODE);
   }
   if(pos[Y_AXIS] != b) {
     count_position[Y_AXIS] = pos[Y_AXIS] = b;
     motion_buffer_block_old.pos[Y_AXIS] = b;
     // Update position in the driver
-    spi_writeRegister(RAMPMODE, HOLD_MODE, Y_AXIS);  //HOLD Mode
-    spi_writeRegister(XTARGET, b, Y_AXIS);
-    spi_writeRegister(XACTUAL, b, Y_AXIS);
-    spi_writeRegister(RAMPMODE, POSITIONING_MODE, Y_AXIS); //Position MODE
+    //spi_writeRegister(REG_RAMPMODE, HOLD_MODE, Y_AXIS);  //HOLD Mode
+    //spi_writeRegister(REG_XTARGET, b, Y_AXIS);
+    //spi_writeRegister(REG_XACTUAL, b, Y_AXIS);
+    //spi_writeRegister(REG_RAMPMODE, POSITIONING_MODE, Y_AXIS); //Position MODE
+    stepperY.RAMPMODE(HOLD_MODE);
+    stepperY.XTARGET(b);
+    stepperY.XACTUAL(b);
+    stepperY.RAMPMODE(POSITIONING_MODE);
   }
   if(pos[Z_AXIS] != c) {
     count_position[Z_AXIS] = pos[Z_AXIS] = c;
     motion_buffer_block_old.pos[Z_AXIS] = c;
     // Update position in the driver
-    spi_writeRegister(RAMPMODE, HOLD_MODE, Z_AXIS);  //HOLD Mode
-    spi_writeRegister(XTARGET, c, Z_AXIS);
-    spi_writeRegister(XACTUAL, c, Z_AXIS);
-    spi_writeRegister(RAMPMODE, POSITIONING_MODE, Z_AXIS); //Position MODE
+    //spi_writeRegister(REG_RAMPMODE, HOLD_MODE, Z_AXIS);  //HOLD Mode
+    //spi_writeRegister(REG_XTARGET, c, Z_AXIS);
+    //spi_writeRegister(REG_XACTUAL, c, Z_AXIS);
+    //spi_writeRegister(REG_RAMPMODE, POSITIONING_MODE, Z_AXIS); //Position MODE
+    stepperZ.RAMPMODE(HOLD_MODE);
+    stepperZ.XTARGET(c);
+    stepperZ.XACTUAL(c);
+    stepperZ.RAMPMODE(POSITIONING_MODE);
   }
   if(pos[E_AXIS] != e) {
     count_position[E_AXIS] = pos[E_AXIS] = e;
     motion_buffer_block_old.pos[E_AXIS] = e;
     // Update position in the driver
-    spi_writeRegister(RAMPMODE, HOLD_MODE, E_AXIS); //HOLD Mode
-    spi_writeRegister(XTARGET, e, E_AXIS);
-    spi_writeRegister(XACTUAL, e, E_AXIS);
-    spi_writeRegister(RAMPMODE, POSITIONING_MODE, E_AXIS);  //Position MODE
+    //spi_writeRegister(REG_RAMPMODE, HOLD_MODE, E_AXIS); //HOLD Mode
+    //spi_writeRegister(REG_XTARGET, e, E_AXIS);
+    //spi_writeRegister(REG_XACTUAL, e, E_AXIS);
+    //spi_writeRegister(REG_RAMPMODE, POSITIONING_MODE, E_AXIS);  //Position MODE
+    stepperE0.RAMPMODE(HOLD_MODE);
+    stepperE0.XTARGET(e);
+    stepperE0.XACTUAL(e);
+    stepperE0.RAMPMODE(POSITIONING_MODE);
   }
 
   CRITICAL_SECTION_END;
 }
 
 void Trams::set_position(const AxisEnum &axis, const long &v) {
+  TMC5130Stepper *st;
+  switch(axis) {
+    case X_AXIS: st = &stepperX;
+    case Y_AXIS: st = &stepperY;
+    case Z_AXIS: st = &stepperZ;
+    case E_AXIS: st = &stepperE0;
+  }
   CRITICAL_SECTION_START;
   count_position[axis] = v;
   if(pos[axis] != v) {
     count_position[axis] = pos[axis] = v;
     motion_buffer_block_old.pos[axis] = v;
     // Update position in the driver
-    spi_writeRegister(RAMPMODE, HOLD_MODE, axis); //HOLD Mode
-    spi_writeRegister(XTARGET, v, axis);
-    spi_writeRegister(XACTUAL, v, axis);
-    spi_writeRegister(RAMPMODE, POSITIONING_MODE, axis);  //Position MODE
+    //spi_writeRegister(REG_RAMPMODE, HOLD_MODE, axis); //HOLD Mode
+    //spi_writeRegister(REG_XTARGET, v, axis);
+    //spi_writeRegister(REG_XACTUAL, v, axis);
+    //spi_writeRegister(REG_RAMPMODE, POSITIONING_MODE, axis);  //Position MODE
+    st->RAMPMODE(HOLD_MODE);
+    st->XTARGET(v);
+    st->XACTUAL(v);
+    st->RAMPMODE(POSITIONING_MODE);
   }
   CRITICAL_SECTION_END;
 }
@@ -936,10 +1077,14 @@ void Trams::set_e_position(const long &e) {
     count_position[E_AXIS] = pos[E_AXIS] = e;
     motion_buffer_block_old.pos[E_AXIS] = e;
     // Update position in the driver
-    spi_writeRegister(RAMPMODE, HOLD_MODE, E_AXIS); //HOLD Mode
-    spi_writeRegister(XTARGET, e, E_AXIS);
-    spi_writeRegister(XACTUAL, e, E_AXIS);
-    spi_writeRegister(RAMPMODE, POSITIONING_MODE, E_AXIS);  //Position MODE
+    spi_writeRegister(REG_RAMPMODE, HOLD_MODE, E_AXIS); //HOLD Mode
+    spi_writeRegister(REG_XTARGET, e, E_AXIS);
+    spi_writeRegister(REG_XACTUAL, e, E_AXIS);
+    spi_writeRegister(REG_RAMPMODE, POSITIONING_MODE, E_AXIS);  //Position MODE
+    stepperE0.RAMPMODE(HOLD_MODE);
+    stepperE0.XTARGET(e);
+    stepperE0.XACTUAL(e);
+    stepperE0.RAMPMODE(POSITIONING_MODE);    
   }
   CRITICAL_SECTION_END;
 }
@@ -981,9 +1126,14 @@ void Trams::set_directions() {
 void Trams::synchronize() {
   while (planner.blocks_queued()) idle();
   while (motion_blocks_queued()) idle();
-  while ((spi_readRegister(RAMP_STAT, X_AXIS) & VZERO) != VZERO) idle();
-  while ((spi_readRegister(RAMP_STAT, Y_AXIS) & VZERO) != VZERO) idle();
-  while ((spi_readRegister(RAMP_STAT, Z_AXIS) & VZERO) != VZERO) idle();
+  
+  //while ((spi_readRegister(REG_RAMP_STAT, X_AXIS) & VZERO) != VZERO) idle();
+  //while ((spi_readRegister(REG_RAMP_STAT, Y_AXIS) & VZERO) != VZERO) idle();
+  //while ((spi_readRegister(REG_RAMP_STAT, Z_AXIS) & VZERO) != VZERO) idle();
+  while (( stepperX.RAMP_STAT() & VZERO) != VZERO) idle();
+  while (( stepperY.RAMP_STAT() & VZERO) != VZERO) idle();
+  while (( stepperZ.RAMP_STAT() & VZERO) != VZERO) idle();
+  while ((stepperE0.RAMP_STAT() & VZERO) != VZERO) idle();
 }
 
 // TRAMS endstops
@@ -991,27 +1141,33 @@ void TramsEndstops::M119() {
   SERIAL_PROTOCOLLNPGM(MSG_M119_REPORT);
   #if ENABLED(USE_XMIN_PLUG)
     SERIAL_PROTOCOLPGM(MSG_X_MIN);
-    SERIAL_PROTOCOLLN( ((spi_readRegister(RAMP_STAT, X_AXIS)&STATUS_STOP_L_bm)>>STATUS_STOP_L_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
+    //SERIAL_PROTOCOLLN( ((spi_readRegister(REG_RAMP_STAT, X_AXIS)&STATUS_STOP_L_bm)>>STATUS_STOP_L_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
+    SERIAL_PROTOCOLLN( ((stepperX.RAMP_STAT()&STATUS_STOP_L_bm)>>STATUS_STOP_L_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
   #endif
   #if ENABLED(USE_XMAX_PLUG)
     SERIAL_PROTOCOLPGM(MSG_X_MAX);
-    SERIAL_PROTOCOLLN( ((spi_readRegister(RAMP_STAT, X_AXIS)&STATUS_STOP_R_bm)>>STATUS_STOP_R_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
+    //SERIAL_PROTOCOLLN( ((spi_readRegister(REG_RAMP_STAT, X_AXIS)&STATUS_STOP_R_bm)>>STATUS_STOP_R_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
+    SERIAL_PROTOCOLLN( ((stepperX.RAMP_STAT()&STATUS_STOP_R_bm)>>STATUS_STOP_R_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
   #endif
   #if ENABLED(USE_YMIN_PLUG)
     SERIAL_PROTOCOLPGM(MSG_Y_MIN);
-    SERIAL_PROTOCOLLN( ((spi_readRegister(RAMP_STAT, Y_AXIS)&STATUS_STOP_L_bm)>>STATUS_STOP_L_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
+    //SERIAL_PROTOCOLLN( ((spi_readRegister(REG_RAMP_STAT, Y_AXIS)&STATUS_STOP_L_bm)>>STATUS_STOP_L_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
+    SERIAL_PROTOCOLLN( ((stepperY.RAMP_STAT()&STATUS_STOP_L_bm)>>STATUS_STOP_L_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
   #endif
   #if ENABLED(USE_YMAX_PLUG)
     SERIAL_PROTOCOLPGM(MSG_Y_MAX);
-    SERIAL_PROTOCOLLN( ((spi_readRegister(RAMP_STAT, Y_AXIS)&STATUS_STOP_R_bm)>>STATUS_STOP_R_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
+    //SERIAL_PROTOCOLLN( ((spi_readRegister(REG_RAMP_STAT, Y_AXIS)&STATUS_STOP_R_bm)>>STATUS_STOP_R_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
+    SERIAL_PROTOCOLLN( ((stepperY.RAMP_STAT()&STATUS_STOP_R_bm)>>STATUS_STOP_R_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
   #endif
   #if ENABLED(USE_ZMIN_PLUG)
     SERIAL_PROTOCOLPGM(MSG_Z_MIN);
-    SERIAL_PROTOCOLLN( ((spi_readRegister(RAMP_STAT, Z_AXIS)&STATUS_STOP_L_bm)>>STATUS_STOP_L_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
+    //SERIAL_PROTOCOLLN( ((spi_readRegister(REG_RAMP_STAT, Z_AXIS)&STATUS_STOP_L_bm)>>STATUS_STOP_L_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
+    SERIAL_PROTOCOLLN( ((stepperZ.RAMP_STAT()&STATUS_STOP_L_bm)>>STATUS_STOP_L_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
   #endif
   #if ENABLED(USE_ZMAX_PLUG)
     SERIAL_PROTOCOLPGM(MSG_Z_MAX);
-    SERIAL_PROTOCOLLN( ((spi_readRegister(RAMP_STAT, Z_AXIS)&STATUS_STOP_R_bm)>>STATUS_STOP_R_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
+    //SERIAL_PROTOCOLLN( ((spi_readRegister(REG_RAMP_STAT, Z_AXIS)&STATUS_STOP_R_bm)>>STATUS_STOP_R_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
+    SERIAL_PROTOCOLLN( ((stepperZ.RAMP_STAT()&STATUS_STOP_R_bm)>>STATUS_STOP_R_bp) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN );
   #endif
   #if ENABLED(Z_MIN_PROBE_ENDSTOP)
     SERIAL_PROTOCOLPGM(MSG_Z_PROBE);
