@@ -1036,6 +1036,66 @@
 
 #endif // HAVE_TMC2130
 
+// @section TRAMS
+
+#if MOTHERBOARD == BOARD_TRAMS
+  /**
+   * Current configuration
+   */
+  // only change if necessary
+  #define X_CURRENT_RUN   25  // Motor run current (0=1/32…31=32/32)
+  #define Y_CURRENT_RUN   25  // Motor run current (0=1/32…31=32/32)
+  #define Z_CURRENT_RUN   23  // Motor run current (0=1/32…31=32/32)
+  #define E0_CURRENT_RUN  28  // Motor run current (0=1/32…31=32/32)
+
+  #define HOLD_MULTIPLIER 0.3
+  #define R_SENSE 0.15
+
+  #define STEALTHCHOP
+
+  /**
+   * STALLGUARD
+   */
+  // x-axis
+  #define STALLGUARD_X                // if selected, stallguard is active
+  #define STALLGUARDTHRESHOLD_X 15  // range 0x00..0x7F
+
+  // y-axis
+  #define STALLGUARD_Y                // if selected, stallguard is active
+  #define STALLGUARDTHRESHOLD_Y 17  // range 0x00..0x7F
+
+  // z-axis
+  //#define STALLGUARD_Z              // if selected, stallguard is active
+  #define STALLGUARDTHRESHOLD_Z 8  // range 0x00..0x7F
+
+  /**
+   * The driver will switch to spreadCycle when stepper speed is over HYBRID_THRESHOLD.
+   * This mode allows for faster movements at the expense of higher noise levels.
+   * STEALTHCHOP needs to be enabled.
+   * M913 X/Y/Z/E to live tune the setting
+   */
+  //#define HYBRID_THRESHOLD
+
+  #define X_HYBRID_THRESHOLD     100  // [mm/s]
+  #define Y_HYBRID_THRESHOLD     100
+  #define Z_HYBRID_THRESHOLD       4
+  #define E0_HYBRID_THRESHOLD     30
+
+  /**
+   * You can set your own advanced settings by filling in predefined functions.
+   * A list of available functions can be found on the library github page
+   * https://github.com/teemuatlut/TMCStepper
+   *
+   * Example:
+   * #define TMC5130_ADV() { \
+   *   stepperX.diag0_temp_prewarn(1); \
+   *   stepperX.interpolate(0); \
+   * }
+   */
+  #define  TMC5130_ADV() {  }
+
+#endif
+
 // @section L6470
 
 /**
