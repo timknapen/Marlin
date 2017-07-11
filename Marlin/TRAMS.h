@@ -97,42 +97,6 @@ extern TramsEndstops endstops;
 #else
   #define STEPPER_DIRECTION_E0 NORMAL_MOTOR_DIRECTION
 #endif
-/*
-// TRINAMIC TMC5130 Register Address Defines
-#define GCONF                 0x00 	//Global configuration flags
-#define X_COMPARE             0x05	//Position  comparison  register
-#define IHOLD_IRUN            0x10	//Driver current control
-#define TCOOLTHRS             0x14	//This is the lower threshold velocity for switching on smart energy coolStep and stallGuard feature.
-#define RAMPMODE              0x20	//Driving mode (Velocity, Positioning, Hold)
-#define XACTUAL               0x21	//Actual motor position
-#define VACTUAL               0x22	//Actual  motor  velocity  from  ramp  generator
-#define VSTART                0x23	//Motor start velocity
-#define A_1                   0x24	//First  acceleration  between  VSTART  and  V1
-#define V_1                   0x25	//First  acceleration  /  deceleration  phase  target velocity
-#define AMAX                  0x26	//Second  acceleration  between  V1  and  VMAX
-#define VMAX                  0x27	//This is the target velocity in velocity mode. It can be changed any time during a motion.
-#define DMAX                  0x28	//Deceleration between VMAX and V1
-#define D_1                   0x2A 	//Deceleration  between  V1  and  VSTOP
-                                    //Attention:  Do  not  set  0  in  positioning  mode, even if V1=0!
-#define VSTOP                 0x2B	//Motor stop velocity (unsigned)
-                                    //Attention: Set VSTOP > VSTART!
-                                    //Attention:  Do  not  set  0  in  positioning  mode, minimum 10 recommend!
-#define TZEROWAIT             0x2C	//Defines  the  waiting  time  after  ramping  down
-                                    //to  zero  velocity  before  next  movement  or
-                                    //direction  inversion  can  start.  Time  range  is about 0 to 2 seconds.
-#define XTARGET               0x2D	//Target position for ramp mode
-#define SW_MODE               0x34	//Switch mode configuration
-#define RAMP_STAT             0x35	//Ramp status and switch event status
-#define XLATCH                0x36	//Latches  XACTUAL  upon  a programmable switch event
-#define CHOPCONF              0x6C	//Chopper and driver configuration
-#define COOLCONF              0x6D	//coolStep smart current control register and stallGuard2 configuration
-#define DRV_STATUS            0x6F	//stallGuard2 value and driver error flags
-*/
-#define SET_IHOLD(a)		((a & 0x1F)<<0)
-#define SET_IRUN(a)			((a & 0x1F)<<8)
-#define SET_IHOLDDELAY(a)	((uint32_t)(a & 0xF)<<16)
-
-#define READ_ACCESS           0x80	// Read access for spi communication
 
 // Polarity for reference switch
 #define REF_SW_HIGH_ACTIV     0x00 	// non-inverted, high active: a high level on REFL stops the motor
@@ -160,18 +124,7 @@ extern TMC5130Stepper stepperY;
 extern TMC5130Stepper stepperZ;
 extern TMC5130Stepper stepperE0;
 
-class TramsSPI {
-  protected:
-    static void spi_init(void);
-    static uint32_t spi_readRegister(uint8_t address, const AxisEnum &axis);
-    static uint8_t spi_writeRegister(uint8_t address, uint32_t data, const AxisEnum &axis);
-    static uint8_t spi_readStatus(const AxisEnum &axis);
-  private:
-    static uint8_t spi_readWriteByte(uint8_t data);
-    static void spi_writeByte(uint8_t data);
-};
-
-class Trams: public Stepper, public TramsSPI {
+class Trams: public Stepper {
   public:
     static void init();
     static void set_position(const long &a, const long &b, const long &c, const long &e);
@@ -204,7 +157,7 @@ class Trams: public Stepper, public TramsSPI {
     static void Trams::TMC5130_init(TMC5130Stepper &st, uint8_t stepper_direction, uint16_t sw_register);
 };
 
-class TramsEndstops: public Endstops, public TramsSPI {
+class TramsEndstops: public Endstops {
   public:
     void M119();
   private:

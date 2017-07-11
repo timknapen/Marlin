@@ -9631,13 +9631,13 @@ inline void gcode_M502() {
 #if ENABLED(IS_TRAMS)
   inline void gcode_M122() {
     SERIAL_ECHO("X axis RAMP_STAT = 0x");
-    MYSERIAL.println(stepperX.RAMP_STAT(X_AXIS), HEX);
+    MYSERIAL.println(stepperX.RAMP_STAT(), HEX);
     SERIAL_ECHO("Y axis RAMP_STAT = 0x");
-    MYSERIAL.println(stepperY.RAMP_STAT(Y_AXIS), HEX);
+    MYSERIAL.println(stepperY.RAMP_STAT(), HEX);
     SERIAL_ECHO("Z axis RAMP_STAT = 0x");
-    MYSERIAL.println(stepperZ.RAMP_STAT(Z_AXIS), HEX);
+    MYSERIAL.println(stepperZ.RAMP_STAT(), HEX);
     SERIAL_ECHO("E0 RAMP_STAT = 0x");
-    MYSERIAL.println(stepperE0.RAMP_STAT(E_AXIS), HEX);
+    MYSERIAL.println(stepperE0.RAMP_STAT(), HEX);
   }
 #endif
 
