@@ -13,22 +13,6 @@ extern Trams stepper;
 class TramsEndstops;
 extern TramsEndstops endstops;
 
-/**
- * Current configuration
- */
-// only change if necessary
-#define X_CURRENT_RUN   25  // Motor run current (0=1/32…31=32/32)
-#define X_CURRENT_HOLD   8  // Standstill current (0=1/32…31=32/32)
-
-#define Y_CURRENT_RUN   25  // Motor run current (0=1/32…31=32/32)
-#define Y_CURRENT_HOLD	 8  // Standstill current (0=1/32…31=32/32)
-
-#define Z_CURRENT_RUN   23  // Motor run current (0=1/32…31=32/32)
-#define Z_CURRENT_HOLD   8  // Standstill current (0=1/32…31=32/32)
-
-#define E0_CURRENT_RUN  28  // Motor run current (0=1/32…31=32/32)
-#define E0_CURRENT_HOLD  8  // Standstill current (0=1/32…31=32/32)
-
 /*
  * Reference switch configuration
  *
@@ -113,24 +97,7 @@ extern TramsEndstops endstops;
 #else
   #define STEPPER_DIRECTION_E0 NORMAL_MOTOR_DIRECTION
 #endif
-
-
-
-/**
- * STALLGUARD
- */
-// x-axis
-//#define STALLGUARD_X                // if selected, stallguard is active
-#define STALLGUARDTHRESHOLD_X	0x08  // range 0x00..0x7F
-
-// y-axis
-//#define STALLGUARD_Y                // if selected, stallguard is active
-#define STALLGUARDTHRESHOLD_Y	0x80  // range 0x00..0x7F
-
-// z-axis
-//#define STALLGUARD_Z              // if selected, stallguard is active
-#define STALLGUARDTHRESHOLD_Z	0x08  // range 0x00..0x7F
-
+/*
 // TRINAMIC TMC5130 Register Address Defines
 #define GCONF                 0x00 	//Global configuration flags
 #define X_COMPARE             0x05	//Position  comparison  register
@@ -160,7 +127,7 @@ extern TramsEndstops endstops;
 #define CHOPCONF              0x6C	//Chopper and driver configuration
 #define COOLCONF              0x6D	//coolStep smart current control register and stallGuard2 configuration
 #define DRV_STATUS            0x6F	//stallGuard2 value and driver error flags
-
+*/
 #define SET_IHOLD(a)		((a & 0x1F)<<0)
 #define SET_IRUN(a)			((a & 0x1F)<<8)
 #define SET_IHOLDDELAY(a)	((uint32_t)(a & 0xF)<<16)
