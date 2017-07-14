@@ -26,6 +26,7 @@ void setCSPin(const AxisEnum &axis, bool state) {
     case Y_AXIS: WRITE( Y_CS_PIN, state); break;
     case Z_AXIS: WRITE( Z_CS_PIN, state); break;
     case E_AXIS: WRITE(E0_CS_PIN, state); break;
+    default: break;
   }
 }
 
@@ -261,7 +262,7 @@ static volatile uint8_t motion_buffer_head = 0,           // Index of the next b
 static volatile bool motion_buffer_full = false;
 static uint8_t out_bits;        // The next stepping-bits to be output
 volatile int32_t pos[NUM_AXIS] = { 0 };
-static volatile int32_t timerClk, nextTimerClk;
+static volatile uint32_t timerClk, nextTimerClk;
 static volatile float TEMPtimerClk;
 
 /**
@@ -832,6 +833,7 @@ void Trams::set_position(const AxisEnum &axis, const long &v) {
     case Y_AXIS: st = &stepperY;
     case Z_AXIS: st = &stepperZ;
     case E_AXIS: st = &stepperE0;
+    default: return;
   }
   CRITICAL_SECTION_START;
   count_position[axis] = v;

@@ -101,13 +101,13 @@ extern TramsEndstops endstops;
 // Polarity for reference switch
 #define REF_SW_HIGH_ACTIV     0x00 	// non-inverted, high active: a high level on REFL stops the motor
 #define REF_SW_LOW_ACTIV      0x0C	// inverted, low active: a low level on REFL stops the motor
-
+/*
 // Stop switch bits in RAMP_STAT register
 #define STATUS_STOP_R_bp      1
 #define STATUS_STOP_R_bm      0x2
 #define STATUS_STOP_L_bp      0
 #define STATUS_STOP_L_bm      0x1
-
+*/
 // Modes for RAMPMODE register
 #define POSITIONING_MODE      0x00  // using all A, D and V parameters)
 #define VELOCITY_MODE_POS     0x01  // positiv VMAX, using AMAX acceleration
@@ -154,7 +154,7 @@ class Trams: public Stepper {
     static void set_directions();
     static void TMC5130_enableDriver(const AxisEnum &axis);
     static void TMC5130_disableDriver(const AxisEnum &axis);
-    static void Trams::TMC5130_init(TMC5130Stepper &st, uint8_t stepper_direction, uint16_t sw_register);
+    static void TMC5130_init(TMC5130Stepper &st, uint8_t stepper_direction, uint16_t sw_register);
 };
 
 class TramsEndstops: public Endstops {
