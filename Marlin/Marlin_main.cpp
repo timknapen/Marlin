@@ -10161,8 +10161,22 @@ inline void gcode_M502() {
   }
 #endif // LIN_ADVANCE
 
-#if ENABLED(HAVE_TMC2130) || ENABLED(HAVE_TMX2208) || ENABLED(IS_TRAMS)
+#if HAS_TRINAMIC
   static bool report_tmc_status = false;
+  const char extended_axis_codes[11][3] = { "X", "X2", "Y", "Y2", "Z", "Z2", "E0", "E1", "E2", "E3", "E4" };
+  enum TMC_AxisEnum {
+    TMC_X,
+    TMC_X2,
+    TMC_Y,
+    TMC_Y2,
+    TMC_Z,
+    TMC_Z2,
+    TMC_E0,
+    TMC_E1,
+    TMC_E2,
+    TMC_E3,
+    TMC_E4
+  };
   #if ENABLED(TMC_DEBUG)
     enum TMC_debug_enum {
       TMC_CODES,
@@ -10200,9 +10214,8 @@ inline void gcode_M502() {
       TMC_SG_RESULT,
       TMC_DRV_STATUS_HEX
     };
-
-    static void drv_status_print_hex(const char name, const uint32_t drv_status) {
-      SERIAL_CHAR(name);
+    static void drv_status_print_hex(const char name[], const uint32_t drv_status) {
+      SERIAL_ECHO(name);
       SERIAL_ECHOPGM(" = 0x");
       for(int B=24; B>=8; B-=8){
         MYSERIAL.print((drv_status>>(B+4))&0xF, HEX);
@@ -10217,7 +10230,7 @@ inline void gcode_M502() {
     #if ENABLED(HAVE_TMC2130)
       static void tmc2130_status(const uint8_t i, TMC2130Stepper &st, AxisEnum axis, const uint16_t spmm) {
         switch(i) {
-          case TMC_CODES: SERIAL_ECHOPAIR("\t", axis_codes[axis]); break;
+          case TMC_CODES: SERIAL_ECHO(extended_axis_codes[axis]); break;
           case TMC_ENABLED: serialprintPGM(st.isEnabled() ? PSTR("true") : PSTR("false")); break;
           case TMC_CURRENT: SERIAL_ECHO(st.getCurrent()); break;
           case TMC_RMS_CURRENT: SERIAL_ECHO(st.rms_current()); break;
@@ -10261,7 +10274,7 @@ inline void gcode_M502() {
       static void tmc2130_parse_drv_status(AxisEnum axis, const uint8_t i, const uint32_t drv_status) {
         SERIAL_ECHOPGM("\t");
         switch(i) {
-          case TMC_DRV_CODES:     SERIAL_ECHO(axis_codes[axis]);  break;
+          case TMC_DRV_CODES:     SERIAL_ECHO(extended_axis_codes[axis]);  break;
           case TMC_STST:          if (drv_status&STST_bm)         SERIAL_ECHOPGM("X"); break;
           case TMC_OLB:           if (drv_status&OLB_bm)          SERIAL_ECHOPGM("X"); break;
           case TMC_OLA:           if (drv_status&OLA_bm)          SERIAL_ECHOPGM("X"); break;
@@ -10273,7 +10286,7 @@ inline void gcode_M502() {
           case TMC_DRV_CS_ACTUAL: SERIAL_ECHO((drv_status&CS_ACTUAL_bm)>>CS_ACTUAL_bp); break;
           case TMC_FSACTIVE:      if (drv_status&FSACTIVE_bm)     SERIAL_ECHOPGM("X"); break;
           case TMC_SG_RESULT:     SERIAL_ECHO((drv_status&SG_RESULT_bm)>>SG_RESULT_bp); break;
-          case TMC_DRV_STATUS_HEX:drv_status_print_hex(axis_codes[axis], drv_status); break;
+          case TMC_DRV_STATUS_HEX:drv_status_print_hex(extended_axis_codes[axis], drv_status); break;
         }
       }
     #endif
@@ -10287,7 +10300,7 @@ inline void gcode_M502() {
     #if ENABLED(HAVE_TMC2208)
       static void tmc2208_status(const uint8_t i, TMC2208Stepper &st, AxisEnum axis, const uint16_t spmm) {
         switch(i) {
-          case TMC_CODES: SERIAL_ECHOPAIR("\t", axis_codes[axis]); break;
+          case TMC_CODES: SERIAL_ECHOPAIR("\t", extended_axis_codes[axis]); break;
           case TMC_ENABLED: serialprintPGM(st.isEnabled() ? PSTR("true") : PSTR("false")); break;
           case TMC_CURRENT: SERIAL_ECHO(st.getCurrent()); break;
           case TMC_RMS_CURRENT: SERIAL_ECHO(st.rms_current()); break;
@@ -10330,7 +10343,7 @@ inline void gcode_M502() {
       static void tmc2208_parse_drv_status(AxisEnum axis, const uint8_t i, const uint32_t drv_status) {
         SERIAL_ECHOPGM("\t");
         switch(i) {
-          case TMC_DRV_CODES:     SERIAL_ECHO(axis_codes[axis]);  break;
+          case TMC_DRV_CODES:     SERIAL_ECHO(extended_axis_codes[axis]);  break;
           case TMC_STST:          if (drv_status&STST_bm)         SERIAL_ECHOPGM("X"); break;
           case TMC_OLB:           if (drv_status&OLB_bm)          SERIAL_ECHOPGM("X"); break;
           case TMC_OLA:           if (drv_status&OLA_bm)          SERIAL_ECHOPGM("X"); break;
@@ -10342,77 +10355,88 @@ inline void gcode_M502() {
           case TMC_DRV_CS_ACTUAL: SERIAL_ECHO((drv_status&CS_ACTUAL_bm)>>CS_ACTUAL_bp); break;
           case TMC_FSACTIVE:      if (drv_status&FSACTIVE_bm)     SERIAL_ECHOPGM("X"); break;
           case TMC_SG_RESULT:     SERIAL_ECHO((drv_status&SG_RESULT_bm)>>SG_RESULT_bp); break;
-          case TMC_DRV_STATUS_HEX:drv_status_print_hex(axis_codes[axis], drv_status); break;
+          case TMC_DRV_STATUS_HEX:drv_status_print_hex(extended_axis_codes[axis], drv_status); break;
         }
       }
     #endif
 
     static void tmc_debug_loop(const TMC_debug_enum i) {
-      #if ENABLED(X_IS_TMC2130)
-        tmc2130_status(i, stepperX, X_AXIS, planner.axis_steps_per_mm[X_AXIS]);
+      #if X_IS_TRINAMIC
+        tmc_status(stepperX, TMC_X, i, planner.axis_steps_per_mm[X_AXIS]);
       #endif
-      #if ENABLED(X_IS_TMC2208)
-        tmc2208_status(i, stepperX, X_AXIS, planner.axis_steps_per_mm[X_AXIS]);
-      #endif
-
-      #if ENABLED(Y_IS_TMC2130)
-        tmc2130_status(i, stepperY, Y_AXIS, planner.axis_steps_per_mm[Y_AXIS]);
-      #endif
-      #if ENABLED(Y_IS_TMC2208)
-        tmc2208_status(i, stepperY, Y_AXIS, planner.axis_steps_per_mm[Y_AXIS]);
+      #if X2_IS_TRINAMIC
+        tmc_status(stepperX2, TMC_X2, i, planner.axis_steps_per_mm[X_AXIS]);
       #endif
 
-      #if ENABLED(Z_IS_TMC2130)
-        tmc2130_status(i, stepperZ, Z_AXIS, planner.axis_steps_per_mm[Z_AXIS]);
+      #if Y_IS_TRINAMIC
+        tmc_status(stepperY, TMC_Y, i, planner.axis_steps_per_mm[Y_AXIS]);
       #endif
-      #if ENABLED(Z_IS_TMC2208)
-        tmc2208_status(i, stepperZ, Z_AXIS, planner.axis_steps_per_mm[Z_AXIS]);
-      #endif
-
-      #if ENABLED(E0_IS_TMC2130)
-        tmc2130_status(i, stepperE0, E_AXIS, planner.axis_steps_per_mm[E_AXIS]);
-      #endif
-      #if ENABLED(E0_IS_TMC2208)
-        tmc2208_status(i, stepperE0, E0_AXIS, planner.axis_steps_per_mm[E0_AXIS]);
+      #if Y2_IS_TRINAMIC
+        tmc_status(stepperY2, TMC_Y2, i, planner.axis_steps_per_mm[Y_AXIS]);
       #endif
 
-      #if ENABLED(IS_TRAMS)
-        tmc5130_status(i, stepperX, X_AXIS, planner.axis_steps_per_mm[X_AXIS]);
-        tmc5130_status(i, stepperY, Y_AXIS, planner.axis_steps_per_mm[Y_AXIS]);
-        tmc5130_status(i, stepperZ, Z_AXIS, planner.axis_steps_per_mm[Z_AXIS]);
-        tmc5130_status(i, stepperE0, E_AXIS, planner.axis_steps_per_mm[E_AXIS]);
+      #if Z_IS_TRINAMIC
+        tmc_status(stepperZ, TMC_Z, i, planner.axis_steps_per_mm[Z_AXIS]);
+      #endif
+      #if Z2_IS_TRINAMIC
+        tmc_status(stepperZ2, TMC_Z2, i, planner.axis_steps_per_mm[Z_AXIS]);
+      #endif
+
+      #if E0_IS_TRINAMIC
+        tmc_status(stepperE0, TMC_E0, i, planner.axis_steps_per_mm[E_AXIS]);
+      #endif
+      #if E1_IS_TRINAMIC
+        tmc_status(stepperE1, TMC_E1, i, planner.axis_steps_per_mm[E_AXIS+1]);
+      #endif
+      #if E2_IS_TRINAMIC
+        tmc_status(stepperE2, TMC_E2, i, planner.axis_steps_per_mm[E_AXIS+2]);
+      #endif
+      #if E3_IS_TRINAMIC
+        tmc_status(stepperE3, TMC_E3, i, planner.axis_steps_per_mm[E_AXIS+3]);
+      #endif
+      #if E4_IS_TRINAMIC
+        tmc_status(stepperE4, TMC_E4, i, planner.axis_steps_per_mm[E_AXIS+4]);
       #endif
 
       SERIAL_EOL();
     }
 
     static void drv_status_loop(const TMC_drv_status_enum i, const uint32_t drv_status_array[]) {
-      #if ENABLED(X_IS_TMC2130) || ENABLED(IS_TRAMS)
-        tmc2130_parse_drv_status(X_AXIS, i, drv_status_array[X_AXIS]);
+      #if X_IS_TRINAMIC
+        tmc_parse_drv_status(stepperX, TMC_X, i, drv_status_array[TMC_X]);
       #endif
-      #if ENABLED(X_IS_TMC2208)
-        tmc2208_parse_drv_status(X_AXIS, i, drv_status_array[X_AXIS]);
-      #endif
-
-      #if ENABLED(Y_IS_TMC2130) || ENABLED(IS_TRAMS)
-        tmc2130_parse_drv_status(Y_AXIS, i, drv_status_array[Y_AXIS]);
-      #endif
-      #if ENABLED(Y_IS_TMC2208)
-        tmc2208_parse_drv_status(Y_AXIS, i, drv_status_array[Y_AXIS]);
+      #if X2_IS_TRINAMIC
+        tmc_parse_drv_status(stepperX2, TMC_X2, i, drv_status_array[TMC_X2]);
       #endif
 
-      #if ENABLED(Z_IS_TMC2130) || ENABLED(IS_TRAMS)
-        tmc2130_parse_drv_status(Z_AXIS, i, drv_status_array[Z_AXIS]);
+      #if Y_IS_TRINAMIC
+        tmc_parse_drv_status(stepperY, TMC_Y, i, drv_status_array[TMC_Y]);
       #endif
-      #if ENABLED(Z_IS_TMC2208)
-        tmc2208_parse_drv_status(Z_AXIS, i, drv_status_array[Z_AXIS]);
+      #if Y2_IS_TRINAMIC
+        tmc_parse_drv_status(stepperY2, TMC_Y2, i, drv_status_array[TMC_Y2]);
       #endif
 
-      #if ENABLED(E0_IS_TMC2130) || ENABLED(IS_TRAMS)
-        tmc2130_parse_drv_status(E_AXIS, i, drv_status_array[E_AXIS]);
+      #if Z_IS_TRINAMIC
+        tmc_parse_drv_status(stepperZ, TMC_Z, i, drv_status_array[TMC_Z]);
       #endif
-      #if ENABLED(E0_IS_TMC2208)
-        tmc2208_parse_drv_status(E_AXIS, i, drv_status_array[E_AXIS]);
+      #if Z2_IS_TRINAMIC
+        tmc_parse_drv_status(stepperZ2, TMC_Z2, i, drv_status_array[TMC_Z2]);
+      #endif
+
+      #if E0_IS_TRINAMIC
+        tmc_parse_drv_status(stepperE0, TMC_E0, i, drv_status_array[TMC_E0]);
+      #endif
+      #if E1_IS_TRINAMIC
+        tmc_parse_drv_status(stepperE1, TMC_E1, i, drv_status_array[TMC_E1]);
+      #endif
+      #if E2_IS_TRINAMIC
+        tmc_parse_drv_status(stepperE2, TMC_E2, i, drv_status_array[TMC_E2]);
+      #endif
+      #if E3_IS_TRINAMIC
+        tmc_parse_drv_status(stepperE3, TMC_E3, i, drv_status_array[TMC_E3]);
+      #endif
+      #if E4_IS_TRINAMIC
+        tmc_parse_drv_status(stepperE4, TMC_E4, i, drv_status_array[TMC_E4]);
       #endif
 
       SERIAL_EOL();
@@ -10422,7 +10446,7 @@ inline void gcode_M502() {
       if (parser.seen('S')) {
         report_tmc_status = parser.value_bool();
       } else {
-        tmc_debug_loop(TMC_CODES);
+        SERIAL_ECHOPGM("\t");                 tmc_debug_loop(TMC_CODES);
         SERIAL_ECHOPGM("Enabled\t");          tmc_debug_loop(TMC_ENABLED);
         SERIAL_ECHOPGM("Set current");        tmc_debug_loop(TMC_CURRENT);
         SERIAL_ECHOPGM("RMS current");        tmc_debug_loop(TMC_RMS_CURRENT);
@@ -10442,19 +10466,45 @@ inline void gcode_M502() {
         SERIAL_ECHOPGM("blank time");         tmc_debug_loop(TMC_TBL);
         SERIAL_ECHOPGM("Stallguard thrs");    tmc_debug_loop(TMC_SGT);
 
-        uint32_t drv_status_array[XYZE_N] = {0};
-        #if ENABLED(X_IS_TMC2130) || ENABLED(X_IS_TMC2208) || ENABLED(IS_TRAMS)
-          drv_status_array[X_AXIS] = stepperX.DRV_STATUS(),
+        uint32_t drv_status_array[10] = {0};
+
+        #if X_IS_TRINAMIC
+          drv_status_array[TMC_X] = stepperX.DRV_STATUS();
         #endif
-        #if ENABLED(Y_IS_TMC2130) || ENABLED(Y_IS_TMC2208) || ENABLED(IS_TRAMS)
-          drv_status_array[Y_AXIS] = stepperY.DRV_STATUS(),
+        #if X2_IS_TRINAMIC
+          drv_status_array[TMC_X2] = stepperX2.DRV_STATUS();
         #endif
-        #if ENABLED(Z_IS_TMC2130) || ENABLED(Z_IS_TMC2208) || ENABLED(IS_TRAMS)
-          drv_status_array[Z_AXIS] = stepperZ.DRV_STATUS();
+
+        #if Y_IS_TRINAMIC
+          drv_status_array[TMC_Y] = stepperY.DRV_STATUS();
         #endif
-        #if ENABLED(E0_IS_TMC2130) || ENABLED(E0_IS_TMC2208) || ENABLED(IS_TRAMS)
-          drv_status_array[E_AXIS] = stepperE0.DRV_STATUS();
+        #if Y2_IS_TRINAMIC
+          drv_status_array[TMC_Y2] = stepperY2.DRV_STATUS();
         #endif
+
+        #if Z_IS_TRINAMIC
+          drv_status_array[TMC_Z] = stepperZ.DRV_STATUS();
+        #endif
+        #if Z2_IS_TRINAMIC
+          drv_status_array[TMC_Z2] = stepperZ2.DRV_STATUS();
+        #endif
+
+        #if E0_IS_TRINAMIC
+          drv_status_array[TMC_E0] = stepperE0.DRV_STATUS();
+        #endif
+        #if E1_IS_TRINAMIC
+          drv_status_array[TMC_E1] = stepperE1.DRV_STATUS();
+        #endif
+        #if E2_IS_TRINAMIC
+          drv_status_array[TMC_E2] = stepperE2.DRV_STATUS();
+        #endif
+        #if E3_IS_TRINAMIC
+          drv_status_array[TMC_E3] = stepperE3.DRV_STATUS();
+        #endif
+        #if E4_IS_TRINAMIC
+          drv_status_array[TMC_E4] = stepperE4.DRV_STATUS();
+        #endif
+
         SERIAL_ECHOPGM("DRVSTATUS");    drv_status_loop(TMC_DRV_CODES,    drv_status_array);
         SERIAL_ECHOPGM("stst\t");       drv_status_loop(TMC_STST,         drv_status_array);
         SERIAL_ECHOPGM("olb\t");        drv_status_loop(TMC_OLB,          drv_status_array);
@@ -10474,51 +10524,51 @@ inline void gcode_M502() {
   #endif
 
   template<typename TMC>
-  static void tmc_get_current(TMC &st, const char name) {
-    SERIAL_CHAR(name);
+  static void tmc_get_current(TMC &st, const char name[]) {
+    SERIAL_ECHO(name);
     SERIAL_ECHOPGM(" axis driver current: ");
     SERIAL_ECHOLN(st.getCurrent());
   }
   template<typename TMC>
-  static void tmc_set_current(TMC &st, const char name, const int mA) {
+  static void tmc_set_current(TMC &st, const char name[], const int mA) {
     st.setCurrent(mA, R_SENSE, HOLD_MULTIPLIER);
     tmc_get_current(st, name);
   }
 
   template<typename TMC>
-  static void tmc_report_otpw(TMC &st, const char name) {
-    SERIAL_CHAR(name);
+  static void tmc_report_otpw(TMC &st, const char name[]) {
+    SERIAL_ECHO(name);
     SERIAL_ECHOPGM(" axis temperature prewarn triggered: ");
     serialprintPGM(st.getOTPW() ? PSTR("true") : PSTR("false"));
     SERIAL_EOL();
   }
   template<typename TMC>
-  static void tmc_clear_otpw(TMC &st, const char name) {
+  static void tmc_clear_otpw(TMC &st, const char name[]) {
     st.clear_otpw();
-    SERIAL_CHAR(name);
+    SERIAL_ECHO(name);
     SERIAL_ECHOLNPGM(" prewarn flag cleared");
   }
 
   template<typename TMC>
-  static void tmc_get_pwmthrs(TMC &st, const char name, const uint16_t spmm) {
-    SERIAL_CHAR(name);
+  static void tmc_get_pwmthrs(TMC &st, const char name[], const uint16_t spmm) {
+    SERIAL_ECHO(name);
     SERIAL_ECHOPGM(" stealthChop max speed set to ");
     SERIAL_ECHOLN(12650000UL * st.microsteps() / (256 * st.stealth_max_speed() * spmm));
   }
   template<typename TMC>
-  static void tmc_set_pwmthrs(TMC &st, const char name, const int32_t thrs, const uint32_t spmm) {
     st.stealth_max_speed(12650000UL * st.microsteps() / (256 * thrs * spmm));
+  static void tmc_set_pwmthrs(TMC &st, const char name[], const int32_t thrs, const uint32_t spmm) {
     tmc_get_pwmthrs(st, name, spmm);
   }
 
   template<typename TMC>
-  static void tmc_get_sgt(TMC &st, const char name) {
-    SERIAL_CHAR(name);
+  static void tmc_get_sgt(TMC &st, const char name[]) {
+    SERIAL_ECHO(name);
     SERIAL_ECHOPGM(" driver homing sensitivity set to ");
     MYSERIAL.println(st.sgt(), DEC);
   }
   template<typename TMC>
-  static void tmc_set_sgt(TMC &st, const char name, const int8_t sgt_val) {
+  static void tmc_set_sgt(TMC &st, const char name[], const int8_t sgt_val) {
     st.sgt(sgt_val);
     tmc_get_sgt(st, name);
   }
@@ -10532,22 +10582,51 @@ inline void gcode_M502() {
     LOOP_XYZE(i)
       values[i] = parser.intval(axis_codes[i]);
 
-    #if ENABLED(X_IS_TMC2130) || ENABLED(X_IS_TMC2208)
-      if (values[X_AXIS]) tmc_set_current(stepperX, 'X', values[X_AXIS]);
-      else tmc_get_current(stepperX, 'X');
+    #if X_IS_TRINAMIC
+      if (values[X_AXIS]) tmc_set_current(stepperX, extended_axis_codes[TMC_X], values[X_AXIS]);
+      else tmc_get_current(stepperX, extended_axis_codes[TMC_X]);
     #endif
-    #if ENABLED(Y_IS_TMC2130) || ENABLED(Y_IS_TMC2208)
-      if (values[Y_AXIS]) tmc_set_current(stepperY, 'Y', values[Y_AXIS]);
-      else tmc_get_current(stepperY, 'Y');
+    #if X2_IS_TRINAMIC
+      if (values[X_AXIS]) tmc_set_current(stepperX2, extended_axis_codes[TMC_X2], values[X_AXIS]);
+      else tmc_get_current(stepperX2, extended_axis_codes[TMC_X2]);
     #endif
-    #if ENABLED(Z_IS_TMC2130) || ENABLED(Z_IS_TMC2208)
-      if (values[Z_AXIS]) tmc_set_current(stepperZ, 'Z', values[Z_AXIS]);
-      else tmc_get_current(stepperZ, 'Z');
+    #if Y_IS_TRINAMIC
+      if (values[Y_AXIS]) tmc_set_current(stepperY, extended_axis_codes[TMC_Y], values[Y_AXIS]);
+      else tmc_get_current(stepperY, extended_axis_codes[TMC_Y]);
     #endif
-    #if ENABLED(E0_IS_TMC2130) || ENABLED(E0_IS_TMC2208)
-      if (values[E_AXIS]) tmc_set_current(stepperE0, 'E', values[E_AXIS]);
-      else tmc_get_current(stepperE0, 'E');
+    #if Y2_IS_TRINAMIC
+      if (values[Y_AXIS]) tmc_set_current(stepperY2, extended_axis_codes[TMC_Y2], values[Y_AXIS]);
+      else tmc_get_current(stepperY2, extended_axis_codes[TMC_Y2]);
     #endif
+    #if Z_IS_TRINAMIC
+      if (values[Z_AXIS]) tmc_set_current(stepperZ, extended_axis_codes[TMC_Z], values[Z_AXIS]);
+      else tmc_get_current(stepperZ, extended_axis_codes[TMC_Z]);
+    #endif
+    #if Z2_IS_TRINAMIC
+      if (values[Z_AXIS]) tmc_set_current(stepperZ2, extended_axis_codes[TMC_Z2], values[Z_AXIS]);
+      else tmc_get_current(stepperZ2, extended_axis_codes[TMC_Z2]);
+    #endif
+    #if E0_IS_TRINAMIC
+      if (values[E_AXIS]) tmc_set_current(stepperE0, extended_axis_codes[TMC_E0], values[E_AXIS]);
+      else tmc_get_current(stepperE0, extended_axis_codes[TMC_E0]);
+    #endif
+    #if E1_IS_TRINAMIC
+      if (values[E_AXIS]) tmc_set_current(stepperE1, extended_axis_codes[TMC_E1], values[E_AXIS]);
+      else tmc_get_current(stepperE1, extended_axis_codes[TMC_E1]);
+    #endif
+    #if E2_IS_TRINAMIC
+      if (values[E_AXIS]) tmc_set_current(stepperE2, extended_axis_codes[TMC_E2], values[E_AXIS]);
+      else tmc_get_current(stepperE2, extended_axis_codes[TMC_E2]);
+    #endif
+    #if E3_IS_TRINAMIC
+      if (values[E_AXIS]) tmc_set_current(stepperE3, extended_axis_codes[TMC_E3], values[E_AXIS]);
+      else tmc_get_current(stepperE3, extended_axis_codes[TMC_E3]);
+    #endif
+    #if E4_IS_TRINAMIC
+      if (values[E_AXIS]) tmc_set_current(stepperE4, extended_axis_codes[TMC_E4], values[E_AXIS]);
+      else tmc_get_current(stepperE4, extended_axis_codes[TMC_E4]);
+    #endif
+
   }
 
   /**
@@ -10555,19 +10634,17 @@ inline void gcode_M502() {
    * The flag is held by the library and persist until manually cleared by M912
    */
   inline void gcode_M911() {
-    const bool reportX = parser.seen(axis_codes[X_AXIS]), reportY = parser.seen(axis_codes[Y_AXIS]), reportZ = parser.seen(axis_codes[Z_AXIS]), reportE = parser.seen(axis_codes[E_AXIS]),
-             reportAll = (!reportX && !reportY && !reportZ && !reportE) || (reportX && reportY && reportZ && reportE);
-    #if ENABLED(X_IS_TMC2130) || (ENABLED(X_IS_TMC2208) && PIN_EXISTS(X_SERIAL_RX))
-      if (reportX || reportAll) tmc_report_otpw(stepperX, axis_codes[X_AXIS]);
+    #if ENABLED(X_IS_TMC2130) || (ENABLED(X_IS_TMC2208) && PIN_EXISTS(X_SERIAL_RX)) || ENABLED(IS_TRAMS)
+      tmc_report_otpw(stepperX, extended_axis_codes[TMC_X]);
     #endif
-    #if ENABLED(Y_IS_TMC2130) || (ENABLED(Y_IS_TMC2208) && PIN_EXISTS(Y_SERIAL_RX))
-      if (reportY || reportAll) tmc_report_otpw(stepperY, axis_codes[Y_AXIS]);
+    #if ENABLED(Y_IS_TMC2130) || (ENABLED(Y_IS_TMC2208) && PIN_EXISTS(Y_SERIAL_RX)) || ENABLED(IS_TRAMS)
+      tmc_report_otpw(stepperY, extended_axis_codes[TMC_Y]);
     #endif
-    #if ENABLED(Z_IS_TMC2130) || (ENABLED(Z_IS_TMC2208) && PIN_EXISTS(Z_SERIAL_RX))
-      if (reportZ || reportAll) tmc_report_otpw(stepperZ, axis_codes[Z_AXIS]);
+    #if ENABLED(Z_IS_TMC2130) || (ENABLED(Z_IS_TMC2208) && PIN_EXISTS(Z_SERIAL_RX)) || ENABLED(IS_TRAMS)
+      tmc_report_otpw(stepperZ, extended_axis_codes[TMC_Z]);
     #endif
-    #if ENABLED(E0_IS_TMC2130) || (ENABLED(E0_IS_TMC2208) && PIN_EXISTS(E0_SERIAL_RX))
-      if (reportE || reportAll) tmc_report_otpw(stepperE0, axis_codes[E_AXIS]);
+    #if ENABLED(E0_IS_TMC2130) || (ENABLED(E0_IS_TMC2208) && PIN_EXISTS(E0_SERIAL_RX)) || ENABLED(IS_TRAMS)
+      tmc_report_otpw(stepperE0, extended_axis_codes[TMC_E0]);
     #endif
   }
 
@@ -10577,17 +10654,23 @@ inline void gcode_M502() {
   inline void gcode_M912() {
     const bool clearX = parser.seen(axis_codes[X_AXIS]), clearY = parser.seen(axis_codes[Y_AXIS]), clearZ = parser.seen(axis_codes[Z_AXIS]), clearE = parser.seen(axis_codes[E_AXIS]),
              clearAll = (!clearX && !clearY && !clearZ && !clearE) || (clearX && clearY && clearZ && clearE);
-    #if ENABLED(X_IS_TMC2130) || (ENABLED(X_IS_TMC2208) && PIN_EXISTS(X_SERIAL_RX))
-      if (clearX || clearAll) tmc_clear_otpw(stepperX, axis_codes[X_AXIS]);
+    #if ENABLED(X_IS_TMC2130) || ENABLED(IS_TRAMS) || (ENABLED(X_IS_TMC2208) && PIN_EXISTS(X_SERIAL_RX))
+      if (clearX || clearAll) tmc_clear_otpw(stepperX, extended_axis_codes[TMC_X]);
     #endif
+    #if ENABLED(X2_IS_TMC2130) || (ENABLED(X2_IS_TMC2208) && PIN_EXISTS(X_SERIAL_RX))
+      if (clearX || clearAll) tmc_clear_otpw(stepperX, extended_axis_codes[TMC_X]);
+    #endif
+
     #if ENABLED(Y_IS_TMC2130) || (ENABLED(Y_IS_TMC2208) && PIN_EXISTS(Y_SERIAL_RX))
-      if (clearY || clearAll) tmc_clear_otpw(stepperY, axis_codes[Y_AXIS]);
+      if (clearY || clearAll) tmc_clear_otpw(stepperY, extended_axis_codes[TMC_Y]);
     #endif
+
     #if ENABLED(Z_IS_TMC2130) || (ENABLED(Z_IS_TMC2208) && PIN_EXISTS(Z_SERIAL_RX))
-      if (clearZ || clearAll) tmc_clear_otpw(stepperZ, axis_codes[Z_AXIS]);
+      if (clearZ || clearAll) tmc_clear_otpw(stepperZ, extended_axis_codes[TMC_Z]);
     #endif
+
     #if ENABLED(E0_IS_TMC2130) || (ENABLED(E0_IS_TMC2208) && PIN_EXISTS(E0_SERIAL_RX))
-      if (clearE || clearAll) tmc_clear_otpw(stepperE0, axis_codes[E_AXIS]);
+      if (clearE || clearAll) tmc_clear_otpw(stepperE0, extended_axis_codes[TMC_E0]);
     #endif
   }
 
@@ -10600,21 +10683,52 @@ inline void gcode_M502() {
       LOOP_XYZE(i)
         values[i] = parser.intval(axis_codes[i]);
 
-      #if ENABLED(X_IS_TMC2130) || ENABLED(X_IS_TMC2208)
-        if (values[X_AXIS]) tmc_set_pwmthrs(stepperX, axis_codes[X_AXIS], values[X_AXIS], planner.axis_steps_per_mm[X_AXIS]);
-        else tmc_get_pwmthrs(stepperX, axis_codes[X_AXIS], planner.axis_steps_per_mm[X_AXIS]);
+      #if X_IS_TRINAMIC
+        if (values[X_AXIS]) tmc_set_pwmthrs(stepperX, extended_axis_codes[TMC_X], values[X_AXIS], planner.axis_steps_per_mm[X_AXIS]);
+        else tmc_get_pwmthrs(stepperX, extended_axis_codes[TMC_X], planner.axis_steps_per_mm[X_AXIS]);
       #endif
-      #if ENABLED(Y_IS_TMC2130) || ENABLED(Y_IS_TMC2208)
-        if (values[Y_AXIS]) tmc_set_pwmthrs(stepperY, axis_codes[Y_AXIS], values[Y_AXIS], planner.axis_steps_per_mm[Y_AXIS]);
-        else tmc_get_pwmthrs(stepperY, axis_codes[Y_AXIS], planner.axis_steps_per_mm[Y_AXIS]);
+      #if X2_IS_TRINAMIC
+        if (values[X_AXIS]) tmc_set_pwmthrs(stepperX2, extended_axis_codes[TMC_X2], values[X_AXIS], planner.axis_steps_per_mm[X_AXIS]);
+        else tmc_get_pwmthrs(stepperX, extended_axis_codes[TMC_X2], planner.axis_steps_per_mm[X_AXIS]);
       #endif
-      #if ENABLED(Z_IS_TMC2130) || ENABLED(Z_IS_TMC2208)
-        if (values[Z_AXIS]) tmc_set_pwmthrs(stepperZ, axis_codes[Z_AXIS], values[Z_AXIS], planner.axis_steps_per_mm[Z_AXIS]);
-        else tmc_get_pwmthrs(stepperZ, axis_codes[Z_AXIS], planner.axis_steps_per_mm[Z_AXIS]);
+
+      #if Y_IS_TRINAMIC
+        if (values[Y_AXIS]) tmc_set_pwmthrs(stepperY, extended_axis_codes[TMC_Y], values[Y_AXIS], planner.axis_steps_per_mm[Y_AXIS]);
+        else tmc_get_pwmthrs(stepperY, extended_axis_codes[TMC_Y], planner.axis_steps_per_mm[Y_AXIS]);
       #endif
-      #if ENABLED(E0_IS_TMC2130) || ENABLED(E0_IS_TMC2208)
-        if (values[E_AXIS]) tmc_set_pwmthrs(stepperE0, axis_codes[E_AXIS], values[E_AXIS], planner.axis_steps_per_mm[E_AXIS]);
-        else tmc_get_pwmthrs(stepperE0, axis_codes[E_AXIS], planner.axis_steps_per_mm[E_AXIS]);
+      #if Y2_IS_TRINAMIC
+        if (values[Y_AXIS]) tmc_set_pwmthrs(stepperY2, extended_axis_codes[TMC_Y2], values[Y_AXIS], planner.axis_steps_per_mm[Y_AXIS]);
+        else tmc_get_pwmthrs(stepperY, extended_axis_codes[TMC_Y2], planner.axis_steps_per_mm[Y_AXIS]);
+      #endif
+
+      #if Z_IS_TRINAMIC
+        if (values[Z_AXIS]) tmc_set_pwmthrs(stepperZ, extended_axis_codes[TMC_Z], values[Z_AXIS], planner.axis_steps_per_mm[Z_AXIS]);
+        else tmc_get_pwmthrs(stepperZ, extended_axis_codes[TMC_Z], planner.axis_steps_per_mm[Z_AXIS]);
+      #endif
+      #if Z2_IS_TRINAMIC
+        if (values[Z_AXIS]) tmc_set_pwmthrs(stepperZ2, extended_axis_codes[TMC_Z2], values[Z_AXIS], planner.axis_steps_per_mm[Z_AXIS]);
+        else tmc_get_pwmthrs(stepperZ, extended_axis_codes[TMC_Z2], planner.axis_steps_per_mm[Z_AXIS]);
+      #endif
+
+      #if E0_IS_TRINAMIC
+        if (values[E_AXIS]) tmc_set_pwmthrs(stepperE0, extended_axis_codes[TMC_E0], values[E_AXIS], planner.axis_steps_per_mm[E_AXIS]);
+        else tmc_get_pwmthrs(stepperE0, extended_axis_codes[TMC_E0], planner.axis_steps_per_mm[E_AXIS]);
+      #endif
+      #if E1_IS_TRINAMIC
+        if (values[E_AXIS]) tmc_set_pwmthrs(stepperE1, extended_axis_codes[TMC_E1], values[E_AXIS], planner.axis_steps_per_mm[E_AXIS]);
+        else tmc_get_pwmthrs(stepperE1, extended_axis_codes[TMC_E1], planner.axis_steps_per_mm[E_AXIS]);
+      #endif
+      #if E2_IS_TRINAMIC
+        if (values[E_AXIS]) tmc_set_pwmthrs(stepperE2, extended_axis_codes[TMC_E2], values[E_AXIS], planner.axis_steps_per_mm[E_AXIS]);
+        else tmc_get_pwmthrs(stepperE2, extended_axis_codes[TMC_E2], planner.axis_steps_per_mm[E_AXIS]);
+      #endif
+      #if E3_IS_TRINAMIC
+        if (values[E_AXIS]) tmc_set_pwmthrs(stepperE3, extended_axis_codes[TMC_E3], values[E_AXIS], planner.axis_steps_per_mm[E_AXIS]);
+        else tmc_get_pwmthrs(stepperE3, extended_axis_codes[TMC_E3], planner.axis_steps_per_mm[E_AXIS]);
+      #endif
+      #if E4_IS_TRINAMIC
+        if (values[E_AXIS]) tmc_set_pwmthrs(stepperE4, extended_axis_codes[TMC_E4], values[E_AXIS], planner.axis_steps_per_mm[E_AXIS]);
+        else tmc_get_pwmthrs(stepperE4, extended_axis_codes[TMC_E4], planner.axis_steps_per_mm[E_AXIS]);
       #endif
     }
   #endif // HYBRID_THRESHOLD
@@ -10624,18 +10738,26 @@ inline void gcode_M502() {
    */
   #if ENABLED(SENSORLESS_HOMING)
     inline void gcode_M914() {
-      #if ENABLED(X_IS_TMC2130)
-        if (parser.seen(axis_codes[X_AXIS])) tmc_set_sgt(stepperX, axis_codes[X_AXIS], parser.value_int());
-        else tmc_get_sgt(stepperX, axis_codes[X_AXIS]);
+      #if ENABLED(X_IS_TMC2130) || ENABLED(IS_TRAMS)
+        if (parser.seen(axis_codes[X_AXIS])) tmc_set_sgt(stepperX, extended_axis_codes[TMC_X], parser.value_int());
+        else tmc_get_sgt(stepperX, extended_axis_codes[TMC_X]);
       #endif
-      #if ENABLED(Y_IS_TMC2130)
-        if (parser.seen(axis_codes[Y_AXIS])) tmc_set_sgt(stepperY, axis_codes[Y_AXIS], parser.value_int());
-        else tmc_get_sgt(stepperY, axis_codes[Y_AXIS]);
+      #if ENABLED(X2_IS_TMC2130)
+        if (parser.seen(axis_codes[X_AXIS])) tmc_set_sgt(stepperX2, extended_axis_codes[TMC_X2], parser.value_int());
+        else tmc_get_sgt(stepperX2, extended_axis_codes[TMC_X2]);
+      #endif
+      #if ENABLED(Y_IS_TMC2130) || ENABLED(IS_TRAMS)
+        if (parser.seen(axis_codes[Y_AXIS])) tmc_set_sgt(stepperY, extended_axis_codes[TMC_Y], parser.value_int());
+        else tmc_get_sgt(stepperY, extended_axis_codes[TMC_Y]);
+      #endif
+      #if ENABLED(Y2_IS_TMC2130)
+        if (parser.seen(axis_codes[Y_AXIS])) tmc_set_sgt(stepperY2, extended_axis_codes[TMC_Y2], parser.value_int());
+        else tmc_get_sgt(stepperY2, extended_axis_codes[TMC_Y2]);
       #endif
     }
   #endif // SENSORLESS_HOMING
 
-#endif // HAVE_TMC2130 OR HAVE_TMC2208
+#endif // HAS_TRINAMIC
 
 /**
  * M907: Set digital trimpot motor current using axis codes X, Y, Z, E, B, S
