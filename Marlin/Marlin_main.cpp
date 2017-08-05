@@ -13817,7 +13817,7 @@ void disable_all_steppers() {
   disable_e_steppers();
 }
 
-#if ENABLED(HAVE_TMC2130)
+#if ENABLED(MONITOR_DRIVER_STATUS)
   /*
    * Check for over temperature or short to ground error flags.
    * Report and log warning of overtemperature condition.
@@ -13862,7 +13862,7 @@ void disable_all_steppers() {
       SERIAL_ECHO(st.getCurrent());
       SERIAL_ECHOLN("mA)");
     }
-    #if defined(CURRENT_STEP_DOWN)
+    #if CURRENT_STEP_DOWN > 0
       // Decrease current if is_otpw is true and driver is enabled and there's been more then 4 warnings
       if (is_otpw && !st.isEnabled() && otpw_cnt > 4) {
         st.setCurrent(st.getCurrent() - CURRENT_STEP_DOWN, R_SENSE, HOLD_MULTIPLIER);
