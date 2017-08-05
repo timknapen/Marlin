@@ -1474,40 +1474,38 @@ void MarlinSettings::reset() {
     #endif
   );
 
-  #if ENABLED(HAVE_TMC2130) || ENABLED(HAVE_TMC2208)
-    #if ENABLED(X_IS_TMC2130) || ENABLED(X_IS_TMC2208)
-      stepperX.setCurrent(X_CURRENT, R_SENSE, HOLD_MULTIPLIER);
-    #endif
-    #if ENABLED(Y_IS_TMC2130) || ENABLED(Y_IS_TMC2208)
-      stepperY.setCurrent(Y_CURRENT, R_SENSE, HOLD_MULTIPLIER);
-    #endif
-    #if ENABLED(Z_IS_TMC2130) || ENABLED(Z_IS_TMC2208)
-      stepperZ.setCurrent(Z_CURRENT, R_SENSE, HOLD_MULTIPLIER);
-    #endif
-    #if ENABLED(X2_IS_TMC2130) || ENABLED(X2_IS_TMC2208)
-      stepperX2.setCurrent(X2_CURRENT, R_SENSE, HOLD_MULTIPLIER);
-    #endif
-    #if ENABLED(Y2_IS_TMC2130) || ENABLED(Y2_IS_TMC2208)
-      stepperY2.setCurrent(Y2_CURRENT, R_SENSE, HOLD_MULTIPLIER);
-    #endif
-    #if ENABLED(Z2_IS_TMC2130) || ENABLED(Z2_IS_TMC2208)
-      stepperZ2.setCurrent(Z2_CURRENT, R_SENSE, HOLD_MULTIPLIER);
-    #endif
-    #if ENABLED(E0_IS_TMC2130) || ENABLED(E0_IS_TMC2208)
-      stepperE0.setCurrent(E0_CURRENT, R_SENSE, HOLD_MULTIPLIER);
-    #endif
-    #if ENABLED(E1_IS_TMC2130) || ENABLED(E1_IS_TMC2208)
-      stepperE1.setCurrent(E1_CURRENT, R_SENSE, HOLD_MULTIPLIER);
-    #endif
-    #if ENABLED(E2_IS_TMC2130) || ENABLED(E2_IS_TMC2208)
-      stepperE2.setCurrent(E2_CURRENT, R_SENSE, HOLD_MULTIPLIER);
-    #endif
-    #if ENABLED(E3_IS_TMC2130) || ENABLED(E3_IS_TMC2208)
-      stepperE3.setCurrent(E3_CURRENT, R_SENSE, HOLD_MULTIPLIER);
-    #endif
-    #if ENABLED(E4_IS_TMC2130) || ENABLED(E4_IS_TMC2208)
-      stepperE4.setCurrent(E4_CURRENT, R_SENSE, HOLD_MULTIPLIER);
-    #endif
+  #if X_IS_TRINAMIC
+    stepperX.setCurrent(X_CURRENT, R_SENSE, HOLD_MULTIPLIER);
+  #endif
+  #if Y_IS_TRINAMIC
+    stepperY.setCurrent(Y_CURRENT, R_SENSE, HOLD_MULTIPLIER);
+  #endif
+  #if Z_IS_TRINAMIC
+    stepperZ.setCurrent(Z_CURRENT, R_SENSE, HOLD_MULTIPLIER);
+  #endif
+  #if X2_IS_TRINAMIC
+    stepperX2.setCurrent(X2_CURRENT, R_SENSE, HOLD_MULTIPLIER);
+  #endif
+  #if Y2_IS_TRINAMIC
+    stepperY2.setCurrent(Y2_CURRENT, R_SENSE, HOLD_MULTIPLIER);
+  #endif
+  #if Z2_IS_TRINAMIC
+    stepperZ2.setCurrent(Z2_CURRENT, R_SENSE, HOLD_MULTIPLIER);
+  #endif
+  #if E0_IS_TRINAMIC
+    stepperE0.setCurrent(E0_CURRENT, R_SENSE, HOLD_MULTIPLIER);
+  #endif
+  #if E1_IS_TRINAMIC
+    stepperE1.setCurrent(E1_CURRENT, R_SENSE, HOLD_MULTIPLIER);
+  #endif
+  #if E2_IS_TRINAMIC
+    stepperE2.setCurrent(E2_CURRENT, R_SENSE, HOLD_MULTIPLIER);
+  #endif
+  #if E3_IS_TRINAMIC
+    stepperE3.setCurrent(E3_CURRENT, R_SENSE, HOLD_MULTIPLIER);
+  #endif
+  #if E4_IS_TRINAMIC
+    stepperE4.setCurrent(E4_CURRENT, R_SENSE, HOLD_MULTIPLIER);
   #endif
 
   #if ENABLED(LIN_ADVANCE)
