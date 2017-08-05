@@ -244,8 +244,6 @@
       { constexpr int extruder = 4; _TMC2130_INIT(E4, steps_per_mm[E_AXIS_N]); }
     #endif
 
-    TMC2130_ADV()
-    delay(500);
   }
 #endif // HAVE_TMC2130
 
@@ -429,8 +427,6 @@
     #if ENABLED(E4_IS_TMC2208)
       { constexpr int extruder = 4; _TMC2208_INIT(E4, steps_per_mm[E_AXIS_N]); }
     #endif
-
-    TMC2208_ADV()
   }
 #endif // HAVE_TMC2208
 

@@ -960,6 +960,11 @@ void Stepper::init() {
     tmc2208_init();
   #endif
 
+  // TRAMS, TMC2130 and TMC2208 advanced settings
+  #if HAS_TRINAMIC
+    TMC_ADV()
+  #endif
+
   // Init L6470 Steppers
   #if ENABLED(HAVE_L6470DRIVER)
     L6470_init();
