@@ -175,8 +175,8 @@
     st.begin();
     st.setCurrent(st.getCurrent(), R_SENSE, HOLD_MULTIPLIER);
     st.microsteps(microsteps);
-    //st.blank_time(36);
-    //st.off_time(5); // Only enables the driver if used with stealthChop
+    st.blank_time(24);
+    st.off_time(5); // Only enables the driver if used with stealthChop
     st.interpolate(INTERPOLATE);
     st.power_down_delay(128); // ~2s until driver lowers to hold current
     st.hysterisis_start(0); // HSTRT = 1
@@ -383,8 +383,8 @@
     st.I_scale_analog(false);
     st.rms_current(st.getCurrent(), HOLD_MULTIPLIER, R_SENSE);
     st.microsteps(microsteps);
-    st.tbl(0b10); // Blank time = 24
-    st.toff(0b10); // Off time = 2
+    st.blank_time(24);
+    st.toff(5);
     st.intpol(INTERPOLATE);
     #if DISABLED(STEALTHCHOP)
       st.en_spreadCycle(true);
