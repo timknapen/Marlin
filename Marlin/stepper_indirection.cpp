@@ -171,7 +171,7 @@
   // Use internal reference voltage for current calculations. This is the default.
   // Following values from Trinamic's spreadsheet with values for a NEMA17 (42BYGHW609)
   // https://www.trinamic.com/products/integrated-circuits/details/tmc2130/
-  void tmc2130_init(TMC2130Stepper &st, const uint16_t microsteps, const uint32_t thrs, const float &spmm) {
+  void tmc2130_init(TMC2130Stepper &st, const uint16_t microsteps, const uint32_t thrs, const float spmm) {
     st.begin();
     st.setCurrent(st.getCurrent(), R_SENSE, HOLD_MULTIPLIER);
     st.microsteps(microsteps);
@@ -190,6 +190,9 @@
       st.stealthChop(1);
       #if ENABLED(HYBRID_THRESHOLD)
         st.stealth_max_speed(12650000UL*st.microsteps()/(256*thrs*spmm));
+      #else
+        UNUSED(thrs);
+        UNUSED(spmm);
       #endif
     #elif ENABLED(SENSORLESS_HOMING)
       st.coolstep_min_speed(1024UL * 1024UL - 1UL);
