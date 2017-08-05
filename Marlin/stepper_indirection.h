@@ -60,6 +60,7 @@
 
 #if ENABLED(HAVE_TMC2208)
   #include <TMC2208Stepper.h>
+  void tmc2208_serial_begin();
   void tmc2208_init();
 #endif
 

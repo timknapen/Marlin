@@ -14096,6 +14096,10 @@ void setup() {
   SERIAL_PROTOCOLLNPGM("start");
   SERIAL_ECHO_START();
 
+  #if ENABLED(HAVE_TMC2208)
+    tmc2208_serial_begin();
+  #endif
+
   // Check startup - does nothing if bootloader sets MCUSR to 0
   byte mcu = MCUSR;
   if (mcu &  1) SERIAL_ECHOLNPGM(MSG_POWERUP);
