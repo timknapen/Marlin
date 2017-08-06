@@ -10509,7 +10509,11 @@ inline void gcode_M502() {
 
     inline void gcode_M122() {
       if (parser.seen('S')) {
-        report_tmc_status = parser.value_bool();
+        if (parser.value_bool()) {
+          SERIAL_ECHOLNPGM("axis:pwm_scale |status_response|");
+          report_tmc_status = true;
+        } else
+          report_tmc_status = false;
       } else {
         SERIAL_ECHOPGM("\t");                 tmc_debug_loop(TMC_CODES);
         SERIAL_ECHOPGM("Enabled\t");          tmc_debug_loop(TMC_ENABLED);
