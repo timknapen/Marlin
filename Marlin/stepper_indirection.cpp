@@ -190,7 +190,7 @@
       st.stealth_amplitude(255);
       st.stealthChop(1);
       #if ENABLED(HYBRID_THRESHOLD)
-        st.stealth_max_speed(12650000UL*st.microsteps()/(256*thrs*spmm));
+        st.stealth_max_speed(12650000UL*microsteps/(256*thrs*spmm));
       #else
         UNUSED(thrs);
         UNUSED(spmm);
@@ -401,7 +401,7 @@
       st.pwm_ofs(36);
       st.en_spreadCycle(false);
       #if ENABLED(HYBRID_THRESHOLD)
-        st.TPWMTHRS(12650000UL*st.microsteps()/(256*thrs*spmm));
+        st.TPWMTHRS(12650000UL*microsteps/(256*thrs*spmm));
       #else
         UNUSED(thrs);
         UNUSED(spmm);
