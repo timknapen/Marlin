@@ -129,6 +129,7 @@
 
   #include <SPI.h>
   #include <TMC2130Stepper.h>
+  #include "planner.h"
   #include "enum.h"
 
   #define _TMC2130_DEFINE(ST) TMC2130Stepper stepper##ST(ST##_ENABLE_PIN, ST##_DIR_PIN, ST##_STEP_PIN, ST##_CS_PIN)
@@ -205,43 +206,43 @@
   void tmc2130_init() {
     constexpr float steps_per_mm[] = DEFAULT_AXIS_STEPS_PER_UNIT;
     #if ENABLED(X_IS_TMC2130)
-      _TMC2130_INIT( X, steps_per_mm[X_AXIS]);
+      _TMC2130_INIT( X, planner.axis_steps_per_mm[X_AXIS]);
       #if ENABLED(SENSORLESS_HOMING)
         stepperX.sg_stall_value(X_HOMING_SENSITIVITY);
       #endif
     #endif
     #if ENABLED(X2_IS_TMC2130)
-      _TMC2130_INIT(X2, steps_per_mm[X_AXIS]);
+      _TMC2130_INIT(X2, planner.axis_steps_per_mm[X_AXIS]);
     #endif
     #if ENABLED(Y_IS_TMC2130)
-      _TMC2130_INIT( Y, steps_per_mm[Y_AXIS]);
+      _TMC2130_INIT( Y, planner.axis_steps_per_mm[Y_AXIS]);
       #if ENABLED(SENSORLESS_HOMING)
         stepperY.sg_stall_value(Y_HOMING_SENSITIVITY);
       #endif
     #endif
     #if ENABLED(Y2_IS_TMC2130)
-      _TMC2130_INIT(Y2, steps_per_mm[Y_AXIS]);
+      _TMC2130_INIT(Y2, planner.axis_steps_per_mm[Y_AXIS]);
     #endif
     #if ENABLED(Z_IS_TMC2130)
-      _TMC2130_INIT( Z, steps_per_mm[Z_AXIS]);
+      _TMC2130_INIT( Z, planner.axis_steps_per_mm[Z_AXIS]);
     #endif
     #if ENABLED(Z2_IS_TMC2130)
-      _TMC2130_INIT(Z2, steps_per_mm[Z_AXIS]);
+      _TMC2130_INIT(Z2, planner.axis_steps_per_mm[Z_AXIS]);
     #endif
     #if ENABLED(E0_IS_TMC2130)
-      _TMC2130_INIT(E0, steps_per_mm[E_AXIS]);
+      _TMC2130_INIT(E0, planner.axis_steps_per_mm[E_AXIS]);
     #endif
     #if ENABLED(E1_IS_TMC2130)
-      { constexpr int extruder = 1; _TMC2130_INIT(E1, steps_per_mm[E_AXIS_N]); }
+      { constexpr int extruder = 1; _TMC2130_INIT(E1, planner.axis_steps_per_mm[E_AXIS_N]); }
     #endif
     #if ENABLED(E2_IS_TMC2130)
-      { constexpr int extruder = 2; _TMC2130_INIT(E2, steps_per_mm[E_AXIS_N]); }
+      { constexpr int extruder = 2; _TMC2130_INIT(E2, planner.axis_steps_per_mm[E_AXIS_N]); }
     #endif
     #if ENABLED(E3_IS_TMC2130)
-      { constexpr int extruder = 3; _TMC2130_INIT(E3, steps_per_mm[E_AXIS_N]); }
+      { constexpr int extruder = 3; _TMC2130_INIT(E3, planner.axis_steps_per_mm[E_AXIS_N]); }
     #endif
     #if ENABLED(E4_IS_TMC2130)
-      { constexpr int extruder = 4; _TMC2130_INIT(E4, steps_per_mm[E_AXIS_N]); }
+      { constexpr int extruder = 4; _TMC2130_INIT(E4, planner.axis_steps_per_mm[E_AXIS_N]); }
     #endif
 
   }
@@ -255,6 +256,7 @@
   #include <SoftwareSerial.h>
   #include <HardwareSerial.h>
   #include <TMC2208Stepper.h>
+  #include "planner.h"
 
   #define _TMC2208_DEFINE_HARDWARE(ST) TMC2208Stepper stepper##ST(&ST##_HARDWARE_SERIAL)
   #define _TMC2208_DEFINE_SOFTWARE(ST) SoftwareSerial stepper##ST##_serial = SoftwareSerial(ST##_SERIAL_RX_PIN, ST##_SERIAL_TX_PIN); \
@@ -415,37 +417,37 @@
   void tmc2208_init() {
     constexpr float steps_per_mm[] = DEFAULT_AXIS_STEPS_PER_UNIT;
     #if ENABLED(X_IS_TMC2208)
-      _TMC2208_INIT(X, steps_per_mm[X_AXIS]);
+      _TMC2208_INIT(X, planner.axis_steps_per_mm[X_AXIS]);
     #endif
     #if ENABLED(X2_IS_TMC2208)
-      _TMC2208_INIT(X2, steps_per_mm[X_AXIS]);
+      _TMC2208_INIT(X2, planner.axis_steps_per_mm[X_AXIS]);
     #endif
     #if ENABLED(Y_IS_TMC2208)
-      _TMC2208_INIT(Y, steps_per_mm[Y_AXIS]);
+      _TMC2208_INIT(Y, planner.axis_steps_per_mm[Y_AXIS]);
     #endif
     #if ENABLED(Y2_IS_TMC2208)
-      _TMC2208_INIT(Y2, steps_per_mm[Y_AXIS]);
+      _TMC2208_INIT(Y2, planner.axis_steps_per_mm[Y_AXIS]);
     #endif
     #if ENABLED(Z_IS_TMC2208)
-      _TMC2208_INIT(Z, steps_per_mm[Z_AXIS]);
+      _TMC2208_INIT(Z, planner.axis_steps_per_mm[Z_AXIS]);
     #endif
     #if ENABLED(Z2_IS_TMC2208)
-      _TMC2208_INIT(Z2, steps_per_mm[Z_AXIS]);
+      _TMC2208_INIT(Z2, planner.axis_steps_per_mm[Z_AXIS]);
     #endif
     #if ENABLED(E0_IS_TMC2208)
-      _TMC2208_INIT(E0, steps_per_mm[E_AXIS]);
+      _TMC2208_INIT(E0, planner.axis_steps_per_mm[E_AXIS]);
     #endif
     #if ENABLED(E1_IS_TMC2208)
-      { constexpr int extruder = 1; _TMC2208_INIT(E1, steps_per_mm[E_AXIS_N]); }
+      { constexpr int extruder = 1; _TMC2208_INIT(E1, planner.axis_steps_per_mm[E_AXIS_N]); }
     #endif
     #if ENABLED(E2_IS_TMC2208)
-      { constexpr int extruder = 2; _TMC2208_INIT(E2, steps_per_mm[E_AXIS_N]); }
+      { constexpr int extruder = 2; _TMC2208_INIT(E2, planner.axis_steps_per_mm[E_AXIS_N]); }
     #endif
     #if ENABLED(E3_IS_TMC2208)
-      { constexpr int extruder = 3; _TMC2208_INIT(E3, steps_per_mm[E_AXIS_N]); }
+      { constexpr int extruder = 3; _TMC2208_INIT(E3, planner.axis_steps_per_mm[E_AXIS_N]); }
     #endif
     #if ENABLED(E4_IS_TMC2208)
-      { constexpr int extruder = 4; _TMC2208_INIT(E4, steps_per_mm[E_AXIS_N]); }
+      { constexpr int extruder = 4; _TMC2208_INIT(E4, planner.axis_steps_per_mm[E_AXIS_N]); }
     #endif
   }
 #endif // HAVE_TMC2208
