@@ -377,7 +377,7 @@
 
   // Use internal reference voltage for current calculations. This is the default.
   // Following values from Trinamic's spreadsheet with values for a NEMA17 (42BYGHW609)
-  void tmc2208_init(TMC2208Stepper &st, const uint16_t microsteps) {
+  void tmc2208_init(TMC2208Stepper &st, const uint16_t microsteps, const uint32_t thrs, const float spmm) {
     st.pdn_disable(true); // Use UART
     st.mstep_reg_select(true); // Select microsteps with UART
     st.I_scale_analog(false);
@@ -386,34 +386,54 @@
     st.blank_time(24);
     st.toff(5);
     st.intpol(INTERPOLATE);
-    #if DISABLED(STEALTHCHOP)
+    st.TPOWERDOWN(128); // ~2s until driver lowers to hold current
+    st.hstrt(0); // HSTRT = 1
+    st.hend(1);
+    #if ENABLED(STEALTHCHOP)
+      st.pwm_lim(12);
+      st.pwm_reg(8);
+      st.pwm_autograd(1);
+      st.pwm_autoscale(1);
+      st.pwm_freq(1);
+      st.pwm_grad(14);
+      st.pwm_ofs(36);
+      st.en_spreadCycle(false);
+      #if ENABLED(HYBRID_THRESHOLD)
+        st.TPWMTHRS(12650000UL*st.microsteps()/(256*thrs*spmm));
+      #else
+        UNUSED(thrs);
+        UNUSED(spmm);
+      #endif
+    #else
       st.en_spreadCycle(true);
     #endif
+    delay(200);
   }
 
-  #define _TMC2208_INIT(ST) tmc2208_init(stepper##ST, ST##_MICROSTEPS)
+  #define _TMC2208_INIT(ST, SPMM) tmc2208_init(stepper##ST, ST##_MICROSTEPS, ST##_HYBRID_THRESHOLD, SPMM)
 
   void tmc2208_init() {
+    constexpr float steps_per_mm[] = DEFAULT_AXIS_STEPS_PER_UNIT;
     #if ENABLED(X_IS_TMC2208)
-      _TMC2208_INIT(X);
+      _TMC2208_INIT(X, steps_per_mm[X_AXIS]);
     #endif
     #if ENABLED(X2_IS_TMC2208)
-      _TMC2208_INIT(X2);
+      _TMC2208_INIT(X2, steps_per_mm[X_AXIS]);
     #endif
     #if ENABLED(Y_IS_TMC2208)
-      _TMC2208_INIT(Y);
+      _TMC2208_INIT(Y, steps_per_mm[Y_AXIS]);
     #endif
     #if ENABLED(Y2_IS_TMC2208)
-      _TMC2208_INIT(Y2);
+      _TMC2208_INIT(Y2, steps_per_mm[Y_AXIS]);
     #endif
     #if ENABLED(Z_IS_TMC2208)
-      _TMC2208_INIT(Z);
+      _TMC2208_INIT(Z, steps_per_mm[Z_AXIS]);
     #endif
     #if ENABLED(Z2_IS_TMC2208)
-      _TMC2208_INIT(Z2);
+      _TMC2208_INIT(Z2, steps_per_mm[Z_AXIS]);
     #endif
     #if ENABLED(E0_IS_TMC2208)
-      _TMC2208_INIT(E0);
+      _TMC2208_INIT(E0, steps_per_mm[E_AXIS]);
     #endif
     #if ENABLED(E1_IS_TMC2208)
       { constexpr int extruder = 1; _TMC2208_INIT(E1, steps_per_mm[E_AXIS_N]); }
