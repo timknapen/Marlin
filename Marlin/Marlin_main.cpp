@@ -10183,6 +10183,7 @@ inline void gcode_M502() {
       TMC_ENABLED,
       TMC_CURRENT,
       TMC_RMS_CURRENT,
+      TMC_MAX_CURRENT,
       TMC_IRUN,
       TMC_IHOLD,
       TMC_CS_ACTUAL,
@@ -10197,6 +10198,8 @@ inline void gcode_M502() {
       TMC_OTPW_TRIGGERED,
       TMC_TOFF,
       TMC_TBL,
+      TMC_HEND,
+      TMC_HSTRT,
       TMC_SGT
     };
     enum TMC_drv_status_enum {
@@ -10298,6 +10301,7 @@ inline void gcode_M502() {
           case TMC_ENABLED: serialprintPGM(st.isEnabled() ? PSTR("true") : PSTR("false")); break;
           case TMC_CURRENT: SERIAL_ECHO(st.getCurrent()); break;
           case TMC_RMS_CURRENT: SERIAL_ECHO(st.rms_current()); break;
+          case TMC_MAX_CURRENT: SERIAL_ECHO((float)st.rms_current()*1.41); break;
           case TMC_IRUN:
             MYSERIAL.print(st.irun(), DEC);
             SERIAL_ECHOPGM("/31");
@@ -10331,6 +10335,8 @@ inline void gcode_M502() {
           case TMC_OTPW_TRIGGERED: serialprintPGM(st.getOTPW() ? PSTR("true") : PSTR("false")); break;
           case TMC_TOFF: MYSERIAL.print(st.off_time(), DEC); break;
           case TMC_TBL: MYSERIAL.print(st.blank_time(), DEC); break;
+          case TMC_HEND: MYSERIAL.print(st.hysterisis_end(), DEC); break;
+          case TMC_HSTRT: MYSERIAL.print(st.hysterisis_start(), DEC); break;
           case TMC_SGT: MYSERIAL.print(st.sgt(), DEC); break;
         }
       }
@@ -10361,6 +10367,7 @@ inline void gcode_M502() {
           case TMC_ENABLED: serialprintPGM(st.isEnabled() ? PSTR("true") : PSTR("false")); break;
           case TMC_CURRENT: SERIAL_ECHO(st.getCurrent()); break;
           case TMC_RMS_CURRENT: SERIAL_ECHO(st.rms_current()); break;
+          case TMC_MAX_CURRENT: SERIAL_ECHO((float)st.rms_current()*1.41); break;
           case TMC_IRUN:
             MYSERIAL.print(st.irun(), DEC);
             SERIAL_ECHOPGM("/31");
@@ -10402,6 +10409,8 @@ inline void gcode_M502() {
           case TMC_OTPW_TRIGGERED: serialprintPGM(st.getOTPW() ? PSTR("true") : PSTR("false")); break;
           case TMC_TOFF: MYSERIAL.print(st.toff(), DEC); break;
           case TMC_TBL: MYSERIAL.print(st.blank_time(), DEC); break;
+          case TMC_HEND: MYSERIAL.print(st.hysterisis_end(), DEC); break;
+          case TMC_HSTRT: MYSERIAL.print(st.hysterisis_start(), DEC); break;
           default: break;
         }
       }
@@ -10519,12 +10528,13 @@ inline void gcode_M502() {
         SERIAL_ECHOPGM("Enabled\t");          tmc_debug_loop(TMC_ENABLED);
         SERIAL_ECHOPGM("Set current");        tmc_debug_loop(TMC_CURRENT);
         SERIAL_ECHOPGM("RMS current");        tmc_debug_loop(TMC_RMS_CURRENT);
+        SERIAL_ECHOPGM("MAX current");        tmc_debug_loop(TMC_MAX_CURRENT);
         SERIAL_ECHOPGM("Run current");        tmc_debug_loop(TMC_IRUN);
         SERIAL_ECHOPGM("Hold current");       tmc_debug_loop(TMC_IHOLD);
         SERIAL_ECHOPGM("CS actual\t");        tmc_debug_loop(TMC_CS_ACTUAL);
         SERIAL_ECHOPGM("PWM scale");          tmc_debug_loop(TMC_PWM_SCALE);
         SERIAL_ECHOPGM("vsense\t");           tmc_debug_loop(TMC_VSENSE);
-        SERIAL_ECHOPGM("stealth\t");          tmc_debug_loop(TMC_STEALTHCHOP);
+        SERIAL_ECHOPGM("stealthChop");        tmc_debug_loop(TMC_STEALTHCHOP);
         SERIAL_ECHOPGM("msteps\t");           tmc_debug_loop(TMC_MICROSTEPS);
         SERIAL_ECHOPGM("tstep\t");            tmc_debug_loop(TMC_TSTEP);
         SERIAL_ECHOPGM("pwm\nthreshold\t");   tmc_debug_loop(TMC_TPWMTHRS);
@@ -10533,6 +10543,8 @@ inline void gcode_M502() {
         SERIAL_ECHOPGM("OT prewarn has\nbeen triggered"); tmc_debug_loop(TMC_OTPW_TRIGGERED);
         SERIAL_ECHOPGM("off time\t");         tmc_debug_loop(TMC_TOFF);
         SERIAL_ECHOPGM("blank time");         tmc_debug_loop(TMC_TBL);
+        SERIAL_ECHOPGM("hysterisis\n-end\t"); tmc_debug_loop(TMC_HEND);
+        SERIAL_ECHOPGM("-start\t");           tmc_debug_loop(TMC_HSTRT);
         SERIAL_ECHOPGM("Stallguard thrs");    tmc_debug_loop(TMC_SGT);
 
         uint32_t drv_status_array[10] = {0};
