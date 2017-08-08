@@ -10238,69 +10238,6 @@ inline void gcode_M502() {
           case TMC_ENABLED: serialprintPGM(st.isEnabled() ? PSTR("true") : PSTR("false")); break;
           case TMC_CURRENT: SERIAL_ECHO(st.getCurrent()); break;
           case TMC_RMS_CURRENT: SERIAL_ECHO(st.rms_current()); break;
-          case TMC_IRUN:
-            MYSERIAL.print(st.irun(), DEC);
-            SERIAL_ECHOPGM("/31");
-            break;
-          case TMC_IHOLD:
-            MYSERIAL.print(st.ihold(), DEC);
-            SERIAL_ECHOPGM("/31");
-            break;
-          case TMC_CS_ACTUAL:
-            MYSERIAL.print(st.cs_actual(), DEC);
-            SERIAL_ECHOPGM("/31");
-            break;
-          case TMC_PWM_SCALE: MYSERIAL.print(st.PWM_SCALE(), DEC); break;
-          case TMC_VSENSE: serialprintPGM(st.vsense() ? PSTR("1=.18") : PSTR("0=.325")); break;
-          case TMC_STEALTHCHOP: serialprintPGM(st.stealthChop() ? PSTR("true") : PSTR("false")); break;
-          case TMC_MICROSTEPS: SERIAL_ECHO(st.microsteps()); break;
-          case TMC_TSTEP: SERIAL_ECHO(st.TSTEP()); break;
-          case TMC_TPWMTHRS:
-            {
-              uint32_t tpwmthrs_val = st.TPWMTHRS();
-              SERIAL_ECHO(tpwmthrs_val);
-            }
-            break;
-          case TMC_TPWMTHRS_MMS:
-            {
-              uint32_t tpwmthrs_val = st.TPWMTHRS();
-              tpwmthrs_val ? SERIAL_ECHO(12650000UL * st.microsteps() / (256 * st.stealth_max_speed() * spmm)) : SERIAL_ECHO('-');
-            }
-            break;
-          case TMC_OTPW: serialprintPGM(st.otpw() ? PSTR("true") : PSTR("false")); break;
-          case TMC_OTPW_TRIGGERED: serialprintPGM(st.getOTPW() ? PSTR("true") : PSTR("false")); break;
-          case TMC_TOFF: MYSERIAL.print(st.off_time(), DEC); break;
-          case TMC_TBL: MYSERIAL.print(st.blank_time(), DEC); break;
-          case TMC_SGT: MYSERIAL.print(st.sgt(), DEC); break;
-        }
-      }
-
-      static void tmc_parse_drv_status(TMC2130Stepper &st, TMC_AxisEnum axis, const TMC_drv_status_enum i, const uint32_t drv_status) {
-        SERIAL_ECHOPGM("\t");
-        switch(i) {
-          case TMC_DRV_CODES:     SERIAL_ECHO(extended_axis_codes[axis]);  break;
-          case TMC_STST:          if (drv_status&STST_bm)         SERIAL_ECHOPGM("X"); break;
-          case TMC_OLB:           if (drv_status&OLB_bm)          SERIAL_ECHOPGM("X"); break;
-          case TMC_OLA:           if (drv_status&OLA_bm)          SERIAL_ECHOPGM("X"); break;
-          case TMC_S2GB:          if (drv_status&S2GB_bm)         SERIAL_ECHOPGM("X"); break;
-          case TMC_S2GA:          if (drv_status&S2GA_bm)         SERIAL_ECHOPGM("X"); break;
-          case TMC_DRV_OTPW:      if (drv_status&OTPW_bm)         SERIAL_ECHOPGM("X"); break;
-          case TMC_OT:            if (drv_status&OT_bm)           SERIAL_ECHOPGM("X"); break;
-          case TMC_STALLGUARD:    if (drv_status&STALLGUARD_bm)   SERIAL_ECHOPGM("X"); break;
-          case TMC_DRV_CS_ACTUAL: SERIAL_ECHO((drv_status&CS_ACTUAL_bm)>>CS_ACTUAL_bp); break;
-          case TMC_FSACTIVE:      if (drv_status&FSACTIVE_bm)     SERIAL_ECHOPGM("X"); break;
-          case TMC_SG_RESULT:     SERIAL_ECHO((drv_status&SG_RESULT_bm)>>SG_RESULT_bp); break;
-          case TMC_DRV_STATUS_HEX:drv_status_print_hex(extended_axis_codes[axis], drv_status); break;
-        }
-      }
-    #endif
-    #if ENABLED(IS_TRAMS)
-      static void tmc_status(TMC5130Stepper &st, AxisEnum axis, const TMC_debug_enum i, const uint16_t spmm) {
-        switch(i) {
-          case TMC_CODES: SERIAL_ECHOPAIR("\t", extended_axis_codes[axis]); break;
-          case TMC_ENABLED: serialprintPGM(st.isEnabled() ? PSTR("true") : PSTR("false")); break;
-          case TMC_CURRENT: SERIAL_ECHO(st.getCurrent()); break;
-          case TMC_RMS_CURRENT: SERIAL_ECHO(st.rms_current()); break;
           case TMC_MAX_CURRENT: SERIAL_ECHO((float)st.rms_current()*1.41); break;
           case TMC_IRUN:
             MYSERIAL.print(st.irun(), DEC);
@@ -10340,7 +10277,8 @@ inline void gcode_M502() {
           case TMC_SGT: MYSERIAL.print(st.sgt(), DEC); break;
         }
       }
-      static void tmc_parse_drv_status(TMC5130Stepper &st, TMC_AxisEnum axis, const uint8_t i, const uint32_t drv_status) {
+
+      static void tmc_parse_drv_status(TMC2130Stepper &st, TMC_AxisEnum axis, const TMC_drv_status_enum i, const uint32_t drv_status) {
         SERIAL_ECHOPGM("\t");
         switch(i) {
           case TMC_DRV_CODES:     SERIAL_ECHO(extended_axis_codes[axis]);  break;
