@@ -1077,7 +1077,7 @@
 
   /**
    * Monitor Trinamic TMC2130 and TMC2208 drivers for error conditions,
-   * like overtemperature and short to ground.
+   * like overtemperature and short to ground. TMC2208 requires hardware serial.
    * In the case of overtemperature Marlin can decrease the driver current until error condition clears.
    * Other detected conditions can be used to stop the current print.
    * Relevant g-codes:
