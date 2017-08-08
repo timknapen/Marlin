@@ -13719,21 +13719,67 @@ void disable_all_steppers() {
    * Keep track of otpw counter so we don't reduce current on a single instance,
    * and so we don't repeatedly report warning before the condition is cleared.
    */
+
+  struct TMC_driver_data {
+    uint32_t drv_status;
+    bool is_otpw;
+    bool is_ot;
+    bool is_error;
+  };
+  #if ENABLED(HAVE_TMC2130)
+    static uint32_t get_pwm_scale(TMC2130Stepper &st) { return st.PWM_SCALE(); }
+    static uint8_t get_status_response(TMC2130Stepper &st) { return st.status_response&0xF; }
+    static TMC_driver_data get_driver_data(TMC2130Stepper &st) {
+      constexpr uint32_t OTPW_bm = 0x4000000UL;
+      constexpr uint8_t OTPW_bp = 26;
+      constexpr uint32_t OT_bm = 0x2000000UL;
+      constexpr uint8_t OT_bp = 25;
+      constexpr uint8_t DRIVER_ERROR_bm = 0x2UL;
+      constexpr uint8_t DRIVER_ERROR_bp = 1;
+      TMC_driver_data data;
+      data.drv_status = st.DRV_STATUS();
+      data.is_otpw = (data.drv_status & OTPW_bm)>>OTPW_bp;
+      data.is_ot = (data.drv_status & OT_bm)>>OT_bp;
+      data.is_error = (st.status_response & DRIVER_ERROR_bm)>>DRIVER_ERROR_bp;
+      return data;
+    }
+  #endif
+  #if ENABLED(HAVE_TMC2208)
+    static uint32_t get_pwm_scale(TMC2208Stepper &st) { return st.pwm_scale_sum(); }
+    static uint8_t get_status_response(TMC2208Stepper &st) {
+      uint32_t drv_status = st.DRV_STATUS();
+      uint8_t gstat = st.GSTAT();
+      uint8_t response = 0;
+      response |= (drv_status >> (31-3)) & 0b1000;
+      response |= gstat & 0b11;
+      return response;
+    }
+    static TMC_driver_data get_driver_data(TMC2208Stepper &st) {
+      constexpr uint32_t OTPW_bm = 0b1ul;
+      constexpr uint8_t OTPW_bp = 0;
+      constexpr uint32_t OT_bm = 0b10ul;
+      constexpr uint8_t OT_bp = 1;
+      TMC_driver_data data;
+      data.drv_status = st.DRV_STATUS();
+      data.is_otpw = (data.drv_status & OTPW_bm)>>OTPW_bp;
+      data.is_ot = (data.drv_status & OT_bm)>>OT_bp;
+      data.is_error = st.drv_err();
+      return data;
+    }
+  #endif
+
   template<typename TMC>
   uint8_t monitor_tmc_driver(TMC &st, const char axisID, uint8_t otpw_cnt) {
-    const uint32_t drv_status = st.DRV_STATUS();
-    const bool  is_otpw = (drv_status & OTPW_bm)>>OTPW_bp,
-                is_ot = (drv_status & OT_bm)>>OT_bp,
-                is_error = (st.status_response & DRIVER_ERROR_bm)>>DRIVER_ERROR_bp;
+    TMC_driver_data data = get_driver_data(st);
 
     #if ENABLED(STOP_ON_ERROR)
-      if (is_error) {
+      if (data.is_error) {
         SERIAL_EOL();
         SERIAL_ECHO(axisID);
         SERIAL_ECHO(" driver error detected:");
-        if (is_ot) SERIAL_ECHO("\novertemperature");
-        if ((drv_status & S2GA_bm)>>S2GA_bp) SERIAL_ECHO("\nshort to ground (coil A)");
-        if ((drv_status & S2GB_bm)>>S2GB_bp) SERIAL_ECHO("\nshort to ground (coil B)");
+        if (data.is_ot) SERIAL_ECHO("\novertemperature");
+        if (st.s2ga()) SERIAL_ECHO("\nshort to ground (coil A)");
+        if (st.s2gb()) SERIAL_ECHO("\nshort to ground (coil B)");
         SERIAL_EOL();
         #if ENABLED(TMC_DEBUG)
           gcode_M122();
@@ -13743,7 +13789,7 @@ void disable_all_steppers() {
     #endif
 
     // Report if a warning was triggered
-    if (is_otpw && otpw_cnt==0) {
+    if (data.is_otpw && otpw_cnt==0) {
       char timestamp[10];
       duration_t elapsed = print_job_timer.duration();
       const bool has_days = (elapsed.value > 60*60*24L);
@@ -13758,7 +13804,7 @@ void disable_all_steppers() {
     }
     #if CURRENT_STEP_DOWN > 0
       // Decrease current if is_otpw is true and driver is enabled and there's been more then 4 warnings
-      if (is_otpw && !st.isEnabled() && otpw_cnt > 4) {
+      if (data.is_otpw && !st.isEnabled() && otpw_cnt > 4) {
         st.setCurrent(st.getCurrent() - CURRENT_STEP_DOWN, R_SENSE, HOLD_MULTIPLIER);
         #if ENABLED(REPORT_CURRENT_CHANGE)
           SERIAL_ECHO(axisID);
@@ -13767,21 +13813,21 @@ void disable_all_steppers() {
       }
     #endif
 
-    if (is_otpw) {
+    if (data.is_otpw) {
       otpw_cnt++;
       st.flag_otpw = true;
     }
     else if (otpw_cnt>0) otpw_cnt--;
 
     if (report_tmc_status) {
-      const uint32_t pwm_scale = st.PWM_SCALE();
+      const uint32_t pwm_scale = get_pwm_scale(st);
       SERIAL_ECHO(axisID);
       SERIAL_ECHOPAIR(":", pwm_scale);
-      SERIAL_ECHO(" |0b"); MYSERIAL.print(st.status_response&0xF, BIN);
+      SERIAL_ECHO(" |0b"); MYSERIAL.print(get_status_response(st), BIN);
       SERIAL_ECHO("| ");
-      if (is_error) SERIAL_ECHO('E');
-      else if (is_ot) SERIAL_ECHO('O');
-      else if (is_otpw) SERIAL_ECHO('W');
+      if (data.is_error) SERIAL_ECHO('E');
+      else if (data.is_ot) SERIAL_ECHO('O');
+      else if (data.is_otpw) SERIAL_ECHO('W');
       else if (otpw_cnt>0) MYSERIAL.print(otpw_cnt, DEC);
       else if (st.flag_otpw) SERIAL_ECHO('F');
       SERIAL_ECHO("\t");
@@ -13794,47 +13840,47 @@ void disable_all_steppers() {
     static millis_t next_cOT = 0;
     if (ELAPSED(millis(), next_cOT)) {
       next_cOT = millis() + 500;
-      #if ENABLED(X_IS_TMC2130)
+      #if ENABLED(X_IS_TMC2130)|| (ENABLED(X_IS_TMC2208) && defined(X_HARDWARE_SERIAL)) || ENABLED(IS_TRAMS)
         static uint8_t x_otpw_cnt = 0;
         x_otpw_cnt = monitor_tmc_driver(stepperX, axis_codes[X_AXIS], x_otpw_cnt);
       #endif
-      #if ENABLED(Y_IS_TMC2130)
+      #if ENABLED(Y_IS_TMC2130)|| (ENABLED(Y_IS_TMC2208) && defined(Y_HARDWARE_SERIAL)) || ENABLED(IS_TRAMS)
         static uint8_t y_otpw_cnt = 0;
         y_otpw_cnt = monitor_tmc_driver(stepperY, axis_codes[Y_AXIS], y_otpw_cnt);
       #endif
-      #if ENABLED(Z_IS_TMC2130)
+      #if ENABLED(Z_IS_TMC2130)|| (ENABLED(Z_IS_TMC2208) && defined(Z_HARDWARE_SERIAL)) || ENABLED(IS_TRAMS)
         static uint8_t z_otpw_cnt = 0;
         z_otpw_cnt = monitor_tmc_driver(stepperZ, axis_codes[Z_AXIS], z_otpw_cnt);
       #endif
-      #if ENABLED(X2_IS_TMC2130)
+      #if ENABLED(X2_IS_TMC2130) || (ENABLED(X2_IS_TMC2208) && defined(X2_HARDWARE_SERIAL))
         static uint8_t x2_otpw_cnt = 0;
         x2_otpw_cnt = monitor_tmc_driver(stepperX2, axis_codes[X_AXIS], x2_otpw_cnt);
       #endif
-      #if ENABLED(Y2_IS_TMC2130)
+      #if ENABLED(Y2_IS_TMC2130) || (ENABLED(Y2_IS_TMC2208) && defined(Y2_HARDWARE_SERIAL))
         static uint8_t y2_otpw_cnt = 0;
         y2_otpw_cnt = monitor_tmc_driver(stepperY2, axis_codes[Y_AXIS], y2_otpw_cnt);
       #endif
-      #if ENABLED(Z2_IS_TMC2130)
+      #if ENABLED(Z2_IS_TMC2130) || (ENABLED(Z2_IS_TMC2208) && defined(Z2_HARDWARE_SERIAL))
         static uint8_t z2_otpw_cnt = 0;
         z2_otpw_cnt = monitor_tmc_driver(stepperZ2, axis_codes[Z_AXIS], z2_otpw_cnt);
       #endif
-      #if ENABLED(E0_IS_TMC2130)
+      #if ENABLED(E0_IS_TMC2130)|| (ENABLED(E0_IS_TMC2208) && defined(E0_HARDWARE_SERIAL)) || ENABLED(IS_TRAMS)
         static uint8_t e0_otpw_cnt = 0;
         e0_otpw_cnt = monitor_tmc_driver(stepperE0, axis_codes[E_AXIS], e0_otpw_cnt);
       #endif
-      #if ENABLED(E1_IS_TMC2130)
+      #if ENABLED(E1_IS_TMC2130) || (ENABLED(E1_IS_TMC2208) && defined(E1_HARDWARE_SERIAL))
         static uint8_t e1_otpw_cnt = 0;
         e1_otpw_cnt = monitor_tmc_driver(stepperE1, axis_codes[E_AXIS], e1_otpw_cnt);
       #endif
-      #if ENABLED(E2_IS_TMC2130)
+      #if ENABLED(E2_IS_TMC2130) || (ENABLED(E2_IS_TMC2208) && defined(E2_HARDWARE_SERIAL))
         static uint8_t e2_otpw_cnt = 0;
         e2_otpw_cnt = monitor_tmc_driver(stepperE2, axis_codes[E_AXIS], e2_otpw_cnt);
       #endif
-      #if ENABLED(E3_IS_TMC2130)
+      #if ENABLED(E3_IS_TMC2130) || (ENABLED(E3_IS_TMC2208) && defined(E3_HARDWARE_SERIAL))
         static uint8_t e3_otpw_cnt = 0;
         e3_otpw_cnt = monitor_tmc_driver(stepperE3, axis_codes[E_AXIS], e3_otpw_cnt);
       #endif
-      #if ENABLED(E4_IS_TMC2130)
+      #if ENABLED(E4_IS_TMC2130) || (ENABLED(E4_IS_TMC2208) && defined(E4_HARDWARE_SERIAL))
         static uint8_t e4_otpw_cnt = 0;
         e4_otpw_cnt = monitor_tmc_driver(stepperE4, axis_codes[E_AXIS], e4_otpw_cnt);
       #endif
@@ -13843,7 +13889,7 @@ void disable_all_steppers() {
     }
   }
 
-#endif // HAVE_TMC2130
+#endif // MONITOR_DRIVER_STATUS
 
 /**
  * Manage several activities:
