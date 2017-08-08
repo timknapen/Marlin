@@ -1989,37 +1989,37 @@ void MarlinSettings::reset() {
       CONFIG_ECHO_START;
       SERIAL_ECHO("  M906");
       #if ENABLED(X_IS_TMC2130) || ENABLED(X_IS_TMC2208)
-        SERIAL_ECHOPAIR(" X", stepperX.getCurrent());
+        SERIAL_ECHOPAIR(" X ", stepperX.getCurrent());
       #endif
       #if ENABLED(Y_IS_TMC2130) || ENABLED(Y_IS_TMC2208)
-        SERIAL_ECHOPAIR(" Y", stepperY.getCurrent());
+        SERIAL_ECHOPAIR(" Y ", stepperY.getCurrent());
       #endif
       #if ENABLED(Z_IS_TMC2130) || ENABLED(Z_IS_TMC2208)
-        SERIAL_ECHOPAIR(" Z", stepperZ.getCurrent());
+        SERIAL_ECHOPAIR(" Z ", stepperZ.getCurrent());
       #endif
       #if ENABLED(X2_IS_TMC2130) || ENABLED(X2_IS_TMC2208)
-        SERIAL_ECHOPAIR(" X2", stepperX2.getCurrent());
+        SERIAL_ECHOPAIR(" X2 ", stepperX2.getCurrent());
       #endif
       #if ENABLED(Y2_IS_TMC2130) || ENABLED(Y2_IS_TMC2208)
-        SERIAL_ECHOPAIR(" Y2", stepperY2.getCurrent());
+        SERIAL_ECHOPAIR(" Y2 ", stepperY2.getCurrent());
       #endif
       #if ENABLED(Z2_IS_TMC2130) || ENABLED(Z2_IS_TMC2208)
-        SERIAL_ECHOPAIR(" Z2", stepperZ2.getCurrent());
+        SERIAL_ECHOPAIR(" Z2 ", stepperZ2.getCurrent());
       #endif
       #if ENABLED(E0_IS_TMC2130) || ENABLED(E0_IS_TMC2208)
-        SERIAL_ECHOPAIR(" E0", stepperE0.getCurrent());
+        SERIAL_ECHOPAIR(" E0 ", stepperE0.getCurrent());
       #endif
       #if ENABLED(E1_IS_TMC2130) || ENABLED(E1_IS_TMC2208)
-        SERIAL_ECHOPAIR(" E1", stepperE1.getCurrent());
+        SERIAL_ECHOPAIR(" E1 ", stepperE1.getCurrent());
       #endif
       #if ENABLED(E2_IS_TMC2130) || ENABLED(E2_IS_TMC2208)
-        SERIAL_ECHOPAIR(" E2", stepperE2.getCurrent());
+        SERIAL_ECHOPAIR(" E2 ", stepperE2.getCurrent());
       #endif
       #if ENABLED(E3_IS_TMC2130) || ENABLED(E3_IS_TMC2208)
-        SERIAL_ECHOPAIR(" E3", stepperE3.getCurrent());
+        SERIAL_ECHOPAIR(" E3 ", stepperE3.getCurrent());
       #endif
       #if ENABLED(E4_IS_TMC2130) || ENABLED(E4_IS_TMC2208)
-        SERIAL_ECHOPAIR(" E4", stepperE4.getCurrent());
+        SERIAL_ECHOPAIR(" E4 ", stepperE4.getCurrent());
       #endif
       SERIAL_EOL();
     #endif
