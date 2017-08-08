@@ -204,7 +204,6 @@
   #define _TMC2130_INIT(ST, SPMM) tmc2130_init(stepper##ST, ST##_MICROSTEPS, ST##_HYBRID_THRESHOLD, SPMM)
 
   void tmc2130_init() {
-    constexpr float steps_per_mm[] = DEFAULT_AXIS_STEPS_PER_UNIT;
     #if ENABLED(X_IS_TMC2130)
       _TMC2130_INIT( X, planner.axis_steps_per_mm[X_AXIS]);
       #if ENABLED(SENSORLESS_HOMING)
@@ -415,7 +414,6 @@
   #define _TMC2208_INIT(ST, SPMM) tmc2208_init(stepper##ST, ST##_MICROSTEPS, ST##_HYBRID_THRESHOLD, SPMM)
 
   void tmc2208_init() {
-    constexpr float steps_per_mm[] = DEFAULT_AXIS_STEPS_PER_UNIT;
     #if ENABLED(X_IS_TMC2208)
       _TMC2208_INIT(X, planner.axis_steps_per_mm[X_AXIS]);
     #endif
