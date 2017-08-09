@@ -995,6 +995,7 @@
  * Connect #_SERIAL_TX_PIN to the driver side PDN_UART pin.
  * To use the reading capabilities, also connect #_SERIAL_RX_PIN
  * to #_SERIAL_TX_PIN with a 1K resistor.
+ * The drivers can also be used with hardware serial.
  *
  * You'll also need the TMC2208Stepper Arduino library
  * (https://github.com/teemuatlut/TMC2208Stepper).
