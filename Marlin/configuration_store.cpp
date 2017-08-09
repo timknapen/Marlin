@@ -154,6 +154,10 @@
  *  578  M906 E3   Stepper E3 current               (uint16_t)
  *  580  M906 E4   Stepper E4 current               (uint16_t)
  *
+ * SENSORLESS HOMING                                4 bytes
+ *  580  M914 X    Stepper X and X2 threshold       (int16_t)
+ *  582  M914 Y    Stepper Y and Y2 threshold       (int16_t)
+ *
  * LIN_ADVANCE:                                     8 bytes
  *  582  M900 K    extruder_advance_k               (float)
  *  586  M900 WHD  advance_ed_ratio                 (float)
@@ -650,6 +654,28 @@ void MarlinSettings::postprocess() {
     #endif
 
     //
+    // TMC2130 Sensorless homing threshold
+    //
+    int16_t thrs;
+    #if ENABLED(SENSORLESS_HOMING)
+      #if ENABLED(X_IS_TMC2130)
+        thrs = stepperX.sgt();
+      #else
+        thrs = 0;
+      #endif
+      EEPROM_WRITE(thrs);
+      #if ENABLED(Y_IS_TMC2130)
+        thrs = stepperY.sgt();
+      #else
+        thrs = 0;
+      #endif
+      EEPROM_WRITE(thrs);
+    #else
+      thrs = 0;
+      for (uint8_t q = 2; q--;) EEPROM_WRITE(thrs);
+    #endif
+
+    //
     // Linear Advance
     //
 
@@ -1093,6 +1119,31 @@ void MarlinSettings::postprocess() {
         for (uint8_t q = 11; q--;) EEPROM_READ(val);
       #endif
 
+      /*
+       * TMC2130 Sensorless homing threshold.
+       * X and X2 use the same value
+       * Y and Y2 use the same value
+       */
+      int16_t thrs;
+      #if ENABLED(SENSORLESS_HOMING)
+        EEPROM_READ(thrs);
+        #if ENABLED(X_IS_TMC2130)
+          stepperX.sgt(thrs);
+        #endif
+        #if ENABLED(X2_IS_TMC2130)
+          stepperX2.sgt(thrs);
+        #endif
+        EEPROM_READ(thrs);
+        #if ENABLED(Y_IS_TMC2130)
+          stepperY.sgt(thrs);
+        #endif
+        #if ENABLED(Y2_IS_TMC2130)
+          stepperY2.sgt(thrs);
+        #endif
+      #else
+        for (uint8_t q = 0; q < 2; q++) EEPROM_READ(thrs);
+      #endif
+
       //
       // Linear Advance
       //
@@ -1506,6 +1557,21 @@ void MarlinSettings::reset() {
   #endif
   #if E4_IS_TRINAMIC
     stepperE4.setCurrent(E4_CURRENT, R_SENSE, HOLD_MULTIPLIER);
+  #endif
+
+  #if ENABLED(SENSORLESS_HOMING)
+    #if ENABLED(X_IS_TMC2130)
+      stepperX.sgt(X_HOMING_SENSITIVITY);
+    #endif
+    #if ENABLED(X2_IS_TMC2130)
+      stepperX2.sgt(X_HOMING_SENSITIVITY);
+    #endif
+    #if ENABLED(Y_IS_TMC2130)
+      stepperY.sgt(Y_HOMING_SENSITIVITY);
+    #endif
+    #if ENABLED(Y2_IS_TMC2130)
+      stepperY2.sgt(Y_HOMING_SENSITIVITY);
+    #endif
   #endif
 
   #if ENABLED(LIN_ADVANCE)
@@ -2020,6 +2086,31 @@ void MarlinSettings::reset() {
       #endif
       #if ENABLED(E4_IS_TMC2130) || ENABLED(E4_IS_TMC2208)
         SERIAL_ECHOPAIR(" E4 ", stepperE4.getCurrent());
+      #endif
+      SERIAL_EOL();
+    #endif
+
+    /**
+     * TMC2130 Sensorless homing thresholds
+     */
+    #if ENABLED(HAVE_TMC2130) && ENABLED(SENSORLESS_HOMING)
+      if (!forReplay) {
+        CONFIG_ECHO_START;
+        SERIAL_ECHOLNPGM("Sensorless homing threshold:");
+      }
+      CONFIG_ECHO_START;
+      SERIAL_ECHO("  M914");
+      #if ENABLED(X_IS_TMC2130)
+        SERIAL_ECHOPAIR(" X", stepperX.sgt());
+      #endif
+      #if ENABLED(X2_IS_TMC2130)
+        SERIAL_ECHOPAIR(" X2 ", stepperX2.sgt());
+      #endif
+      #if ENABLED(Y_IS_TMC2130)
+        SERIAL_ECHOPAIR(" Y", stepperY.sgt());
+      #endif
+      #if ENABLED(X2_IS_TMC2130)
+        SERIAL_ECHOPAIR(" Y2 ", stepperY2.sgt());
       #endif
       SERIAL_EOL();
     #endif
