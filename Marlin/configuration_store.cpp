@@ -575,70 +575,70 @@ void MarlinSettings::postprocess() {
       EEPROM_WRITE(dummy);
     }
 
-    // Save TMC2130 Configuration, and placeholder values
+    // Save TMC2130 or TMC2208 Configuration, and placeholder values
     uint16_t val;
-    #if ENABLED(HAVE_TMC2130) || ENABLED(HAVE_TMC2208)
-      #if ENABLED(X_IS_TMC2130) || ENABLED(X_IS_TMC2208)
+    #if HAS_TRINAMIC
+      #if X_IS_TRINAMIC
         val = stepperX.getCurrent();
       #else
         val = 0;
       #endif
       EEPROM_WRITE(val);
-      #if ENABLED(Y_IS_TMC2130) || ENABLED(Y_IS_TMC2208)
+      #if Y_IS_TRINAMIC
         val = stepperY.getCurrent();
       #else
         val = 0;
       #endif
       EEPROM_WRITE(val);
-      #if ENABLED(Z_IS_TMC2130) || ENABLED(Z_IS_TMC2208)
+      #if Z_IS_TRINAMIC
         val = stepperZ.getCurrent();
       #else
         val = 0;
       #endif
       EEPROM_WRITE(val);
-      #if ENABLED(X2_IS_TMC2130) || ENABLED(X2_IS_TMC2208)
+      #if X2_IS_TRINAMIC
         val = stepperX2.getCurrent();
       #else
         val = 0;
       #endif
       EEPROM_WRITE(val);
-      #if ENABLED(Y2_IS_TMC2130) || ENABLED(Y2_IS_TMC2208)
+      #if Y2_IS_TRINAMIC
         val = stepperY2.getCurrent();
       #else
         val = 0;
       #endif
       EEPROM_WRITE(val);
-      #if ENABLED(Z2_IS_TMC2130) || ENABLED(Z2_IS_TMC2208)
+      #if Z2_IS_TRINAMIC
         val = stepperZ2.getCurrent();
       #else
         val = 0;
       #endif
       EEPROM_WRITE(val);
-      #if ENABLED(E0_IS_TMC2130) || ENABLED(E0_IS_TMC2208)
+      #if E0_IS_TRINAMIC
         val = stepperE0.getCurrent();
       #else
         val = 0;
       #endif
       EEPROM_WRITE(val);
-      #if ENABLED(E1_IS_TMC2130) || ENABLED(E1_IS_TMC2208)
+      #if E1_IS_TRINAMIC
         val = stepperE1.getCurrent();
       #else
         val = 0;
       #endif
       EEPROM_WRITE(val);
-      #if ENABLED(E2_IS_TMC2130) || ENABLED(E2_IS_TMC2208)
+      #if E2_IS_TRINAMIC
         val = stepperE2.getCurrent();
       #else
         val = 0;
       #endif
       EEPROM_WRITE(val);
-      #if ENABLED(E3_IS_TMC2130) || ENABLED(E3_IS_TMC2208)
+      #if E3_IS_TRINAMIC
         val = stepperE3.getCurrent();
       #else
         val = 0;
       #endif
       EEPROM_WRITE(val);
-      #if ENABLED(E4_IS_TMC2130) || ENABLED(E4_IS_TMC2208)
+      #if E4_IS_TRINAMIC
         val = stepperE4.getCurrent();
       #else
         val = 0;
@@ -1044,49 +1044,49 @@ void MarlinSettings::postprocess() {
       //
 
       uint16_t val;
-      #if ENABLED(HAVE_TMC2130) || ENABLED(HAVE_TMC2208)
+      #if HAS_TRINAMIC
         EEPROM_READ(val);
-        #if ENABLED(X_IS_TMC2130) || ENABLED(X_IS_TMC2208)
+        #if X_IS_TRINAMIC
           stepperX.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
         #endif
         EEPROM_READ(val);
-        #if ENABLED(Y_IS_TMC2130) || ENABLED(Y_IS_TMC2208)
+        #if Y_IS_TRINAMIC
           stepperY.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
         #endif
         EEPROM_READ(val);
-        #if ENABLED(Z_IS_TMC2130) || ENABLED(Z_IS_TMC2208)
+        #if Z_IS_TRINAMIC
           stepperZ.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
         #endif
         EEPROM_READ(val);
-        #if ENABLED(X2_IS_TMC2130) || ENABLED(X2_IS_TMC2208)
+        #if X2_IS_TRINAMIC
           stepperX2.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
         #endif
         EEPROM_READ(val);
-        #if ENABLED(Y2_IS_TMC2130) || ENABLED(Y2_IS_TMC2208)
+        #if Y2_IS_TRINAMIC
           stepperY2.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
         #endif
         EEPROM_READ(val);
-        #if ENABLED(Z2_IS_TMC2130) || ENABLED(Z2_IS_TMC2208)
+        #if Z2_IS_TRINAMIC
           stepperZ2.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
         #endif
         EEPROM_READ(val);
-        #if ENABLED(E0_IS_TMC2130) || ENABLED(E0_IS_TMC2208)
+        #if E0_IS_TRINAMIC
           stepperE0.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
         #endif
         EEPROM_READ(val);
-        #if ENABLED(E1_IS_TMC2130) || ENABLED(E1_IS_TMC2208)
+        #if E1_IS_TRINAMIC
           stepperE1.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
         #endif
         EEPROM_READ(val);
-        #if ENABLED(E2_IS_TMC2130) || ENABLED(E2_IS_TMC2208)
+        #if E2_IS_TRINAMIC
           stepperE2.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
         #endif
         EEPROM_READ(val);
-        #if ENABLED(E3_IS_TMC2130) || ENABLED(E3_IS_TMC2208)
+        #if E3_IS_TRINAMIC
           stepperE3.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
         #endif
         EEPROM_READ(val);
-        #if ENABLED(E4_IS_TMC2130) || ENABLED(E4_IS_TMC2208)
+        #if E4_IS_TRINAMIC
           stepperE4.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
         #endif
       #else
