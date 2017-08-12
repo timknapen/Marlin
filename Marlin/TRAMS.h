@@ -134,6 +134,7 @@ class Trams: public Stepper {
     static void isr();
     static void TMC5130_homing(const AxisEnum &axis, const float homing_feedrate_mm_s);
     static void synchronize();
+    static void report_positions();
     typedef struct {
       uint32_t  initial_speed[NUM_AXIS],
                 nominal_speed[NUM_AXIS],

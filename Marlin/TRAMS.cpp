@@ -893,6 +893,36 @@ void Trams::synchronize() {
   while (( stepperY.RAMP_STAT() & VZERO) != VZERO) idle();
   while (( stepperZ.RAMP_STAT() & VZERO) != VZERO) idle();
   while ((stepperE0.RAMP_STAT() & VZERO) != VZERO) idle();
+
+void Trams::report_positions() {
+  CRITICAL_SECTION_START;
+  const long xpos = stepperX.XACTUAL(),
+             ypos = stepperY.XACTUAL(),
+             zpos = stepperZ.XACTUAL();
+  CRITICAL_SECTION_END;
+
+  #if CORE_IS_XY || CORE_IS_XZ || IS_SCARA
+    SERIAL_PROTOCOLPGM(MSG_COUNT_A);
+  #else
+    SERIAL_PROTOCOLPGM(MSG_COUNT_X);
+  #endif
+  SERIAL_PROTOCOL(xpos);
+
+  #if CORE_IS_XY || CORE_IS_YZ || IS_SCARA
+    SERIAL_PROTOCOLPGM(" B:");
+  #else
+    SERIAL_PROTOCOLPGM(" Y:");
+  #endif
+  SERIAL_PROTOCOL(ypos);
+
+  #if CORE_IS_XZ || CORE_IS_YZ
+    SERIAL_PROTOCOLPGM(" C:");
+  #else
+    SERIAL_PROTOCOLPGM(" Z:");
+  #endif
+  SERIAL_PROTOCOL(zpos);
+
+  SERIAL_EOL();
 }
 
 // TRAMS endstops
