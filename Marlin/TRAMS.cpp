@@ -750,7 +750,7 @@ void Trams::init() {
   endstops.init();
 
   // waveform generation = 0100 = CTC
-  SET_WGM(1, CTC_OCRnA);
+  SET_WGM(1, NORMAL);
 
   // output mode = 00 (disconnected)
   SET_COMA(1, NORMAL);
@@ -762,9 +762,7 @@ void Trams::init() {
   // create_speed_lookuptable.py
   SET_CS(1, PRESCALER_8);  //  CS 2 = 1/8 prescaler
 
-  // Init Stepper ISR to 122 Hz for quick starting
-  OCR1A = 0x4000;
-  TCNT1 = 0;
+  TCNT1 = 1;
   ENABLE_STEPPER_DRIVER_INTERRUPT();
 
   #if ENABLED(ADVANCE) || ENABLED(LIN_ADVANCE)
