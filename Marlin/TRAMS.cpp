@@ -891,6 +891,7 @@ void Trams::synchronize() {
   while (( stepperY.RAMP_STAT() & VZERO) != VZERO) idle();
   while (( stepperZ.RAMP_STAT() & VZERO) != VZERO) idle();
   while ((stepperE0.RAMP_STAT() & VZERO) != VZERO) idle();
+}
 
 void Trams::report_positions() {
   CRITICAL_SECTION_START;
