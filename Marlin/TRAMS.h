@@ -145,7 +145,7 @@ class Trams: public Stepper {
       bool  calcready,
             pos_change_z;
     } motion_block_t;
-  private:
+  //private:
     static FORCE_INLINE void discard_current_motion_block(void);
     static FORCE_INLINE motion_block_t *get_current_motion_block(void);
     static FORCE_INLINE bool motion_blocks_queued(void);

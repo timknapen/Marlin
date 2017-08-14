@@ -9630,14 +9630,34 @@ inline void gcode_M502() {
 
 #if ENABLED(IS_TRAMS)
   inline void gcode_M122() {
-    SERIAL_ECHO("X axis RAMP_STAT = 0x");
+    if (parser.seen('S')) {
+      switch (parser.value_int()) {
+          case 1: stepperX.SW_MODE(0); break;
+          case 2: stepperX.XTARGET(0); break;
+          case 3: stepperX.XACTUAL(0); break;
+          case 4: stepperX.toff(0); break;
+          case 5: stepperX.toff(5); break;
+          case 6: enable_all_steppers(); stepperX.XTARGET(0); break;
+          default: break;
+      }
+      delay(100);
+    }
+    SERIAL_ECHO("RAMP_STAT = 0x");
     MYSERIAL.println(stepperX.RAMP_STAT(), HEX);
-    SERIAL_ECHO("Y axis RAMP_STAT = 0x");
+
+    MYSERIAL.print("SW_MODE=0x"); MYSERIAL.println(stepperX.SW_MODE(), HEX);
+    MYSERIAL.print("RAMPMODE="); MYSERIAL.println(stepperX.RAMPMODE(), DEC);
+    MYSERIAL.print("XTARGET="); MYSERIAL.println(stepperX.XTARGET(), DEC);
+    MYSERIAL.print("XACTUAL="); MYSERIAL.println(stepperX.XACTUAL(), DEC);
+    MYSERIAL.print("VACTUAL="); MYSERIAL.println(stepperX.VACTUAL(), DEC);
+
+    /*SERIAL_ECHO("Y axis RAMP_STAT = 0x");
     MYSERIAL.println(stepperY.RAMP_STAT(), HEX);
     SERIAL_ECHO("Z axis RAMP_STAT = 0x");
     MYSERIAL.println(stepperZ.RAMP_STAT(), HEX);
     SERIAL_ECHO("E0 RAMP_STAT = 0x");
     MYSERIAL.println(stepperE0.RAMP_STAT(), HEX);
+    */
   }
 #endif
 
