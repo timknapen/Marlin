@@ -347,7 +347,7 @@
 
 bool Running = true;
 
-uint8_t marlin_debug_flags = DEBUG_NONE;
+uint8_t marlin_debug_flags = DEBUG_DRYRUN; //DEBUG_NONE;
 
 /**
  * Cartesian Current Position

@@ -753,7 +753,7 @@
 //#define NO_TIMEOUTS 1000 // Milliseconds
 
 // Some clients will have this feature soon. This could make the NO_TIMEOUTS unnecessary.
-//#define ADVANCED_OK
+#define ADVANCED_OK
 
 // @section fwretract
 
@@ -1062,7 +1062,7 @@
 
   // y-axis
   #define STALLGUARD_Y                // if selected, stallguard is active
-  #define STALLGUARDTHRESHOLD_Y 10 //25  // range 0x00..0x7F
+  #define STALLGUARDTHRESHOLD_Y 18 //25  // range 0x00..0x7F
 
   // z-axis
   //#define STALLGUARD_Z              // if selected, stallguard is active

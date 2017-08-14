@@ -700,7 +700,7 @@ void Trams::isr() {
  */
 void Trams::TMC5130_init(TMC5130Stepper &st, uint8_t stepper_direction, uint16_t sw_register) {
   st.begin();
-  st.setCurrent(st.getCurrent(), R_SENSE, HOLD_MULTIPLIER);
+  st.setCurrent(800, R_SENSE, HOLD_MULTIPLIER);
   st.blank_time(2);
   st.off_time(3); // Only enables the driver if used with stealthChop
   st.power_down_delay(128); // ~2s until driver lowers to hold current
