@@ -976,7 +976,7 @@
 
 #endif
 
-// @section TMC2130
+// @section TMC2130, TMC2208, TRAMS
 
 /**
  * Enable this for SilentStepStick Trinamic TMC2130 SPI-configurable stepper drivers.
