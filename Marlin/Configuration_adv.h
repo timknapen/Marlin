@@ -1058,11 +1058,11 @@
    */
   // x-axis
   #define STALLGUARD_X                // if selected, stallguard is active
-  #define STALLGUARDTHRESHOLD_X 9 //22  // range 0x00..0x7F
+  #define STALLGUARDTHRESHOLD_X 6 //22  // range 0x00..0x7F
 
   // y-axis
   #define STALLGUARD_Y                // if selected, stallguard is active
-  #define STALLGUARDTHRESHOLD_Y 18 //25  // range 0x00..0x7F
+  #define STALLGUARDTHRESHOLD_Y 10 //25  // range 0x00..0x7F
 
   // z-axis
   //#define STALLGUARD_Z              // if selected, stallguard is active
