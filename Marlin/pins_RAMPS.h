@@ -74,8 +74,8 @@
   #define X_MAX_PIN         2
 #endif
 #define Y_MIN_PIN          14
-#define Y_MAX_PIN          15
-#define Z_MIN_PIN          18
+#define Y_MAX_PIN           2
+#define Z_MIN_PIN          57
 #define Z_MAX_PIN          19
 
 //
@@ -91,22 +91,27 @@
 #define X_STEP_PIN         54
 #define X_DIR_PIN          55
 #define X_ENABLE_PIN       38
-#define X_CS_PIN           53
+#define X_CS_PIN           42
 
 #define Y_STEP_PIN         60
 #define Y_DIR_PIN          61
 #define Y_ENABLE_PIN       56
-#define Y_CS_PIN           49
+#define Y_CS_PIN           65
 
 #define Z_STEP_PIN         46
 #define Z_DIR_PIN          48
 #define Z_ENABLE_PIN       62
-#define Z_CS_PIN           40
+#define Z_CS_PIN           -1
+
+#define Z2_STEP_PIN        36
+#define Z2_DIR_PIN         34
+#define Z2_ENABLE_PIN      30
+#define Z2_CS_PIN          -1
 
 #define E0_STEP_PIN        26
 #define E0_DIR_PIN         28
 #define E0_ENABLE_PIN      24
-#define E0_CS_PIN          42
+#define E0_CS_PIN          40
 
 #define E1_STEP_PIN        36
 #define E1_DIR_PIN         34
@@ -216,7 +221,7 @@
 
 #if ENABLED(IS_RAMPS_EFB)                      // Hotend, Fan, Bed
   #define FAN_PIN        RAMPS_D9_PIN
-  #define HEATER_BED_PIN RAMPS_D8_PIN
+  #define HEATER_BED_PIN 63
 #elif ENABLED(IS_RAMPS_EEF)                    // Hotend, Hotend, Fan
   #define HEATER_1_PIN   RAMPS_D9_PIN
   #define FAN_PIN        RAMPS_D8_PIN
@@ -247,6 +252,7 @@
 //
 #define SDSS               53
 #define LED_PIN            13
+#define SOL1_PIN       64
 
 #ifndef FILWIDTH_PIN
   #define FILWIDTH_PIN      5   // Analog Input on AUX2
