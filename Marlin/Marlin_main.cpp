@@ -10716,6 +10716,41 @@ inline void gcode_M502() {
     }
   #endif // SENSORLESS_HOMING
 
+  /**
+   * TMC Z axis calibration routine
+   */
+  #if ENABLED(TMC_Z_CALIBRATION) && (Z_IS_TRINAMIC || Z2_IS_TRINAMIC)
+    inline void gcode_M915() {
+      uint16_t _rms = parser.seenval('S') ? parser.value_int() : CALIBRATION_CURRENT;
+      uint16_t _z = parser.seenval('Z') ? parser.value_int() : CALIBRATION_EXTRA_HEIGHT;
+
+      if (!axis_known_position[Z_AXIS]) {
+        SERIAL_ECHOLNPGM("\nPlease home Z axis first");
+        return;
+      }
+
+      uint16_t Z_current_1 = stepperZ.getCurrent();
+      uint16_t Z2_current_1 = stepperZ.getCurrent();
+
+      stepperZ.setCurrent(_rms, R_SENSE, HOLD_MULTIPLIER);
+      stepperZ2.setCurrent(_rms, R_SENSE, HOLD_MULTIPLIER);
+      SERIAL_ECHOPAIR("\nCalibration current: Z", _rms);
+
+      soft_endstops_enabled = false;
+
+      do_blocking_move_to_z(Z_MAX_POS+_z);
+
+      stepperZ.setCurrent(Z_current_1, R_SENSE, HOLD_MULTIPLIER);
+      stepperZ2.setCurrent(Z2_current_1, R_SENSE, HOLD_MULTIPLIER);
+
+      do_blocking_move_to_z(Z_MAX_POS);
+      soft_endstops_enabled = true;
+
+      SERIAL_ECHOLNPGM("\nHoming Z because we lost steps");
+      home_z_safely();
+    }
+  #endif
+
 #endif // HAS_TRINAMIC
 
 /**
@@ -12270,6 +12305,12 @@ void process_parsed_command() {
         #if ENABLED(SENSORLESS_HOMING)
           case 914: // M914: Set SENSORLESS_HOMING sensitivity.
             gcode_M914();
+            break;
+        #endif
+
+        #if ENABLED(TMC_Z_CALIBRATION) && (Z_IS_TRINAMIC || Z2_IS_TRINAMIC)
+          case 915: // M915: TMC Z axis calibration routine
+            gcode_M915();
             break;
         #endif
       #endif
