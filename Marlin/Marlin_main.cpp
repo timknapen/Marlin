@@ -10478,6 +10478,15 @@ inline void gcode_M502() {
           SERIAL_ECHOPGM("s2vsb\t");          drv_status_loop(TMC_S2VSB);
         #endif
         SERIAL_ECHOLNPGM("Driver registers:");drv_status_loop(TMC_DRV_STATUS_HEX);
+        SERIAL_ECHOLNPGM("Chopconf:");
+        #if X_IS_TRINAMIC
+          SERIAL_ECHOPGM("X:0x");
+          MYSERIAL.println(stepperX.CHOPCONF(), HEX);
+        #endif
+        #if Y_IS_TRINAMIC
+          SERIAL_ECHOPGM("Y:0x");
+          MYSERIAL.println(stepperY.CHOPCONF(), HEX);
+        #endif
       }
     }
   #endif
