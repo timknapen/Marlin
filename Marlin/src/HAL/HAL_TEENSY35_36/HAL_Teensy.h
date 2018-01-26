@@ -31,7 +31,7 @@
 // --------------------------------------------------------------------------
 
 // _BV is re-defined in Arduino.h
-#undef _BV
+// #undef _BV // gives me a compile error on Teensy3.5 / Teensy Loader 1.41 / Arduino 1.8.5
 
 #include <Arduino.h>
 
