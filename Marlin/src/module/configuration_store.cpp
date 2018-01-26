@@ -52,7 +52,6 @@
  *  123  M203 XY   planner.max_feedrate_mm_s        (float x4 ... x8) + 64
  *  139  M201 XY   planner.max_acceleration_mm_per_s2 (uint32_t x4 ... x8) + 64
  *  155  M204 P    planner.acceleration             (float)
- *  159  M204 R    planner.retract_acceleration     (float)
  *  163  M204 T    planner.travel_acceleration      (float)
  *  167  M205 S    planner.min_feedrate_mm_s        (float)
  *  171  M205 T    planner.min_travel_feedrate_mm_s (float)
@@ -127,10 +126,7 @@ void MarlinSettings::postprocess() {
 
   // Make sure delta kinematics are updated before refreshing the
   // planner position so the stepper counts will be set correctly.
-
-
-  planner.calculate_volumetric_multipliers();
-
+	
   #if HAS_HOME_OFFSET
     // Software endstops depend on home_offset
     LOOP_XY(i) update_software_endstops((AxisEnum)i);
@@ -194,7 +190,6 @@ void MarlinSettings::postprocess() {
     EEPROM_WRITE(planner.max_acceleration_mm_per_s2);
 
     EEPROM_WRITE(planner.acceleration);
-    EEPROM_WRITE(planner.retract_acceleration);
     EEPROM_WRITE(planner.travel_acceleration);
     EEPROM_WRITE(planner.min_feedrate_mm_s);
     EEPROM_WRITE(planner.min_travel_feedrate_mm_s);
@@ -402,7 +397,6 @@ void MarlinSettings::postprocess() {
       }
 
       EEPROM_READ(planner.acceleration);
-      EEPROM_READ(planner.retract_acceleration);
       EEPROM_READ(planner.travel_acceleration);
       EEPROM_READ(planner.min_feedrate_mm_s);
       EEPROM_READ(planner.min_travel_feedrate_mm_s);
@@ -719,7 +713,6 @@ void MarlinSettings::reset() {
   }
 
   planner.acceleration = DEFAULT_ACCELERATION;
-  planner.retract_acceleration = DEFAULT_RETRACT_ACCELERATION;
   planner.travel_acceleration = DEFAULT_TRAVEL_ACCELERATION;
   planner.min_feedrate_mm_s = DEFAULT_MINIMUMFEEDRATE;
   planner.min_segment_time_us = DEFAULT_MINSEGMENTTIME;
@@ -837,11 +830,6 @@ void MarlinSettings::reset() {
         SERIAL_ECHOLNPGM(" Disabled");
     }
 
-    CONFIG_ECHO_START;
-    SERIAL_ECHOPAIR("  M200 D", LINEAR_UNIT(planner.filament_size[0]));
-    SERIAL_EOL();
-   
-
     if (!parser.volumetric_enabled) {
       CONFIG_ECHO_START;
       SERIAL_ECHOLNPGM("  M200 D0");
@@ -880,7 +868,6 @@ void MarlinSettings::reset() {
     }
     CONFIG_ECHO_START;
     SERIAL_ECHOPAIR("  M204 P", LINEAR_UNIT(planner.acceleration));
-    SERIAL_ECHOPAIR(" R", LINEAR_UNIT(planner.retract_acceleration));
     SERIAL_ECHOLNPAIR(" T", LINEAR_UNIT(planner.travel_acceleration));
 
     if (!forReplay) {

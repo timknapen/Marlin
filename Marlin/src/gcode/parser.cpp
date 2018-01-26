@@ -304,7 +304,6 @@ void GCodeParser::unknown_command_error() {
           SERIAL_ECHOPAIR("\n     byte: ", (int)value_byte());
           SERIAL_ECHOPAIR("\n     bool: ", (int)value_bool());
           SERIAL_ECHOPAIR("\n   linear: ", value_linear_units());
-          SERIAL_ECHOPAIR("\n  celsius: ", value_celsius());
         }
         else
           SERIAL_ECHOPGM(" (no value)");

@@ -346,10 +346,6 @@
 //
 //#define INCH_MODE_SUPPORT
 
-//
-// M149 Set temperature units support
-//
-//#define TEMPERATURE_UNITS_SUPPORT
 
 
 //=============================================================================

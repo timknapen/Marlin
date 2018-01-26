@@ -121,7 +121,7 @@
  * M211 - Enable, Disable, and/or Report software endstops: S<0|1> (Requires MIN_SOFTWARE_ENDSTOPS or MAX_SOFTWARE_ENDSTOPS)
 
  * M220 - Set Feedrate Percentage: "M220 S<percent>"
- * M221 - Set Flow Percentage: "M221 S<percent>"
+
  * M226 - Wait until a pin is in a given state: "M226 P<pin> S<state>"
 
 * M280 - Set servo position absolute: "M280 P<index> S<angle|µs>". (Requires servos)
@@ -370,7 +370,6 @@ private:
   static void M211();
 
   static void M220();
-  static void M221();
   static void M226();
 
   #if HAS_SERVOS

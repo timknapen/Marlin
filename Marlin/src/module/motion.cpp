@@ -28,7 +28,6 @@
 #include "endstops.h"
 #include "stepper.h"
 #include "planner.h"
-#include "temperature.h"
 
 #include "../gcode/gcode.h"
 

@@ -67,10 +67,6 @@ public:
     static float linear_unit_factor, volumetric_unit_factor;
   #endif
 
-  #if ENABLED(TEMPERATURE_UNITS_SUPPORT)
-    static TempUnit input_temp_units;
-  #endif
-
   // Command line state
   static char *command_ptr,               // The command, so it can be echoed
               *string_arg;                // string of command line
@@ -236,62 +232,6 @@ public:
 
   #endif
 
-  #if ENABLED(TEMPERATURE_UNITS_SUPPORT)
-
-    inline static void set_input_temp_units(TempUnit units) { input_temp_units = units; }
-
-    #if ENABLED(ULTIPANEL) && DISABLED(DISABLE_M503)
-
-      FORCE_INLINE static char temp_units_code() {
-        return input_temp_units == TEMPUNIT_K ? 'K' : input_temp_units == TEMPUNIT_F ? 'F' : 'C';
-      }
-      FORCE_INLINE static const char* temp_units_name() {
-        return input_temp_units == TEMPUNIT_K ? PSTR("Kelvin") : input_temp_units == TEMPUNIT_F ? PSTR("Fahrenheit") : PSTR("Celsius");
-      }
-      inline static float to_temp_units(const float &f) {
-        switch (input_temp_units) {
-          case TEMPUNIT_F:
-            return f * 0.5555555556 + 32.0;
-          case TEMPUNIT_K:
-            return f + 273.15;
-          case TEMPUNIT_C:
-          default:
-            return f;
-        }
-      }
-
-    #endif // ULTIPANEL && !DISABLE_M503
-
-    inline static float value_celsius() {
-      const float f = value_float();
-      switch (input_temp_units) {
-        case TEMPUNIT_F:
-          return (f - 32.0) * 0.5555555556;
-        case TEMPUNIT_K:
-          return f - 273.15;
-        case TEMPUNIT_C:
-        default:
-          return f;
-      }
-    }
-
-    inline static float value_celsius_diff() {
-      switch (input_temp_units) {
-        case TEMPUNIT_F:
-          return value_float() * 0.5555555556;
-        case TEMPUNIT_C:
-        case TEMPUNIT_K:
-        default:
-          return value_float();
-      }
-    }
-
-  #else // !TEMPERATURE_UNITS_SUPPORT
-
-    FORCE_INLINE static float value_celsius()      { return value_float(); }
-    FORCE_INLINE static float value_celsius_diff() { return value_float(); }
-
-  #endif // !TEMPERATURE_UNITS_SUPPORT
 
   FORCE_INLINE static float value_feedrate() { return value_linear_units(); }
 
@@ -306,7 +246,6 @@ public:
   FORCE_INLINE static int32_t     longval(const char c, const int32_t dval=0)    { return seenval(c) ? value_long()         : dval; }
   FORCE_INLINE static uint32_t    ulongval(const char c, const uint32_t dval=0)  { return seenval(c) ? value_ulong()        : dval; }
   FORCE_INLINE static float       linearval(const char c, const float dval=0.0)  { return seenval(c) ? value_linear_units() : dval; }
-  FORCE_INLINE static float       celsiusval(const char c, const float dval=0.0) { return seenval(c) ? value_celsius()      : dval; }
   FORCE_INLINE static const char* strval(const char c)                           { return seenval(c) ? value_ptr            : NULL; }
 
 };

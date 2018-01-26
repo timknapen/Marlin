@@ -352,21 +352,6 @@ void Planner::check_axes_activity() {
 
  }
 
-/*
-inline float calculate_volumetric_multiplier(const float &diameter) {
-  return (parser.volumetric_enabled && diameter) ? 1.0 / CIRCLE_AREA(diameter * 0.5) : 1.0;
-}
-
-void Planner::calculate_volumetric_multipliers() {
-  for (uint8_t i = 0; i < COUNT(filament_size); i++) {
-    volumetric_multiplier[i] = calculate_volumetric_multiplier(filament_size[i]);
-    refresh_e_factor(i);
-  }
-}
- */
-
-
-
 /**
  * Planner::_buffer_steps
  *
@@ -581,7 +566,7 @@ void Planner::_buffer_steps(const int32_t (&target)[XY], float fr_mm_s) {
   uint32_t accel;
   if (!block->steps[X_AXIS] && !block->steps[Y_AXIS]) {
     // convert to: acceleration steps/sec^2
-    accel = CEIL(retract_acceleration * steps_per_mm);
+    accel = CEIL(acceleration * steps_per_mm);
   }
   else {
     #define LIMIT_ACCEL_LONG(AXIS,INDX) do{ \

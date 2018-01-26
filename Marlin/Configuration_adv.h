@@ -241,6 +241,15 @@
 
 //MARK: -  serial
 
+/**
+ * Set the number of proportional font spaces required to fill up a typical character space.
+ * This can help to better align the output of commands like `G29 O` Mesh Output.
+ *
+ * For clients that use a fixed-width font (like OctoPrint), leave this set to 1.0.
+ * Otherwise, adjust according to your client and font.
+ */
+#define PROPORTIONAL_FONT_RATIO 1.0
+
 // The ASCII buffer for serial input
 #define MAX_CMD_SIZE 96
 #define BUFSIZE 4
