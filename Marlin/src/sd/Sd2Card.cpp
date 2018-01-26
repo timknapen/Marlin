@@ -169,7 +169,7 @@ bool Sd2Card::eraseSingleBlockEnable() {
  * \return true for success, false for failure.
  * The reason for failure can be determined by calling errorCode() and errorData().
  */
-bool Sd2Card::init(uint8_t sckRateID, pin_t chipSelectPin) {
+bool Sd2Card::SD_init(uint8_t sckRateID, pin_t chipSelectPin) {
   errorCode_ = type_ = 0;
   chipSelectPin_ = chipSelectPin;
   // 16-bit init start time allows over a minute
@@ -254,7 +254,7 @@ bool Sd2Card::init(uint8_t sckRateID, pin_t chipSelectPin) {
  * \param[out] dst Pointer to the location that will receive the data.
  * \return true for success, false for failure.
  */
-bool Sd2Card::readBlock(uint32_t blockNumber, uint8_t* dst) {
+bool Sd2Card::SD_readBlock(uint32_t blockNumber, uint8_t* dst) {
   // use address if not SDHC card
   if (type() != SD_CARD_TYPE_SDHC) blockNumber <<= 9;
 
@@ -466,7 +466,7 @@ bool Sd2Card::waitNotBusy(uint16_t timeoutMillis) {
  * \param[in] src Pointer to the location of the data to be written.
  * \return true for success, false for failure.
  */
-bool Sd2Card::writeBlock(uint32_t blockNumber, const uint8_t* src) {
+bool Sd2Card::SD_writeBlock(uint32_t blockNumber, const uint8_t* src) {
   // use address if not SDHC card
   if (type() != SD_CARD_TYPE_SDHC) blockNumber <<= 9;
   if (cardCommand(CMD24, blockNumber)) {

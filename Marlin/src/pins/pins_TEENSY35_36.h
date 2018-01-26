@@ -112,7 +112,7 @@ D8    HEATER_BED_PIN      CS1     RX4  A12 31 |   46 * * 47   | 34 A15 PWM      
 //#define TEMP_1_PIN          0
 //#define TEMP_BED_PIN        1 // Bed / Analog pin numbering
 
-#define SDSS               39 // 8
+#define SDSS               BUILTIN_SDCARD //39 // 8
 //#define LED_PIN            13
 //#define PS_ON_PIN           1
 #define ALARM_PIN          -1
