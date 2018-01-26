@@ -76,7 +76,7 @@ float feedrate_mm_s = MMM_TO_MMS(1500.0);
 int16_t feedrate_percentage = 100;
 
 // Homing feedrate is const progmem - compare to constexpr in the header
-const float homing_feedrate_mm_s[4] PROGMEM = {
+const float homing_feedrate_mm_s[2] PROGMEM = {
 	MMM_TO_MMS(HOMING_FEEDRATE_XY), MMM_TO_MMS(HOMING_FEEDRATE_XY),
 };
 
@@ -211,7 +211,7 @@ void do_blocking_move_to(const float &rx, const float &ry, const float &fr_mm_s/
     }
 	 */
 
-    feedrate_mm_s = fr_mm_s ? fr_mm_s : XY_PROBE_FEEDRATE_MM_S;
+    feedrate_mm_s = fr_mm_s;
     current_position[X_AXIS] = rx;
     current_position[Y_AXIS] = ry;
     line_to_current_position();

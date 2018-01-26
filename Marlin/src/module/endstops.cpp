@@ -248,6 +248,11 @@ void Endstops::update() {
     #define Y_AXIS_HEAD Y_AXIS
   #endif
 
+	
+	// With Dual X, endstops are only checked in the homing direction for the active extruder
+	#define X_MIN_TEST true
+	#define X_MAX_TEST true
+	
   /**
    * Check and update endstops according to conditions
    */
