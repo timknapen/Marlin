@@ -143,6 +143,11 @@
   //#define DISABLE_MULTI_STEPPING
 #endif
 
+#ifdef CPU_32_BIT
+	#define MAX_STEP_FREQUENCY (STEP_DOUBLER_FREQUENCY * 4) // Max step frequency for the Due is approx. 330kHz
+#else
+	#define MAX_STEP_FREQUENCY 40000 // Max step frequency for Ultimaker (5000 pps / half step)
+#endif
 
 // MS1 MS2 Stepper Driver Microstepping mode table
 #define MICROSTEP1 LOW,LOW
