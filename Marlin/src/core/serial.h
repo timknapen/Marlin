@@ -25,9 +25,6 @@
 
 #include "../inc/MarlinConfig.h"
 
-#if HAS_ABL && ENABLED(DEBUG_LEVELING_FEATURE)
-  #include "../libs/vector_3.h"
-#endif
 
 /**
  * Define debug bit-masks
@@ -39,8 +36,6 @@ enum DebugFlags {
   DEBUG_ERRORS        = _BV(2), ///< Not implemented
   DEBUG_DRYRUN        = _BV(3), ///< Ignore temperature setting and E movement commands
   DEBUG_COMMUNICATION = _BV(4), ///< Not implemented
-  DEBUG_LEVELING      = _BV(5), ///< Print detailed output for homing and leveling
-  DEBUG_MESH_ADJUST   = _BV(6), ///< UBL bed leveling
   DEBUG_ALL           = 0xFF
 };
 
@@ -63,6 +58,7 @@ enum DebugFlags {
 
 //todo: HAL: breaks encapsulation
 // For AVR only, define a serial interface based on configuration
+/**
 #ifdef __AVR__
   #ifdef USBCON
     #include "HardwareSerial.h"
@@ -81,6 +77,7 @@ enum DebugFlags {
   // To pull the Serial port definitions and overrides
   #include "../HAL/HAL_DUE/MarlinSerial_Due.h"
 #endif
+**/
 
 extern uint8_t marlin_debug_flags;
 #define DEBUGGING(F) (marlin_debug_flags & (DEBUG_## F))
@@ -143,14 +140,5 @@ void serial_spaces(uint8_t count);
 //
 void serialprintPGM(const char* str);
 
-#if ENABLED(DEBUG_LEVELING_FEATURE)
-  void print_xyz(const char* prefix, const char* suffix, const float x, const float y, const float z);
-  void print_xyz(const char* prefix, const char* suffix, const float xyz[]);
-  #if HAS_ABL
-    void print_xyz(const char* prefix, const char* suffix, const vector_3 &xyz);
-  #endif
-  #define DEBUG_POS(SUFFIX,VAR) do { \
-    print_xyz(PSTR("  " STRINGIFY(VAR) "="), PSTR(" : " SUFFIX "\n"), VAR); }while(0)
-#endif
 
 #endif // __SERIAL_H__

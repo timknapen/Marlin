@@ -39,15 +39,15 @@ inline void tmc2130_set_current(TMC2130Stepper &st, const char name, const int m
 }
 
 /**
- * M906: Set motor current in milliamps using axis codes X, Y, Z, E
+ * M906: Set motor current in milliamps using axis codes X, Y
  * Report driver currents when no axis specified
  *
  * S1: Enable automatic current control
  * S0: Disable
  */
 void GcodeSuite::M906() {
-  uint16_t values[XYZE];
-  LOOP_XYZE(i)
+  uint16_t values[XY];
+  LOOP_XY(i)
     values[i] = parser.intval(axis_codes[i]);
 
   #if ENABLED(X_IS_TMC2130)
@@ -58,16 +58,8 @@ void GcodeSuite::M906() {
     if (values[Y_AXIS]) tmc2130_set_current(stepperY, 'Y', values[Y_AXIS]);
     else tmc2130_get_current(stepperY, 'Y');
   #endif
-  #if ENABLED(Z_IS_TMC2130)
-    if (values[Z_AXIS]) tmc2130_set_current(stepperZ, 'Z', values[Z_AXIS]);
-    else tmc2130_get_current(stepperZ, 'Z');
-  #endif
-  #if ENABLED(E0_IS_TMC2130)
-    if (values[E_AXIS]) tmc2130_set_current(stepperE0, 'E', values[E_AXIS]);
-    else tmc2130_get_current(stepperE0, 'E');
-  #endif
-
-  #if ENABLED(AUTOMATIC_CURRENT_CONTROL)
+ 
+#if ENABLED(AUTOMATIC_CURRENT_CONTROL)
     if (parser.seen('S')) auto_current_control = parser.value_bool();
   #endif
 }

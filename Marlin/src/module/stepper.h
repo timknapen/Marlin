@@ -66,7 +66,7 @@ class Stepper {
       static bool abort_on_endstop_hit;
     #endif
 
-    #if ENABLED(X_DUAL_ENDSTOPS) || ENABLED(Y_DUAL_ENDSTOPS) || ENABLED(Z_DUAL_ENDSTOPS)
+    #if ENABLED(X_DUAL_ENDSTOPS) || ENABLED(Y_DUAL_ENDSTOPS)
       static bool performing_homing;
     #endif
 
@@ -89,27 +89,12 @@ class Stepper {
     #if ENABLED(Y_DUAL_ENDSTOPS)
       static bool locked_y_motor, locked_y2_motor;
     #endif
-    #if ENABLED(Z_DUAL_ENDSTOPS)
-      static bool locked_z_motor, locked_z2_motor;
-    #endif
 
     // Counter variables for the Bresenham line tracer
-    static long counter_X, counter_Y, counter_Z, counter_E;
+    static long counter_X, counter_Y;
     static volatile uint32_t step_events_completed; // The number of step events executed in the current block
 
-    #if ENABLED(LIN_ADVANCE)
-      static hal_timer_t nextMainISR, nextAdvanceISR, eISR_Rate;
-      #define _NEXT_ISR(T) nextMainISR = T
-
-      static volatile int e_steps[E_STEPPERS];
-      static int final_estep_rate;
-      static int current_estep_rate[E_STEPPERS]; // Actual extruder speed [steps/s]
-      static int current_adv_steps[E_STEPPERS];  // The amount of current added esteps due to advance.
-                                                 // i.e., the current amount of pressure applied
-                                                 // to the spring (=filament).
-    #else
-      #define _NEXT_ISR(T) HAL_timer_set_count(STEP_TIMER_NUM, T);
-    #endif // LIN_ADVANCE
+	#define _NEXT_ISR(T) HAL_timer_set_count(STEP_TIMER_NUM, T);
 
     static long acceleration_time, deceleration_time;
     //unsigned long accelerate_until, decelerate_after, acceleration_rate, initial_rate, final_rate, nominal_rate;
@@ -117,7 +102,7 @@ class Stepper {
     static uint8_t step_loops, step_loops_nominal;
     static hal_timer_t OCR1A_nominal;
 
-    static volatile long endstops_trigsteps[XYZ];
+    static volatile long endstops_trigsteps[XY];
     static volatile long endstops_stepsTotal, endstops_stepsDone;
 
     //
@@ -129,16 +114,6 @@ class Stepper {
     // Current direction of stepper motors (+1 or -1)
     //
     static volatile signed char count_direction[NUM_AXIS];
-
-    //
-    // Mixing extruder mix counters
-    //
-    #if ENABLED(MIXING_EXTRUDER)
-      static long counter_m[MIXING_STEPPERS];
-      #define MIXING_STEPPERS_LOOP(VAR) \
-        for (uint8_t VAR = 0; VAR < MIXING_STEPPERS; VAR++) \
-          if (current_block->mix_event_count[VAR])
-    #endif
 
   public:
 
@@ -158,10 +133,6 @@ class Stepper {
 
     static void isr();
 
-    #if ENABLED(LIN_ADVANCE)
-      static void advance_isr();
-      static void advance_isr_scheduler();
-    #endif
 
     //
     // Block until all buffered steps are executed
@@ -171,9 +142,8 @@ class Stepper {
     //
     // Set the current position in steps
     //
-    static void set_position(const long &a, const long &b, const long &c, const long &e);
+    static void set_position(const long &a, const long &b);
     static void set_position(const AxisEnum &a, const long &v);
-    static void set_e_position(const long &e);
 
     //
     // Set direction bits for all steppers
@@ -195,13 +165,7 @@ class Stepper {
     //
     static float get_axis_position_mm(const AxisEnum axis);
 
-    //
-    // SCARA AB axes are in degrees, not mm
-    //
-    #if IS_SCARA
-      FORCE_INLINE static float get_axis_position_degrees(const AxisEnum axis) { return get_axis_position_mm(axis); }
-    #endif
-
+	
     //
     // The stepper subsystem goes to sleep when it runs out of things to execute. Call this
     // to notify the subsystem that it is time to go to work.
@@ -223,7 +187,7 @@ class Stepper {
     //
     FORCE_INLINE static bool motor_direction(const AxisEnum axis) { return TEST(last_direction_bits, axis); }
 
-    #if HAS_DIGIPOTSS || HAS_MOTOR_CURRENT_PWM
+    #if HAS_MOTOR_CURRENT_PWM
       static void digitalPotWrite(const int16_t address, const int16_t value);
       static void digipot_current(const uint8_t driver, const int16_t current);
     #endif
@@ -246,11 +210,6 @@ class Stepper {
       FORCE_INLINE static void set_y2_lock(const bool state) { locked_y2_motor = state; }
     #endif
 
-    #if ENABLED(Z_DUAL_ENDSTOPS)
-      FORCE_INLINE static void set_homing_flag_z(const bool state) { performing_homing = state; }
-      FORCE_INLINE static void set_z_lock(const bool state) { locked_z_motor = state; }
-      FORCE_INLINE static void set_z2_lock(const bool state) { locked_z2_motor = state; }
-    #endif
 
     #if ENABLED(BABYSTEPPING)
       static void babystep(const AxisEnum axis, const bool direction); // perform a short step with a single stepper motor, outside of any convention
@@ -283,7 +242,7 @@ class Stepper {
 
       NOMORE(step_rate, MAX_STEP_FREQUENCY);
 
-      // TODO: HAL: tidy this up, use condtionals_post.h
+      // TODO: HAL: tidy this up, use conditionals_post.h
       #ifdef CPU_32_BIT
         #if ENABLED(DISABLE_MULTI_STEPPING)
           step_loops = 1;
@@ -349,11 +308,9 @@ class Stepper {
     // Called whenever a new block begins.
     FORCE_INLINE static void trapezoid_generator_reset() {
 
-      static int8_t last_extruder = -1;
 
-      if (current_block->direction_bits != last_direction_bits || current_block->active_extruder != last_extruder) {
+      if (current_block->direction_bits != last_direction_bits ) {
         last_direction_bits = current_block->direction_bits;
-        last_extruder = current_block->active_extruder;
         set_directions();
       }
 
@@ -362,13 +319,6 @@ class Stepper {
       OCR1A_nominal = calc_timer_interval(current_block->nominal_rate);
       // make a note of the number of step loops required at nominal speed
       step_loops_nominal = step_loops;
-
-      #if ENABLED(LIN_ADVANCE)
-        if (current_block->use_advance_lead) {
-          current_estep_rate[current_block->active_extruder] = ((unsigned long)acc_step_rate * current_block->abs_adv_steps_multiplier8) >> 17;
-          final_estep_rate = (current_block->nominal_rate * current_block->abs_adv_steps_multiplier8) >> 17;
-        }
-      #endif
 
       // SERIAL_ECHO_START();
       // SERIAL_ECHOPGM("advance :");
@@ -381,7 +331,7 @@ class Stepper {
       // SERIAL_ECHOLN(current_block->final_advance/256.0);
     }
 
-    #if HAS_DIGIPOTSS || HAS_MOTOR_CURRENT_PWM
+    #if HAS_MOTOR_CURRENT_PWM
       static void digipot_init();
     #endif
 

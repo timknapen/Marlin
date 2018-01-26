@@ -27,7 +27,6 @@
 #include "cardreader.h"
 
 #include "../Marlin.h"
-#include "../lcd/ultralcd.h"
 #include "../module/stepper.h"
 #include "../module/printcounter.h"
 #include "../core/language.h"
@@ -423,7 +422,6 @@ void CardReader::openFile(char* name, const bool read, const bool subcall/*=fals
       SERIAL_PROTOCOLLNPAIR(MSG_SD_SIZE, filesize);
       SERIAL_PROTOCOLLNPGM(MSG_SD_FILE_SELECTED);
       getfilename(0, fname);
-      lcd_setstatus(longFilename[0] ? longFilename : fname);
     }
     else {
       SERIAL_PROTOCOLPAIR(MSG_SD_OPEN_FILE_FAIL, fname);
@@ -440,7 +438,6 @@ void CardReader::openFile(char* name, const bool read, const bool subcall/*=fals
     else {
       saving = true;
       SERIAL_PROTOCOLLNPAIR(MSG_SD_WRITE_TO_FILE, name);
-      lcd_setstatus(fname);
     }
   }
 }
@@ -905,9 +902,6 @@ void CardReader::printingHasFinished() {
       presort();
     #endif
 
-    #if ENABLED(SD_REPRINT_LAST_SELECTED_FILE)
-      lcd_reselect_last_file();
-    #endif
   }
 }
 

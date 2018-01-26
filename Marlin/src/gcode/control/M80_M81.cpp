@@ -21,14 +21,9 @@
  */
 
 #include "../gcode.h"
-#include "../../module/temperature.h"
 #include "../../module/stepper.h"
 
 #include "../../inc/MarlinConfig.h"
-
-#if ENABLED(ULTIPANEL)
-  #include "../../lcd/ultralcd.h"
-#endif
 
 #if HAS_SUICIDE
   #include "../../Marlin.h"
@@ -79,9 +74,6 @@
 
     powersupply_on = true;
 
-    #if ENABLED(ULTIPANEL)
-      LCD_MESSAGEPGM(WELCOME_MSG);
-    #endif
   }
 
 #endif // HAS_POWER_SWITCH
@@ -92,17 +84,7 @@
  *      This code should ALWAYS be available for EMERGENCY SHUTDOWN!
  */
 void GcodeSuite::M81() {
-  thermalManager.disable_all_heaters();
   stepper.finish_and_disable();
-
-  #if FAN_COUNT > 0
-    for (uint8_t i = 0; i < FAN_COUNT; i++) fanSpeeds[i] = 0;
-    #if ENABLED(PROBING_FANS_OFF)
-      fans_paused = false;
-      ZERO(paused_fanSpeeds);
-    #endif
-  #endif
-
   safe_delay(1000); // Wait 1 second before switching off
 
   #if HAS_SUICIDE
@@ -113,7 +95,4 @@ void GcodeSuite::M81() {
     powersupply_on = false;
   #endif
 
-  #if ENABLED(ULTIPANEL)
-    LCD_MESSAGEPGM(MACHINE_NAME " " MSG_OFF ".");
-  #endif
 }

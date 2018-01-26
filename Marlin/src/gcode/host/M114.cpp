@@ -28,7 +28,7 @@
 
 #if ENABLED(M114_DETAIL)
 
-  void report_xyze(const float pos[], const uint8_t n = 4, const uint8_t precision = 3) {
+  void report_xy(const float pos[], const uint8_t n = 2, const uint8_t precision = 3) {
     char str[12];
     for (uint8_t i = 0; i < n; i++) {
       SERIAL_CHAR(' ');
@@ -39,48 +39,25 @@
     SERIAL_EOL();
   }
 
-  inline void report_xyz(const float pos[]) { report_xyze(pos, 3); }
-
   void report_current_position_detail() {
 
     stepper.synchronize();
 
     SERIAL_PROTOCOLPGM("\nLogical:");
-    const float logical[XYZ] = {
+    const float logical[XY] = {
       LOGICAL_X_POSITION(current_position[X_AXIS]),
       LOGICAL_Y_POSITION(current_position[Y_AXIS]),
-      LOGICAL_Z_POSITION(current_position[Z_AXIS])
     };
-    report_xyze(logical);
+    report_xy(logical);
 
     SERIAL_PROTOCOLPGM("Raw:    ");
-    report_xyz(current_position);
+    report_xy(current_position);
 
-    float leveled[XYZ] = { current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] };
+    float leveled[XY] = { current_position[X_AXIS], current_position[Y_AXIS] };
 
-    #if PLANNER_LEVELING
-      SERIAL_PROTOCOLPGM("Leveled:");
-      planner.apply_leveling(leveled);
-      report_xyz(leveled);
-
-      SERIAL_PROTOCOLPGM("UnLevel:");
-      float unleveled[XYZ] = { leveled[X_AXIS], leveled[Y_AXIS], leveled[Z_AXIS] };
-      planner.unapply_leveling(unleveled);
-      report_xyz(unleveled);
-    #endif
-
-    #if IS_KINEMATIC
-      #if IS_SCARA
-        SERIAL_PROTOCOLPGM("ScaraK: ");
-      #else
-        SERIAL_PROTOCOLPGM("DeltaK: ");
-      #endif
-      inverse_kinematics(leveled);  // writes delta[]
-      report_xyz(delta);
-    #endif
 
     SERIAL_PROTOCOLPGM("Stepper:");
-    LOOP_XYZE(i) {
+    LOOP_XY(i) {
       SERIAL_CHAR(' ');
       SERIAL_CHAR(axis_codes[i]);
       SERIAL_CHAR(':');
@@ -88,28 +65,17 @@
     }
     SERIAL_EOL();
 
-    #if IS_SCARA
-      const float deg[XYZ] = {
-        stepper.get_axis_position_degrees(A_AXIS),
-        stepper.get_axis_position_degrees(B_AXIS)
-      };
-      SERIAL_PROTOCOLPGM("Degrees:");
-      report_xyze(deg, 2);
-    #endif
-
     SERIAL_PROTOCOLPGM("FromStp:");
-    get_cartesian_from_steppers();  // writes cartes[XYZ] (with forward kinematics)
-    const float from_steppers[XYZE] = { cartes[X_AXIS], cartes[Y_AXIS], cartes[Z_AXIS], stepper.get_axis_position_mm(E_AXIS) };
-    report_xyze(from_steppers);
+    get_cartesian_from_steppers();  // writes cartes[XY] (with forward kinematics)
+    const float from_steppers[XY] = { cartes[X_AXIS], cartes[Y_AXIS] };
+    report_xy(from_steppers);
 
-    const float diff[XYZE] = {
+    const float diff[XY] = {
       from_steppers[X_AXIS] - leveled[X_AXIS],
-      from_steppers[Y_AXIS] - leveled[Y_AXIS],
-      from_steppers[Z_AXIS] - leveled[Z_AXIS],
-      from_steppers[E_AXIS] - current_position[E_AXIS]
+      from_steppers[Y_AXIS] - leveled[Y_AXIS]
     };
     SERIAL_PROTOCOLPGM("Differ: ");
-    report_xyze(diff);
+    report_xy(diff);
   }
 
 #endif // M114_DETAIL

@@ -33,13 +33,13 @@
   bool GCodeSuite::select_coordinate_system(const int8_t _new) {
     if (active_coordinate_system == _new) return false;
     stepper.synchronize();
-    float old_offset[XYZ] = { 0 }, new_offset[XYZ] = { 0 };
+    float old_offset[XY] = { 0 }, new_offset[XY] = { 0 };
     if (WITHIN(active_coordinate_system, 0, MAX_COORDINATE_SYSTEMS - 1))
       COPY(old_offset, coordinate_system[active_coordinate_system]);
     if (WITHIN(_new, 0, MAX_COORDINATE_SYSTEMS - 1))
       COPY(new_offset, coordinate_system[_new]);
     active_coordinate_system = _new;
-    LOOP_XYZ(i) {
+    LOOP_XY(i) {
       const float diff = new_offset[i] - old_offset[i];
       if (diff) {
         position_shift[i] += diff;
@@ -67,7 +67,7 @@
   /**
    * G54-G59.3: Select a new workspace
    *
-   * A workspace is an XYZ offset to the machine native space.
+   * A workspace is an XY offset to the machine native space.
    * All workspaces default to 0,0,0 at start, or with EEPROM
    * support they may be restored from a previous session.
    *

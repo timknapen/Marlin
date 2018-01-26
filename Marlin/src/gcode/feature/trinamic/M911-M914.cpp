@@ -40,21 +40,15 @@ inline void tmc2130_report_otpw(TMC2130Stepper &st, const char name) {
  * The flag is held by the library and persist until manually cleared by M912
  */
 void GcodeSuite::M911() {
-  const bool reportX = parser.seen('X'), reportY = parser.seen('Y'), reportZ = parser.seen('Z'), reportE = parser.seen('E'),
-           reportAll = (!reportX && !reportY && !reportZ && !reportE) || (reportX && reportY && reportZ && reportE);
+  const bool reportX = parser.seen('X'), reportY = parser.seen('Y'),
+           reportAll = (!reportX && !reportY ) || (reportX && reportY );
   #if ENABLED(X_IS_TMC2130)
     if (reportX || reportAll) tmc2130_report_otpw(stepperX, 'X');
   #endif
   #if ENABLED(Y_IS_TMC2130)
     if (reportY || reportAll) tmc2130_report_otpw(stepperY, 'Y');
   #endif
-  #if ENABLED(Z_IS_TMC2130)
-    if (reportZ || reportAll) tmc2130_report_otpw(stepperZ, 'Z');
-  #endif
-  #if ENABLED(E0_IS_TMC2130)
-    if (reportE || reportAll) tmc2130_report_otpw(stepperE0, 'E');
-  #endif
-}
+ }
 
 inline void tmc2130_clear_otpw(TMC2130Stepper &st, const char name) {
   st.clear_otpw();
@@ -66,19 +60,13 @@ inline void tmc2130_clear_otpw(TMC2130Stepper &st, const char name) {
  * M912: Clear TMC2130 stepper driver overtemperature pre-warn flag held by the library
  */
 void GcodeSuite::M912() {
-  const bool clearX = parser.seen('X'), clearY = parser.seen('Y'), clearZ = parser.seen('Z'), clearE = parser.seen('E'),
-           clearAll = (!clearX && !clearY && !clearZ && !clearE) || (clearX && clearY && clearZ && clearE);
+  const bool clearX = parser.seen('X'), clearY = parser.seen('Y'),
+           clearAll = (!clearX && !clearY ) || (clearX && clearY );
   #if ENABLED(X_IS_TMC2130)
     if (clearX || clearAll) tmc2130_clear_otpw(stepperX, 'X');
   #endif
   #if ENABLED(Y_IS_TMC2130)
     if (clearY || clearAll) tmc2130_clear_otpw(stepperY, 'Y');
-  #endif
-  #if ENABLED(Z_IS_TMC2130)
-    if (clearZ || clearAll) tmc2130_clear_otpw(stepperZ, 'Z');
-  #endif
-  #if ENABLED(E0_IS_TMC2130)
-    if (clearE || clearAll) tmc2130_clear_otpw(stepperE0, 'E');
   #endif
 }
 
@@ -100,8 +88,8 @@ void GcodeSuite::M912() {
    * M913: Set HYBRID_THRESHOLD speed.
    */
   void GcodeSuite::M913() {
-    uint16_t values[XYZE];
-    LOOP_XYZE(i)
+    uint16_t values[XY];
+    LOOP_XY(i)
       values[i] = parser.intval(axis_codes[i]);
 
     #if ENABLED(X_IS_TMC2130)
@@ -111,14 +99,6 @@ void GcodeSuite::M912() {
     #if ENABLED(Y_IS_TMC2130)
       if (values[Y_AXIS]) tmc2130_set_pwmthrs(stepperY, 'Y', values[Y_AXIS], planner.axis_steps_per_mm[Y_AXIS]);
       else tmc2130_get_pwmthrs(stepperY, 'Y', planner.axis_steps_per_mm[Y_AXIS]);
-    #endif
-    #if ENABLED(Z_IS_TMC2130)
-      if (values[Z_AXIS]) tmc2130_set_pwmthrs(stepperZ, 'Z', values[Z_AXIS], planner.axis_steps_per_mm[Z_AXIS]);
-      else tmc2130_get_pwmthrs(stepperZ, 'Z', planner.axis_steps_per_mm[Z_AXIS]);
-    #endif
-    #if ENABLED(E0_IS_TMC2130)
-      if (values[E_AXIS]) tmc2130_set_pwmthrs(stepperE0, 'E', values[E_AXIS], planner.axis_steps_per_mm[E_AXIS]);
-      else tmc2130_get_pwmthrs(stepperE0, 'E', planner.axis_steps_per_mm[E_AXIS]);
     #endif
   }
 

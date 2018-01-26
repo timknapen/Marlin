@@ -27,14 +27,10 @@
 #include "queue.h"
 #include "gcode.h"
 
-#include "../lcd/ultralcd.h"
 #include "../sd/cardreader.h"
 #include "../module/planner.h"
 #include "../Marlin.h"
 
-#if HAS_COLOR_LEDS
-  #include "../feature/leds/leds.h"
-#endif
 
 /**
  * GCode line number handling. Hosts may opt to include line numbers when
@@ -286,7 +282,6 @@ inline void get_serial_commands() {
             case 2:
             case 3:
               SERIAL_ERRORLNPGM(MSG_ERR_STOPPED);
-              LCD_MESSAGEPGM(MSG_STOPPED);
               break;
           }
         }
@@ -369,7 +364,6 @@ inline void get_serial_commands() {
           else {
             SERIAL_PROTOCOLLNPGM(MSG_FILE_PRINTED);
             #if ENABLED(PRINTER_EVENT_LEDS)
-              LCD_MESSAGEPGM(MSG_INFO_COMPLETED_PRINTS);
               leds.set_green();
               #if HAS_RESUME_CONTINUE
                 enqueue_and_echo_commands_P(PSTR("M0")); // end of the queue!

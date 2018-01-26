@@ -22,7 +22,6 @@
 
 #include "../gcode.h"
 #include "../../module/stepper.h"
-#include "../../lcd/ultralcd.h"
 
 /**
  * G4: Dwell S<seconds> or P<milliseconds>
@@ -34,8 +33,6 @@ void GcodeSuite::G4() {
   if (parser.seenval('S')) dwell_ms = parser.value_millis_from_seconds(); // seconds to wait
 
   stepper.synchronize();
-
-  if (!lcd_hasstatus()) LCD_MESSAGEPGM(MSG_DWELL);
 
   dwell(dwell_ms);
 }

@@ -176,14 +176,8 @@ bool Sd2Card::SD_init(uint8_t sckRateID, pin_t chipSelectPin) {
   uint16_t t0 = (uint16_t)millis();
   uint32_t arg;
 
-  // If init takes more than 4s it could trigger
-  // watchdog leading to a reboot loop.
-  #if ENABLED(USE_WATCHDOG)
-    watchdog_reset();
-  #endif
-
   // set pin modes
-//todo: should use chipSelectPin ?
+  //todo: should use chipSelectPin ?
   spiBegin();
 
   // set SCK rate for initialization commands

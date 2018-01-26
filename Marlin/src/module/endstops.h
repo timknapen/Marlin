@@ -33,17 +33,8 @@
 enum EndstopEnum {
   X_MIN,
   Y_MIN,
-  Z_MIN,
-  Z_MIN_PROBE,
   X_MAX,
-  Y_MAX,
-  Z_MAX,
-  X2_MIN,
-  X2_MAX,
-  Y2_MIN,
-  Y2_MAX,
-  Z2_MIN,
-  Z2_MAX
+  Y_MAX
 };
 
 class Endstops {
@@ -51,7 +42,7 @@ class Endstops {
   public:
 
     static bool enabled, enabled_globally;
-    static volatile char endstop_hit_bits; // use X_MIN, Y_MIN, Z_MIN and Z_MIN_PROBE as BIT value
+    static volatile char endstop_hit_bits; // use X_MIN, Y_MIN as BIT value
 
     #if ENABLED(X_DUAL_ENDSTOPS)
       static float x_endstop_adj;
@@ -59,10 +50,7 @@ class Endstops {
     #if ENABLED(Y_DUAL_ENDSTOPS)
       static float y_endstop_adj;
     #endif
-    #if ENABLED(Z_DUAL_ENDSTOPS)
-      static float z_endstop_adj;
-    #endif
-    #if ENABLED(X_DUAL_ENDSTOPS) || ENABLED(Y_DUAL_ENDSTOPS) || ENABLED(Z_DUAL_ENDSTOPS)
+	#if ENABLED(X_DUAL_ENDSTOPS) || ENABLED(Y_DUAL_ENDSTOPS)
       typedef uint16_t esbits_t;
     #else
       typedef byte esbits_t;
@@ -112,12 +100,7 @@ class Endstops {
     // Clear endstops (i.e., they were hit intentionally) to suppress the report
     static void hit_on_purpose() { endstop_hit_bits = 0; }
 
-    // Enable / disable endstop z-probe checking
-    #if HAS_BED_PROBE
-      static volatile bool z_probe_enabled;
-      static void enable_z_probe(bool onoff=true) { z_probe_enabled = onoff; }
-    #endif
-
+	
     // Debugging of endstops
     #if ENABLED(PINS_DEBUGGING)
       static bool monitor_flag;
@@ -139,18 +122,13 @@ class Endstops {
     #if ENABLED(Y_DUAL_ENDSTOPS)
       static void test_dual_y_endstops(const EndstopEnum es1, const EndstopEnum es2);
     #endif
-    #if ENABLED(Z_DUAL_ENDSTOPS)
-      static void test_dual_z_endstops(const EndstopEnum es1, const EndstopEnum es2);
-    #endif
 };
 
 extern Endstops endstops;
 
-#if HAS_BED_PROBE
-  #define ENDSTOPS_ENABLED  (endstops.enabled || endstops.z_probe_enabled)
-#else
+
   #define ENDSTOPS_ENABLED  endstops.enabled
-#endif
+
 
 
 #endif // __ENDSTOPS_H__

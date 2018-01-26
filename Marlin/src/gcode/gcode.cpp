@@ -36,13 +36,9 @@ GcodeSuite gcode;
   #include "../module/printcounter.h"
 #endif
 
-#if ENABLED(DIRECT_MIXING_IN_G1)
-  #include "../feature/mixing.h"
-#endif
 
 #include "../Marlin.h" // for idle()
 
-uint8_t GcodeSuite::target_extruder;
 millis_t GcodeSuite::previous_cmd_ms;
 
 bool GcodeSuite::axis_relative_modes[] = AXIS_RELATIVE_MODES;
@@ -52,50 +48,24 @@ bool GcodeSuite::axis_relative_modes[] = AXIS_RELATIVE_MODES;
   uint8_t GcodeSuite::host_keepalive_interval = DEFAULT_KEEPALIVE_INTERVAL;
 #endif
 
-#if ENABLED(CNC_WORKSPACE_PLANES)
-  GcodeSuite::WorkspacePlane GcodeSuite::workspace_plane = PLANE_XY;
-#endif
-
 #if ENABLED(CNC_COORDINATE_SYSTEMS)
   int8_t GcodeSuite::active_coordinate_system = -1; // machine space
-  float GcodeSuite::coordinate_system[MAX_COORDINATE_SYSTEMS][XYZ];
+  float GcodeSuite::coordinate_system[MAX_COORDINATE_SYSTEMS][XY];
 #endif
 
-/**
- * Set target_extruder from the T parameter or the active_extruder
- *
- * Returns TRUE if the target is invalid
- */
-bool GcodeSuite::get_target_extruder_from_command() {
-  if (parser.seenval('T')) {
-    const int8_t e = parser.value_byte();
-    if (e >= EXTRUDERS) {
-      SERIAL_ECHO_START();
-      SERIAL_CHAR('M');
-      SERIAL_ECHO(parser.codenum);
-      SERIAL_ECHOLNPAIR(" " MSG_INVALID_EXTRUDER " ", e);
-      return true;
-    }
-    target_extruder = e;
-  }
-  else
-    target_extruder = active_extruder;
-
-  return false;
-}
 
 /**
- * Set XYZE destination and feedrate from the current GCode command
+ * Set XY  destination and feedrate from the current GCode command
  *
  *  - Set destination from included axis codes
  *  - Set to current for missing axis codes
  *  - Set the feedrate, if included
  */
 void GcodeSuite::get_destination_from_command() {
-  LOOP_XYZE(i) {
+  LOOP_XY(i) {
     if (parser.seen(axis_codes[i])) {
       const float v = parser.value_axis_units((AxisEnum)i) + (axis_relative_modes[i] || relative_mode ? current_position[i] : 0);
-      destination[i] = i == E_AXIS ? v : LOGICAL_TO_NATIVE(v, i);
+      destination[i] = LOGICAL_TO_NATIVE(v, i);
     }
     else
       destination[i] = current_position[i];
@@ -104,15 +74,6 @@ void GcodeSuite::get_destination_from_command() {
   if (parser.linearval('F') > 0.0)
     feedrate_mm_s = MMM_TO_MMS(parser.value_feedrate());
 
-  #if ENABLED(PRINTCOUNTER)
-    if (!DEBUGGING(DRYRUN))
-      print_job_timer.incFilamentUsed(destination[E_AXIS] - current_position[E_AXIS]);
-  #endif
-
-  // Get ABCDHI mixing factors
-  #if ENABLED(MIXING_EXTRUDER) && ENABLED(DIRECT_MIXING_IN_G1)
-    gcode_get_mix();
-  #endif
 }
 
 /**
@@ -144,15 +105,11 @@ void GcodeSuite::process_parsed_command() {
       // G0, G1
       case 0:
       case 1:
-        #if IS_SCARA
-          G0_G1(parser.codenum == 0);
-        #else
           G0_G1();
-        #endif
         break;
 
       // G2, G3
-      #if ENABLED(ARC_SUPPORT) && DISABLED(SCARA)
+      #if ENABLED(ARC_SUPPORT)
         case 2: // G2: CW ARC
         case 3: // G3: CCW ARC
           G2_G3(parser.codenum == 2);
@@ -170,33 +127,6 @@ void GcodeSuite::process_parsed_command() {
           break;
       #endif // BEZIER_CURVE_SUPPORT
 
-      #if ENABLED(FWRETRACT)
-        case 10: // G10: retract
-          G10();
-          break;
-        case 11: // G11: retract_recover
-          G11();
-          break;
-      #endif // FWRETRACT
-
-      #if ENABLED(NOZZLE_CLEAN_FEATURE)
-        case 12:
-          G12(); // G12: Nozzle Clean
-          break;
-      #endif // NOZZLE_CLEAN_FEATURE
-
-      #if ENABLED(CNC_WORKSPACE_PLANES)
-        case 17: // G17: Select Plane XY
-          G17();
-          break;
-        case 18: // G18: Select Plane ZX
-          G18();
-          break;
-        case 19: // G19: Select Plane YZ
-          G19();
-          break;
-      #endif // CNC_WORKSPACE_PLANES
-
       #if ENABLED(INCH_MODE_SUPPORT)
         case 20: // G20: Inch Mode
           G20();
@@ -207,61 +137,9 @@ void GcodeSuite::process_parsed_command() {
           break;
       #endif // INCH_MODE_SUPPORT
 
-      #if ENABLED(G26_MESH_VALIDATION)
-        case 26: // G26: Mesh Validation Pattern generation
-          G26();
-          break;
-      #endif // AUTO_BED_LEVELING_UBL
-
-      #if ENABLED(NOZZLE_PARK_FEATURE)
-        case 27: // G27: Nozzle Park
-          G27();
-          break;
-      #endif // NOZZLE_PARK_FEATURE
-
       case 28: // G28: Home all axes, one at a time
         G28(false);
         break;
-
-      #if HAS_LEVELING
-        case 29: // G29 Detailed Z probe, probes the bed at 3 or more points,
-                 // or provides access to the UBL System if enabled.
-          G29();
-          break;
-      #endif // HAS_LEVELING
-
-      #if HAS_BED_PROBE
-
-        case 30: // G30 Single Z probe
-          G30();
-          break;
-
-        #if ENABLED(Z_PROBE_SLED)
-
-            case 31: // G31: dock the sled
-              G31();
-              break;
-
-            case 32: // G32: undock the sled
-              G32();
-              break;
-
-        #endif // Z_PROBE_SLED
-
-      #endif // HAS_BED_PROBE
-
-      #if ENABLED(DELTA_AUTO_CALIBRATION)
-        case 33: // G33: Delta Auto-Calibration
-          G33();
-          break;
-      #endif // DELTA_AUTO_CALIBRATION
-
-      #if ENABLED(G38_PROBE_TARGET)
-        case 38: // G38.2 & G38.3
-          if (parser.subcode == 2 || parser.subcode == 3)
-            G38(parser.subcode == 2);
-          break;
-      #endif
 
       case 90: // G90
         relative_mode = false;
@@ -273,10 +151,6 @@ void GcodeSuite::process_parsed_command() {
       case 92: // G92 - Set current axis position(s)
         G92();
         break;
-
-      #if HAS_MESH
-        case 42: G42(); break;        // G42: Coordinated move to a mesh point
-      #endif
 
       #if ENABLED(DEBUG_GCODE_PARSER)
         case 800:
@@ -293,13 +167,6 @@ void GcodeSuite::process_parsed_command() {
           M0_M1();
           break;
       #endif // ULTIPANEL
-
-      #if ENABLED(SPINDLE_LASER_ENABLE)
-        // These synchronize with movement commands...
-        case 3: M3_M4(true ); break;  // M3: turn spindle/laser on, set laser/spindle power/speed, set rotation direction CW
-        case 4: M3_M4(false); break;  // M4: turn spindle/laser on, set laser/spindle power/speed, set rotation direction CCW
-        case 5: M5(); break;          // M5 - turn spindle/laser off
-      #endif
 
       case 17: // M17: Enable all stepper motors
         M17();
@@ -338,18 +205,6 @@ void GcodeSuite::process_parsed_command() {
         case 43: M43(); break;    // M43: Read pin state
       #endif
 
-      #if ENABLED(Z_MIN_PROBE_REPEATABILITY_TEST)
-        case 48: M48(); break;    // M48: Z probe repeatability test
-      #endif
-
-      #if ENABLED(G26_MESH_VALIDATION)
-        case 49: M49(); break;    // M49: Turn on or off G26 debug flag for verbose output
-      #endif
-
-      #if ENABLED(ULTRA_LCD) && ENABLED(LCD_SET_PROGRESS_MANUALLY)
-        case 73: M73(); break;    // M73: Set progress percentage (for display on LCD)
-      #endif
-
       case 75: M75(); break;      // M75: Start print timer
       case 76: M76(); break;      // M76: Pause print timer
       case 77: M77(); break;      // M77: Stop print timer
@@ -361,9 +216,6 @@ void GcodeSuite::process_parsed_command() {
       #if ENABLED(M100_FREE_MEMORY_WATCHER)
         case 100: M100(); break;  // M100: Free Memory Report
       #endif
-
-      case 104: M104(); break;    // M104: Set hot end temperature
-      case 109: M109(); break;    // M109: Wait for hotend temperature to reach target
 
       case 110: M110(); break;    // M110: Set Current Line Number
 
@@ -379,52 +231,11 @@ void GcodeSuite::process_parsed_command() {
         case 113: M113(); break; // M113: Set Host Keepalive interval
       #endif
 
-      #if HAS_HEATER_BED && HAS_TEMP_BED
-        case 140: M140(); break;  // M140: Set bed temperature
-        case 190: M190(); break;  // M190: Wait for bed temperature to reach target
-      #endif
-
-      case 105: // M105: Report current temperature
-        M105();
-        KEEPALIVE_STATE(NOT_BUSY);
-        return; // "ok" already printed
-
-      #if ENABLED(AUTO_REPORT_TEMPERATURES) && (HAS_TEMP_HOTEND || HAS_TEMP_BED)
-        case 155: M155(); break;  // M155: Set temperature auto-report interval
-      #endif
-
-      #if FAN_COUNT > 0
-        case 106: M106(); break;  // M106: Fan On
-        case 107: M107(); break;  // M107: Fan Off
-      #endif
-
-      #if ENABLED(PARK_HEAD_ON_PAUSE)
-        case 125: // M125: Store current position and move to filament change position
-          M125(); break;
-      #endif
-
-      #if ENABLED(BARICUDA)
-        // PWM for HEATER_1_PIN
-        #if HAS_HEATER_1
-          case 126: M126(); break;  // M126: valve open
-          case 127: M127(); break;  // M127: valve closed
-        #endif
-
-        // PWM for HEATER_2_PIN
-        #if HAS_HEATER_2
-          case 128: M128(); break;  // M128: valve open
-          case 129: M129(); break;  // M129: valve closed
-        #endif
-      #endif // BARICUDA
-
-      #if HAS_POWER_SWITCH
+	  #if HAS_POWER_SWITCH
         case 80: M80(); break;    // M80: Turn on Power Supply
       #endif
 
       case 81: M81(); break;      // M81: Turn off Power, including Power Supply, if possible
-
-      case 82: M82(); break;      // M82: Set E axis normal mode (same as other axes)
-      case 83: M83(); break;      // M83: Set E axis relative mode
 
       case 18: // M18 => M84
       case 84: M18_M84(); break;  // M84: Disable all steppers or set timeout
@@ -436,40 +247,13 @@ void GcodeSuite::process_parsed_command() {
 
       case 115: M115(); break;    // M115: Report capabilities
 
-      case 117: M117(); break;    // M117: Set LCD message text, if possible
       case 118: M118(); break;    // M118: Display a message in the host console
 
       case 119: M119(); break;    // M119: Report endstop states
       case 120: M120(); break;    // M120: Enable endstops
       case 121: M121(); break;    // M121: Disable endstops
 
-      #if ENABLED(ULTIPANEL)
-        case 145: M145(); break;  // M145: Set material heatup parameters
-      #endif
-
-      #if ENABLED(TEMPERATURE_UNITS_SUPPORT)
-        case 149: M149(); break;  // M149: Set temperature units
-      #endif
-
-      #if HAS_COLOR_LEDS
-        case 150: M150(); break;  // M150: Set Status LED Color
-      #endif
-
-      #if ENABLED(MIXING_EXTRUDER)
-        case 163: M163(); break;    // M163: Set a component weight for mixing extruder
-        #if MIXING_VIRTUAL_TOOLS > 1
-          case 164: M164(); break;  // M164: Save current mix as a virtual extruder
-        #endif
-        #if ENABLED(DIRECT_MIXING_IN_G1)
-          case 165: M165(); break;  // M165: Set multiple mix weights
-        #endif
-      #endif
-
-      case 200: // M200: Set filament diameter, E to cubic units
-        M200();
-        break;
-
-      case 201: M201(); break;  // M201: Set max acceleration for print moves (units/s^2)
+	 case 201: M201(); break;  // M201: Set max acceleration for print moves (units/s^2)
 
       #if 0
         case 202: M202(); break; // Not used for Sprinter/grbl gen6
@@ -483,123 +267,17 @@ void GcodeSuite::process_parsed_command() {
         case 206: M206(); break;  // M206: Set home offsets
       #endif
 
-      #if ENABLED(DELTA)
-        case 665: M665(); break;  // M665: Set delta configurations
-      #endif
-
-      #if ENABLED(DELTA) || ENABLED(Z_DUAL_ENDSTOPS)
-        case 666: M666(); break;  // M666: Set delta or dual endstop adjustment
-      #endif
-
-      #if ENABLED(FWRETRACT)
-        case 207: M207(); break;  // M207: Set Retract Length, Feedrate, and Z lift
-        case 208: M208(); break;  // M208: Set Recover (unretract) Additional Length and Feedrate
-        case 209: if (MIN_AUTORETRACT <= MAX_AUTORETRACT) M209(); break;  // M209: Turn Automatic Retract Detection on/off
-      #endif
-
-      case 211: M211(); break;    // M211: Enable, Disable, and/or Report software endstops
-
-      #if HOTENDS > 1
-        case 218: // M218: Set a tool offset
-          M218();
-          break;
-      #endif
+	  case 211: M211(); break;    // M211: Enable, Disable, and/or Report software endstops
 
       case 220: M220(); break;    // M220: Set Feedrate Percentage: S<percent> ("FR" on your LCD)
 
-      case 221: // M221: Set Flow Percentage
-        M221();
-        break;
-
-      case 226: M226(); break;    // M226: Wait until a pin reaches a state
+	  case 226: M226(); break;    // M226: Wait until a pin reaches a state
 
       #if HAS_SERVOS
         case 280: M280(); break;  // M280: Set servo position absolute
       #endif
 
-      #if ENABLED(BABYSTEPPING)
-        case 290: M290(); break;  // M290: Babystepping
-      #endif
-
-      #if HAS_BUZZER
-        case 300: M300(); break;  // M300: Play beep tone
-      #endif
-
-      #if ENABLED(PIDTEMP)
-        case 301: M301(); break;  // M301: Set hotend PID parameters
-      #endif
-
-      #if ENABLED(PIDTEMPBED)
-        case 304: M304(); break;  // M304: Set bed PID parameters
-      #endif
-
-      #if defined(CHDK) || HAS_PHOTOGRAPH
-        case 240: M240(); break;  // M240: Trigger a camera by emulating a Canon RC-1 : http://www.doc-diy.net/photo/rc-1_hacked/
-      #endif
-
-      #if HAS_LCD_CONTRAST
-        case 250: M250(); break;  // M250: Set LCD contrast
-      #endif
-
-      #if ENABLED(EXPERIMENTAL_I2CBUS)
-        case 260: M260(); break;  // M260: Send data to an i2c slave
-        case 261: M261(); break;  // M261: Request data from an i2c slave
-      #endif
-
-      #if ENABLED(PREVENT_COLD_EXTRUSION)
-        case 302: M302(); break;  // M302: Allow cold extrudes (set the minimum extrude temperature)
-      #endif
-
-      case 303: // M303: PID autotune
-        M303();
-        break;
-
-      #if ENABLED(MORGAN_SCARA)
-        case 360: if (M360()) return; break;  // M360: SCARA Theta pos1
-        case 361: if (M361()) return; break;  // M361: SCARA Theta pos2
-        case 362: if (M362()) return; break;  // M362: SCARA Psi pos1
-        case 363: if (M363()) return; break;  // M363: SCARA Psi pos2
-        case 364: if (M364()) return; break;  // M364: SCARA Psi pos3 (90 deg to Theta)
-      #endif
-
-      #if ENABLED(EXT_SOLENOID)
-        case 380: M380(); break;  // M380: Activate solenoid on active extruder
-        case 381: M381(); break;  // M381: Disable all solenoids
-      #endif
-
       case 400: M400(); break;    // M400: Finish all moves
-
-      #if HAS_BED_PROBE
-        case 401: M401(); break;  // M401: Deploy probe
-        case 402: M402(); break;  // M402: Stow probe
-      #endif
-
-      #if ENABLED(FILAMENT_WIDTH_SENSOR)
-        case 404:  // M404: Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or display nominal filament width
-          M404();
-          break;
-        case 405:  // M405: Turn on filament sensor for control
-          M405();
-          break;
-        case 406:  // M406: Turn off filament sensor for control
-          M406();
-          break;
-        case 407:   // M407: Display measured filament diameter
-          M407();
-          break;
-      #endif // FILAMENT_WIDTH_SENSOR
-
-      #if HAS_LEVELING
-        case 420: // M420: Enable/Disable Bed Leveling
-          M420();
-          break;
-      #endif
-
-      #if HAS_MESH
-        case 421: // M421: Set a Mesh Bed Leveling Z coordinate
-          M421();
-          break;
-      #endif
 
       #if HAS_M206_COMMAND
         case 428: M428(); break;  // M428: Apply current_position to home_offset
@@ -616,48 +294,7 @@ void GcodeSuite::process_parsed_command() {
         case 540: M540(); break;  // M540: Set abort on endstop hit for SD printing
       #endif
 
-      #if HAS_BED_PROBE
-        case 851: // M851: Set Z Probe Z Offset
-          M851();
-          break;
-      #endif // HAS_BED_PROBE
-
-      #if ENABLED(SKEW_CORRECTION_GCODE)
-        case 852: // M852: Set Skew factors
-          M852();
-          break;
-      #endif
-
-      #if ENABLED(ADVANCED_PAUSE_FEATURE)
-        case 600: // M600: Pause for filament change
-          M600();
-          break;
-      #endif // ADVANCED_PAUSE_FEATURE
-
-      #if ENABLED(DUAL_X_CARRIAGE) || ENABLED(DUAL_NOZZLE_DUPLICATION_MODE)
-        case 605: M605(); break;  // M605: Set Dual X Carriage movement mode
-      #endif
-
-      #if ENABLED(MK2_MULTIPLEXER)
-        case 702: M702(); break;  // M702: Unload all extruders
-      #endif
-
-      #if ENABLED(LIN_ADVANCE)
-        case 900: M900(); break;  // M900: Set advance K factor.
-      #endif
-
-      #if HAS_DIGIPOTSS || HAS_MOTOR_CURRENT_PWM || ENABLED(DIGIPOT_I2C) || ENABLED(DAC_STEPPER_CURRENT)
-        case 907: M907(); break;      // M907: Set digital trimpot motor current using axis codes.
-        #if HAS_DIGIPOTSS || ENABLED(DAC_STEPPER_CURRENT)
-          case 908: M908(); break;    // M908: Control digital trimpot directly.
-          #if ENABLED(DAC_STEPPER_CURRENT) // As with Printrbot RevF
-            case 909: M909(); break;  // M909: Print digipot/DAC current value
-            case 910: M910(); break;  // M910: Commit digipot/DAC value to external EEPROM
-          #endif
-        #endif
-      #endif
-
-      #if ENABLED(HAVE_TMC2130)
+	#if ENABLED(HAVE_TMC2130)
         case 906: M906(); break;    // M906: Set motor current in milliamps using axis codes X, Y, Z, E
         case 911: M911(); break;    // M911: Report TMC2130 prewarn triggered flags
         case 912: M912(); break;    // M912: Clear TMC2130 prewarn triggered flags
@@ -674,7 +311,6 @@ void GcodeSuite::process_parsed_command() {
         case 351: M351(); break;    // M351: Toggle MS1 MS2 pins directly, S# determines MS1 or MS2, X# sets the pin high/low.
       #endif
 
-      case 355: M355(); break;      // M355: Set case light brightness
 
       #if ENABLED(DEBUG_GCODE_PARSER)
         case 800:
@@ -682,24 +318,9 @@ void GcodeSuite::process_parsed_command() {
           break;
       #endif
 
-      #if ENABLED(I2C_POSITION_ENCODERS)
-        case 860: M860(); break; // M860: Report encoder module position
-        case 861: M861(); break; // M861: Report encoder module status
-        case 862: M862(); break; // M862: Perform axis test
-        case 863: M863(); break; // M863: Calibrate steps/mm
-        case 864: M864(); break; // M864: Change module address
-        case 865: M865(); break; // M865: Check module firmware version
-        case 866: M866(); break; // M866: Report axis error count
-        case 867: M867(); break; // M867: Toggle error correction
-        case 868: M868(); break; // M868: Set error correction threshold
-        case 869: M869(); break; // M869: Report axis error
-      #endif
-
       case 999: M999(); break;  // M999: Restart after being Stopped
     }
     break;
-
-    case 'T': T(parser.codenum); break; // Tn: Tool Change
 
     default: parser.unknown_command_error();
   }

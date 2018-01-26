@@ -60,25 +60,6 @@ void setup_endstop_interrupts( void ) {
     attachInterrupt(digitalPinToInterrupt(Y_MIN_PIN), endstop_ISR, CHANGE);
   #endif
 
-  #if HAS_Z_MAX
-    attachInterrupt(digitalPinToInterrupt(Z_MAX_PIN), endstop_ISR, CHANGE);
-  #endif
-
-  #if HAS_Z_MIN
-     attachInterrupt(digitalPinToInterrupt(Z_MIN_PIN), endstop_ISR, CHANGE);
-  #endif
-
-  #if HAS_Z2_MAX
-    attachInterrupt(digitalPinToInterrupt(Z2_MAX_PIN), endstop_ISR, CHANGE);
-  #endif
-
-  #if HAS_Z2_MIN
-    attachInterrupt(digitalPinToInterrupt(Z2_MIN_PIN), endstop_ISR, CHANGE);
-  #endif
-
-  #if HAS_Z_MIN_PROBE_PIN
-    attachInterrupt(digitalPinToInterrupt(Z_MIN_PROBE_PIN), endstop_ISR, CHANGE);
-  #endif
 }
 
 #endif //_ENDSTOP_INTERRUPTS_H_

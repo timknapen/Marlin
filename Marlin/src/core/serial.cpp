@@ -47,26 +47,3 @@ void serial_echopair_P(const char* s_P, unsigned long v) { serialprintPGM(s_P); 
 
 void serial_spaces(uint8_t count) { count *= (PROPORTIONAL_FONT_RATIO); while (count--) MYSERIAL.write(' '); }
 
-#if ENABLED(DEBUG_LEVELING_FEATURE)
-
-  void print_xyz(const char* prefix, const char* suffix, const float x, const float y, const float z) {
-    serialprintPGM(prefix);
-    SERIAL_CHAR('(');
-    SERIAL_ECHO(x);
-    SERIAL_ECHOPAIR(", ", y);
-    SERIAL_ECHOPAIR(", ", z);
-    SERIAL_CHAR(')');
-    if (suffix) serialprintPGM(suffix); else SERIAL_EOL();
-  }
-
-  void print_xyz(const char* prefix, const char* suffix, const float xyz[]) {
-    print_xyz(prefix, suffix, xyz[X_AXIS], xyz[Y_AXIS], xyz[Z_AXIS]);
-  }
-
-  #if HAS_ABL
-    void print_xyz(const char* prefix, const char* suffix, const vector_3 &xyz) {
-      print_xyz(prefix, suffix, xyz.x, xyz.y, xyz.z);
-    }
-  #endif
-
-#endif

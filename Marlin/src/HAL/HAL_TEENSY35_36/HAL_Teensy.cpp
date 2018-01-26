@@ -67,7 +67,6 @@ uint8_t HAL_get_reset_source(void) {
   switch (RCM_SRS0) {
     case 128: return RST_POWER_ON; break;
     case 64: return RST_EXTERNAL; break;
-    case 32: return RST_WATCHDOG; break;
     // case 8: return RST_LOSS_OF_LOCK; break;
     // case 4: return RST_LOSS_OF_CLOCK; break;
     // case 2: return RST_LOW_VOLTAGE; break;

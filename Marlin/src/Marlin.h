@@ -64,97 +64,9 @@ void manage_inactivity(bool ignore_stepper_queue = false);
   #define disable_Y() NOOP
 #endif
 
-#if HAS_Z2_ENABLE
-  #define  enable_Z() do{ Z_ENABLE_WRITE( Z_ENABLE_ON); Z2_ENABLE_WRITE(Z_ENABLE_ON); }while(0)
-  #define disable_Z() do{ Z_ENABLE_WRITE(!Z_ENABLE_ON); Z2_ENABLE_WRITE(!Z_ENABLE_ON); axis_known_position[Z_AXIS] = false; }while(0)
-#elif HAS_Z_ENABLE
-  #define  enable_Z() Z_ENABLE_WRITE( Z_ENABLE_ON)
-  #define disable_Z() do{ Z_ENABLE_WRITE(!Z_ENABLE_ON); axis_known_position[Z_AXIS] = false; }while(0)
-#else
-  #define  enable_Z() NOOP
-  #define disable_Z() NOOP
-#endif
-
-#if ENABLED(MIXING_EXTRUDER)
-
-  /**
-   * Mixing steppers synchronize their enable (and direction) together
-   */
-  #if MIXING_STEPPERS > 3
-    #define  enable_E0() { E0_ENABLE_WRITE( E_ENABLE_ON); E1_ENABLE_WRITE( E_ENABLE_ON); E2_ENABLE_WRITE( E_ENABLE_ON); E3_ENABLE_WRITE( E_ENABLE_ON); }
-    #define disable_E0() { E0_ENABLE_WRITE(!E_ENABLE_ON); E1_ENABLE_WRITE(!E_ENABLE_ON); E2_ENABLE_WRITE(!E_ENABLE_ON); E3_ENABLE_WRITE(!E_ENABLE_ON); }
-  #elif MIXING_STEPPERS > 2
-    #define  enable_E0() { E0_ENABLE_WRITE( E_ENABLE_ON); E1_ENABLE_WRITE( E_ENABLE_ON); E2_ENABLE_WRITE( E_ENABLE_ON); }
-    #define disable_E0() { E0_ENABLE_WRITE(!E_ENABLE_ON); E1_ENABLE_WRITE(!E_ENABLE_ON); E2_ENABLE_WRITE(!E_ENABLE_ON); }
-  #else
-    #define  enable_E0() { E0_ENABLE_WRITE( E_ENABLE_ON); E1_ENABLE_WRITE( E_ENABLE_ON); }
-    #define disable_E0() { E0_ENABLE_WRITE(!E_ENABLE_ON); E1_ENABLE_WRITE(!E_ENABLE_ON); }
-  #endif
-  #define  enable_E1() NOOP
-  #define disable_E1() NOOP
-  #define  enable_E2() NOOP
-  #define disable_E2() NOOP
-  #define  enable_E3() NOOP
-  #define disable_E3() NOOP
-  #define  enable_E4() NOOP
-  #define disable_E4() NOOP
-
-#else // !MIXING_EXTRUDER
-
-  #if HAS_E0_ENABLE
-    #define  enable_E0() E0_ENABLE_WRITE( E_ENABLE_ON)
-    #define disable_E0() E0_ENABLE_WRITE(!E_ENABLE_ON)
-  #else
-    #define  enable_E0() NOOP
-    #define disable_E0() NOOP
-  #endif
-
-  #if E_STEPPERS > 1 && HAS_E1_ENABLE
-    #define  enable_E1() E1_ENABLE_WRITE( E_ENABLE_ON)
-    #define disable_E1() E1_ENABLE_WRITE(!E_ENABLE_ON)
-  #else
-    #define  enable_E1() NOOP
-    #define disable_E1() NOOP
-  #endif
-
-  #if E_STEPPERS > 2 && HAS_E2_ENABLE
-    #define  enable_E2() E2_ENABLE_WRITE( E_ENABLE_ON)
-    #define disable_E2() E2_ENABLE_WRITE(!E_ENABLE_ON)
-  #else
-    #define  enable_E2() NOOP
-    #define disable_E2() NOOP
-  #endif
-
-  #if E_STEPPERS > 3 && HAS_E3_ENABLE
-    #define  enable_E3() E3_ENABLE_WRITE( E_ENABLE_ON)
-    #define disable_E3() E3_ENABLE_WRITE(!E_ENABLE_ON)
-  #else
-    #define  enable_E3() NOOP
-    #define disable_E3() NOOP
-  #endif
-
-  #if E_STEPPERS > 4 && HAS_E4_ENABLE
-    #define  enable_E4() E4_ENABLE_WRITE( E_ENABLE_ON)
-    #define disable_E4() E4_ENABLE_WRITE(!E_ENABLE_ON)
-  #else
-    #define  enable_E4() NOOP
-    #define disable_E4() NOOP
-  #endif
-
-#endif // !MIXING_EXTRUDER
-
-#if ENABLED(EXPERIMENTAL_I2CBUS)
-  #include "feature/twibus.h"
-  extern TWIBus i2c;
-#endif
-
-#if ENABLED(G38_PROBE_TARGET)
-  extern bool G38_move,        // flag to tell the interrupt handler that a G38 command is being run
-              G38_endstop_hit; // flag from the interrupt handler to indicate if the endstop went active
-#endif
 
 /**
- * The axis order in all axis related arrays is X, Y, Z, E
+ * The axis order in all axis related arrays is X, Y
  */
 #define _AXIS(AXIS) AXIS ##_AXIS
 
@@ -170,46 +82,17 @@ extern bool Running;
 inline bool IsRunning() { return  Running; }
 inline bool IsStopped() { return !Running; }
 
-extern bool axis_known_position[XYZ];
-extern bool axis_homed[XYZ];
+extern bool axis_known_position[XY];
+extern bool axis_homed[XY];
 extern volatile bool wait_for_heatup;
 
 #if HAS_RESUME_CONTINUE
   extern volatile bool wait_for_user;
 #endif
 
-#if ENABLED(AUTO_BED_LEVELING_UBL)
-  typedef struct { double A, B, D; } linear_fit;
-  linear_fit* lsf_linear_fit(double x[], double y[], double z[], const int);
-#endif
 
 // Inactivity shutdown timer
 extern millis_t max_inactive_time, stepper_inactive_time;
-
-#if FAN_COUNT > 0
-  extern int16_t fanSpeeds[FAN_COUNT];
-  #if ENABLED(EXTRA_FAN_SPEED)
-    extern int16_t old_fanSpeeds[FAN_COUNT],
-                   new_fanSpeeds[FAN_COUNT];
-  #endif
-  #if ENABLED(PROBING_FANS_OFF)
-    extern bool fans_paused;
-    extern int16_t paused_fanSpeeds[FAN_COUNT];
-  #endif
-#endif
-
-#if ENABLED(ADVANCED_PAUSE_FEATURE)
-  enum AdvancedPauseMenuResponse {
-    ADVANCED_PAUSE_RESPONSE_WAIT_FOR,
-    ADVANCED_PAUSE_RESPONSE_EXTRUDE_MORE,
-    ADVANCED_PAUSE_RESPONSE_RESUME_PRINT
-  };
-  extern AdvancedPauseMenuResponse advanced_pause_menu_response;
-#endif
-
-#if ENABLED(PID_EXTRUSION_SCALING)
-  extern int lpq_len;
-#endif
 
 bool pin_is_protected(const pin_t pin);
 

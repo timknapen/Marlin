@@ -26,26 +26,19 @@
 
 #include "../gcode.h"
 #include "../../module/motion.h"
-#include "../../lcd/ultralcd.h"
-#include "../../libs/buzzer.h"
 #include "../../Marlin.h" // for axis_homed
 
 /**
- * M206: Set Additional Homing Offset (X Y Z). SCARA aliases T=X, P=Y
+ * M206: Set Additional Homing Offset (X Y ).
  *
  * *** @thinkyhead: I recommend deprecating M206 for SCARA in favor of M665.
  * ***              M206 for SCARA will remain enabled in 1.1.x for compatibility.
  * ***              In the 2.0 release, it will simply be disabled by default.
  */
 void GcodeSuite::M206() {
-  LOOP_XYZ(i)
+  LOOP_XY(i)
     if (parser.seen(axis_codes[i]))
       set_home_offset((AxisEnum)i, parser.value_linear_units());
-
-  #if ENABLED(MORGAN_SCARA)
-    if (parser.seen('T')) set_home_offset(A_AXIS, parser.value_float()); // Theta
-    if (parser.seen('P')) set_home_offset(B_AXIS, parser.value_float()); // Psi
-  #endif
 
   report_current_position();
 }
@@ -64,25 +57,20 @@ void GcodeSuite::M206() {
 void GcodeSuite::M428() {
   if (axis_unhomed_error()) return;
 
-  float diff[XYZ];
-  LOOP_XYZ(i) {
+  float diff[XY];
+  LOOP_XY(i) {
     diff[i] = base_home_pos((AxisEnum)i) - current_position[i];
     if (!WITHIN(diff[i], -20, 20) && home_dir((AxisEnum)i) > 0)
       diff[i] = -current_position[i];
     if (!WITHIN(diff[i], -20, 20)) {
       SERIAL_ERROR_START();
       SERIAL_ERRORLNPGM(MSG_ERR_M428_TOO_FAR);
-      LCD_ALERTMESSAGEPGM("Err: Too far!");
-      BUZZ(200, 40);
       return;
     }
   }
 
-  LOOP_XYZ(i) set_home_offset((AxisEnum)i, diff[i]);
+  LOOP_XY(i) set_home_offset((AxisEnum)i, diff[i]);
   report_current_position();
-  LCD_MESSAGEPGM(MSG_HOME_OFFSETS_APPLIED);
-  BUZZ(100, 659);
-  BUZZ(100, 698);
 }
 
 #endif // HAS_M206_COMMAND

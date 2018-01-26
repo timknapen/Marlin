@@ -34,7 +34,7 @@
  */
 void GcodeSuite::M350() {
   if (parser.seen('S')) for (uint8_t i = 0; i <= 4; i++) stepper.microstep_mode(i, parser.value_byte());
-  LOOP_XYZE(i) if (parser.seen(axis_codes[i])) stepper.microstep_mode(i, parser.value_byte());
+  LOOP_XY(i) if (parser.seen(axis_codes[i])) stepper.microstep_mode(i, parser.value_byte());
   if (parser.seen('B')) stepper.microstep_mode(4, parser.value_byte());
   stepper.microstep_readings();
 }
@@ -46,11 +46,11 @@ void GcodeSuite::M350() {
 void GcodeSuite::M351() {
   if (parser.seenval('S')) switch (parser.value_byte()) {
     case 1:
-      LOOP_XYZE(i) if (parser.seenval(axis_codes[i])) stepper.microstep_ms(i, parser.value_byte(), -1);
+      LOOP_XY(i) if (parser.seenval(axis_codes[i])) stepper.microstep_ms(i, parser.value_byte(), -1);
       if (parser.seenval('B')) stepper.microstep_ms(4, parser.value_byte(), -1);
       break;
     case 2:
-      LOOP_XYZE(i) if (parser.seenval(axis_codes[i])) stepper.microstep_ms(i, -1, parser.value_byte());
+      LOOP_XY(i) if (parser.seenval(axis_codes[i])) stepper.microstep_ms(i, -1, parser.value_byte());
       if (parser.seenval('B')) stepper.microstep_ms(4, -1, parser.value_byte());
       break;
   }

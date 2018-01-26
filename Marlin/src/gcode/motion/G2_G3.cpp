@@ -44,22 +44,14 @@
  * options for G2/G3 arc generation. In future these options may be GCode tunable.
  */
 void plan_arc(
-  const float (&cart)[XYZE],  // Destination position
+  const float (&cart)[XY],  // Destination position
   const float (&offset)[2],   // Center of rotation relative to current_position
   const uint8_t clockwise     // Clockwise?
 ) {
-  #if ENABLED(CNC_WORKSPACE_PLANES)
-    AxisEnum p_axis, q_axis, l_axis;
-    switch (gcode.workspace_plane) {
-      default:
-      case GcodeSuite::PLANE_XY: p_axis = X_AXIS; q_axis = Y_AXIS; l_axis = Z_AXIS; break;
-      case GcodeSuite::PLANE_ZX: p_axis = Z_AXIS; q_axis = X_AXIS; l_axis = Y_AXIS; break;
-      case GcodeSuite::PLANE_YZ: p_axis = Y_AXIS; q_axis = Z_AXIS; l_axis = X_AXIS; break;
-    }
-  #else
-    constexpr AxisEnum p_axis = X_AXIS, q_axis = Y_AXIS, l_axis = Z_AXIS;
-  #endif
+	
+	constexpr AxisEnum p_axis = X_AXIS, q_axis = Y_AXIS;
 
+	
   // Radius vector from center to current location
   float r_P = -offset[0], r_Q = -offset[1];
 
@@ -67,9 +59,7 @@ void plan_arc(
               center_P = current_position[p_axis] - r_P,
               center_Q = current_position[q_axis] - r_Q,
               rt_X = cart[p_axis] - center_P,
-              rt_Y = cart[q_axis] - center_Q,
-              linear_travel = cart[l_axis] - current_position[l_axis],
-              extruder_travel = cart[E_AXIS] - current_position[E_AXIS];
+			  rt_Y = cart[q_axis] - center_Q;
 
   // CCW angle of rotation between position and target from the circle center. Only one atan2() trig computation required.
   float angular_travel = ATAN2(r_P * rt_Y - r_Q * rt_X, r_P * rt_X + r_Q * rt_Y);
@@ -80,7 +70,7 @@ void plan_arc(
   if (angular_travel == 0 && current_position[p_axis] == cart[p_axis] && current_position[q_axis] == cart[q_axis])
     angular_travel = RADIANS(360);
 
-  const float mm_of_travel = HYPOT(angular_travel * radius, FABS(linear_travel));
+  const float mm_of_travel = angular_travel * radius;
   if (mm_of_travel < 0.001) return;
 
   uint16_t segments = FLOOR(mm_of_travel / (MM_PER_ARC_SEGMENT));
@@ -113,18 +103,11 @@ void plan_arc(
    * This is important when there are successive arc motions.
    */
   // Vector rotation matrix values
-  float arc_target[XYZE];
+  float arc_target[XY];
   const float theta_per_segment = angular_travel / segments,
-              linear_per_segment = linear_travel / segments,
-              extruder_per_segment = extruder_travel / segments,
               sin_T = theta_per_segment,
               cos_T = 1 - 0.5 * sq(theta_per_segment); // Small angle approximation
 
-  // Initialize the linear axis
-  arc_target[l_axis] = current_position[l_axis];
-
-  // Initialize the extruder axis
-  arc_target[E_AXIS] = current_position[E_AXIS];
 
   const float fr_mm_s = MMS_SCALED(feedrate_mm_s);
 
@@ -136,7 +119,6 @@ void plan_arc(
 
   for (uint16_t i = 1; i < segments; i++) { // Iterate (segments-1) times
 
-    thermalManager.manage_heater();
     if (ELAPSED(millis(), next_idle_ms)) {
       next_idle_ms = millis() + 200UL;
       idle();
@@ -168,16 +150,14 @@ void plan_arc(
     // Update arc_target location
     arc_target[p_axis] = center_P + r_P;
     arc_target[q_axis] = center_Q + r_Q;
-    arc_target[l_axis] += linear_per_segment;
-    arc_target[E_AXIS] += extruder_per_segment;
 
     clamp_to_software_endstops(arc_target);
 
-    planner.buffer_line_kinematic(arc_target, fr_mm_s, active_extruder);
+    planner.buffer_line_kinematic(arc_target, fr_mm_s);
   }
 
   // Ensure last segment arrives at target location.
-  planner.buffer_line_kinematic(cart, fr_mm_s, active_extruder);
+  planner.buffer_line_kinematic(cart, fr_mm_s);
 
   // As far as the parser is concerned, the position is now == target. In reality the
   // motion control system might still be processing the action and the real tool position

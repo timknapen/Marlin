@@ -51,17 +51,4 @@ void GcodeSuite::M42() {
   digitalWrite(pin, pin_status);
   analogWrite(pin, pin_status);
 
-  #if FAN_COUNT > 0
-    switch (pin) {
-      #if HAS_FAN0
-        case FAN_PIN: fanSpeeds[0] = pin_status; break;
-      #endif
-      #if HAS_FAN1
-        case FAN1_PIN: fanSpeeds[1] = pin_status; break;
-      #endif
-      #if HAS_FAN2
-        case FAN2_PIN: fanSpeeds[2] = pin_status; break;
-      #endif
-    }
-  #endif
 }

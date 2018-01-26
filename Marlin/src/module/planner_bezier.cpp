@@ -33,7 +33,6 @@
 
 #include "planner.h"
 #include "motion.h"
-#include "temperature.h"
 
 #include "../Marlin.h"
 #include "../core/language.h"
@@ -108,7 +107,7 @@ inline static float dist1(float x1, float y1, float x2, float y2) { return FABS(
  * the mitigation offered by MIN_STEP and the small computational
  * power available on Arduino, I think it is not wise to implement it.
  */
-void cubic_b_spline(const float position[NUM_AXIS], const float target[NUM_AXIS], const float offset[4], float fr_mm_s, uint8_t extruder) {
+void cubic_b_spline(const float position[NUM_AXIS], const float target[NUM_AXIS], const float offset[4], float fr_mm_s) {
   // Absolute first and second control points are recovered.
   const float first0 = position[X_AXIS] + offset[0],
               first1 = position[Y_AXIS] + offset[1],
@@ -125,7 +124,6 @@ void cubic_b_spline(const float position[NUM_AXIS], const float target[NUM_AXIS]
 
   while (t < 1.0) {
 
-    thermalManager.manage_heater();
     millis_t now = millis();
     if (ELAPSED(now, next_idle_ms)) {
       next_idle_ms = now + 200UL;
@@ -185,12 +183,8 @@ void cubic_b_spline(const float position[NUM_AXIS], const float target[NUM_AXIS]
     // Compute and send new position
     bez_target[X_AXIS] = new_pos0;
     bez_target[Y_AXIS] = new_pos1;
-    // FIXME. The following two are wrong, since the parameter t is
-    // not linear in the distance.
-    bez_target[Z_AXIS] = interp(position[Z_AXIS], target[Z_AXIS], t);
-    bez_target[E_AXIS] = interp(position[E_AXIS], target[E_AXIS], t);
     clamp_to_software_endstops(bez_target);
-    planner.buffer_line_kinematic(bez_target, fr_mm_s, extruder);
+    planner.buffer_line_kinematic(bez_target, fr_mm_s);
   }
 }
 

@@ -37,12 +37,8 @@ enum AxisEnum {
   A_AXIS    = 0,
   Y_AXIS    = 1,
   B_AXIS    = 1,
-  Z_AXIS    = 2,
-  C_AXIS    = 2,
-  E_AXIS    = 3,
   X_HEAD    = 4,
   Y_HEAD    = 5,
-  Z_HEAD    = 6,
   ALL_AXES  = 100
 };
 
@@ -52,35 +48,18 @@ enum AxisEnum {
 #define LOOP_L_N(VAR, N) LOOP_S_L_N(VAR, 0, N)
 
 #define LOOP_NA(VAR) LOOP_L_N(VAR, NUM_AXIS)
-#define LOOP_XYZ(VAR) LOOP_S_LE_N(VAR, X_AXIS, Z_AXIS)
-#define LOOP_XYZE(VAR) LOOP_S_LE_N(VAR, X_AXIS, E_AXIS)
-#define LOOP_XYZE_N(VAR) LOOP_S_L_N(VAR, X_AXIS, XYZE_N)
+#define LOOP_XY(VAR) LOOP_S_LE_N(VAR, X_AXIS, Y_AXIS)
 
 typedef enum {
   LINEARUNIT_MM,
   LINEARUNIT_INCH
 } LinearUnit;
 
-typedef enum {
-  TEMPUNIT_C,
-  TEMPUNIT_K,
-  TEMPUNIT_F
-} TempUnit;
 
 /**
  * SD Card
  */
 enum LsAction { LS_SerialPrint, LS_Count, LS_GetFilename };
 
-/**
- * Ultra LCD
- */
-enum LCDViewAction {
-  LCDVIEW_NONE,
-  LCDVIEW_REDRAW_NOW,
-  LCDVIEW_CALL_REDRAW_NEXT,
-  LCDVIEW_CLEAR_CALL_REDRAW,
-  LCDVIEW_CALL_NO_REDRAW
-};
 
 #endif // __ENUM_H__

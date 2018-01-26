@@ -104,9 +104,7 @@
   #define WEBSITE_URL DEFAULT_WEBSITE_URL
 #endif
 
-// Common LCD messages
 
-  /* nothing here yet */
 
 // Common serial messages
 #define MSG_MARLIN "Marlin"
@@ -117,7 +115,6 @@
 #define MSG_POWERUP                         "PowerUp"
 #define MSG_EXTERNAL_RESET                  " External Reset"
 #define MSG_BROWNOUT_RESET                  " Brown out Reset"
-#define MSG_WATCHDOG_RESET                  " Watchdog Reset"
 #define MSG_SOFTWARE_RESET                  " Software Reset"
 #define MSG_AUTHOR                          " | Author: "
 #define MSG_CONFIGURATION_VER               " Last Updated: "
@@ -314,7 +311,5 @@
  && DISABLED(DISPLAY_CHARSET_ISO10646_SK)
   #define DISPLAY_CHARSET_ISO10646_1 // use the better font on full graphic displays.
 #endif
-
-#include "../lcd/language/language_en.h"
 
 #endif // __LANGUAGE_H

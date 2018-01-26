@@ -25,14 +25,10 @@
 #if DISABLED(EMERGENCY_PARSER)
 
 #include "../gcode.h"
-#include "../../Marlin.h" // for wait_for_heatup, kill, quickstop_stepper
+#include "../../Marlin.h" 
+// for wait_for_heatup, kill, quickstop_stepper
 
-/**
- * M108: Stop the waiting for heaters in M109, M190, M303. Does not affect the target temperature.
- */
-void GcodeSuite::M108() {
-  wait_for_heatup = false;
-}
+
 
 /**
  * M112: Emergency Stop

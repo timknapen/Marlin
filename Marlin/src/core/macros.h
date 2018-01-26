@@ -23,17 +23,14 @@
 #ifndef MACROS_H
 #define MACROS_H
 
-#define NUM_AXIS 4
-#define XYZE 4
+#define NUM_AXIS 2
+#define XY 2
 #define ABC  3
-#define XYZ  3
 
 #define _XMIN_ 100
 #define _YMIN_ 200
-#define _ZMIN_ 300
 #define _XMAX_ 101
 #define _YMAX_ 201
-#define _ZMAX_ 301
 
 #define _FORCE_INLINE_ __attribute__((__always_inline__)) __inline__
 #define  FORCE_INLINE  __attribute__((always_inline)) inline

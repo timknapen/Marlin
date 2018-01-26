@@ -41,9 +41,7 @@ bool GCodeParser::volumetric_enabled;
   float GCodeParser::linear_unit_factor, GCodeParser::volumetric_unit_factor;
 #endif
 
-#if ENABLED(TEMPERATURE_UNITS_SUPPORT)
-  TempUnit GCodeParser::input_temp_units;
-#endif
+
 
 char *GCodeParser::command_ptr,
      *GCodeParser::string_arg,
@@ -118,7 +116,7 @@ void GCodeParser::parse(char *p) {
   }
 
   // Bail if the letter is not G, M, or T
-  switch (letter) { case 'G': case 'M': case 'T': break; default: return; }
+  switch (letter) { case 'G': case 'M': default: return; }
 
   // Skip spaces to get the numeric part
   while (*p == ' ') p++;

@@ -24,30 +24,16 @@
 #include "../../module/planner.h"
 
 /**
- * M92: Set axis steps-per-unit for one or more axes, X, Y, Z, and E.
+ * M92: Set axis steps-per-unit for one or more axes, X, Y
  *      (Follows the same syntax as G92)
  *
- *      With multiple extruders use T to specify which one.
  */
 void GcodeSuite::M92() {
 
-  GET_TARGET_EXTRUDER();
 
-  LOOP_XYZE(i) {
+  LOOP_XY(i) {
     if (parser.seen(axis_codes[i])) {
-      if (i == E_AXIS) {
-        const float value = parser.value_per_axis_unit((AxisEnum)(E_AXIS + TARGET_EXTRUDER));
-        if (value < 20.0) {
-          float factor = planner.axis_steps_per_mm[E_AXIS + TARGET_EXTRUDER] / value; // increase e constants if M92 E14 is given for netfab.
-          planner.max_jerk[E_AXIS] *= factor;
-          planner.max_feedrate_mm_s[E_AXIS + TARGET_EXTRUDER] *= factor;
-          planner.max_acceleration_steps_per_s2[E_AXIS + TARGET_EXTRUDER] *= factor;
-        }
-        planner.axis_steps_per_mm[E_AXIS + TARGET_EXTRUDER] = value;
-      }
-      else {
         planner.axis_steps_per_mm[i] = parser.value_per_axis_unit((AxisEnum)i);
-      }
     }
   }
   planner.refresh_positioning();

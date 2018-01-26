@@ -98,33 +98,6 @@ void tmc2130_checkOverTemp(void) {
     #if ENABLED(Y_IS_TMC2130)
       automatic_current_control(stepperY, "Y");
     #endif
-    #if ENABLED(Z_IS_TMC2130)
-      automatic_current_control(stepperZ, "Z");
-    #endif
-    #if ENABLED(X2_IS_TMC2130)
-      automatic_current_control(stepperX2, "X2");
-    #endif
-    #if ENABLED(Y2_IS_TMC2130)
-      automatic_current_control(stepperY2, "Y2");
-    #endif
-    #if ENABLED(Z2_IS_TMC2130)
-      automatic_current_control(stepperZ2, "Z2");
-    #endif
-    #if ENABLED(E0_IS_TMC2130)
-      automatic_current_control(stepperE0, "E0");
-    #endif
-    #if ENABLED(E1_IS_TMC2130)
-      automatic_current_control(stepperE1, "E1");
-    #endif
-    #if ENABLED(E2_IS_TMC2130)
-      automatic_current_control(stepperE2, "E2");
-    #endif
-    #if ENABLED(E3_IS_TMC2130)
-      automatic_current_control(stepperE3, "E3");
-    #endif
-    #if ENABLED(E4_IS_TMC2130)
-      automatic_current_control(stepperE4, "E4");
-    #endif
   }
 }
 
