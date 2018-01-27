@@ -164,7 +164,6 @@ void disable_all_steppers() {
 
 /**
  * Manage several activities:
- *  - Check for Filament Runout
  *  - Keep the command buffer full
  *  - Check for maximum inactive time between commands
  *  - Check for maximum inactive time between stepper commands
@@ -329,7 +328,7 @@ void stop() {
 
 /**
  * Marlin entry-point: Set up before the program loop
- *  - Set up the kill pin, filament runout, power hold
+ *  - Set up the kill pin, power hold
  *  - Start the serial port
  *  - Print startup messages and diagnostics
  *  - Get EEPROM or default settings
@@ -381,7 +380,7 @@ void setup() {
     SERIAL_ECHOPGM(STRING_DISTRIBUTION_DATE);
     SERIAL_ECHOLNPGM(MSG_AUTHOR STRING_CONFIG_H_AUTHOR);
     SERIAL_ECHO_START();
-    SERIAL_ECHOLNPGM("Compiled: " __DATE__);
+    SERIAL_ECHOLNPGM(" Compiled: " __DATE__);
   #endif
 
   SERIAL_ECHO_START();

@@ -72,7 +72,7 @@ void GcodeSuite::G28(const bool always_home_all) {
   // Wait for planner moves to finish!
   stepper.synchronize();
 
-  setup_for_endstop_or_probe_move();
+  setup_for_endstop_move();
   endstops.enable(true); // Enable endstops for next homing move
 
 	
@@ -117,7 +117,7 @@ void GcodeSuite::G28(const bool always_home_all) {
 
   endstops.not_homing();
  
-  clean_up_after_endstop_or_probe_move();
+  clean_up_after_endstop_move();
 
   report_current_position();
 

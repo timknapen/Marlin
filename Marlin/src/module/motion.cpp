@@ -239,7 +239,7 @@ void do_blocking_move_to_xy(const float &rx, const float &ry, const float &fr_mm
 }
 
 //
-// Prepare to do endstop or probe moves
+// Prepare to do endstop moves
 // with custom feedrates.
 //
 //  - Save current feedrates
@@ -247,7 +247,7 @@ void do_blocking_move_to_xy(const float &rx, const float &ry, const float &fr_mm
 //  - Reset the command timeout
 //  - Enable the endstops (for endstop moves)
 //
-void bracket_probe_move(const bool before) {
+void bracket_move(const bool before) {
   static float saved_feedrate_mm_s;
   static int16_t saved_feedrate_percentage;
 
@@ -264,8 +264,8 @@ void bracket_probe_move(const bool before) {
   }
 }
 
-void setup_for_endstop_or_probe_move() { bracket_probe_move(true); }
-void clean_up_after_endstop_or_probe_move() { bracket_probe_move(false); }
+void setup_for_endstop_move() { bracket_move(true); }
+void clean_up_after_endstop_move() { bracket_move(false); }
 
 // Software Endstops are based on the configured limits.
 float soft_endstop_min[XY] = { X_MIN_BED, Y_MIN_BED },
@@ -319,8 +319,6 @@ inline bool prepare_move_to_destination_cartesian() {
  * Prepare a single move and get ready for the next one
  *
  *
- * Make sure current_position[E] and destination[E] are good
- * before calling or cold/lengthy extrusion may get missed.
  */
 void prepare_move_to_destination() {
   clamp_to_software_endstops(destination);
@@ -452,11 +450,7 @@ void homeaxis(const AxisEnum axis) {
 
 
   do_homing_move(axis, 1.5 * max_length(axis) * axis_home_dir);
-
-  // When homing Z with probe respect probe clearance
-  const float bump = axis_home_dir * (
-    home_bump_mm(axis)
-  );
+  const float bump = axis_home_dir * (home_bump_mm(axis));
 
   // If a second homing move is configured...
   if (bump) {

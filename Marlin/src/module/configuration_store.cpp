@@ -222,42 +222,6 @@ void MarlinSettings::postprocess() {
       for (uint8_t q = 11; q--;) EEPROM_WRITE(dummy);
     #endif
 
-    #if DISABLED(ULTIPANEL)
-      constexpr int lcd_preheat_hotend_temp[2] = { PREHEAT_1_TEMP_HOTEND, PREHEAT_2_TEMP_HOTEND },
-                    lcd_preheat_bed_temp[2] = { PREHEAT_1_TEMP_BED, PREHEAT_2_TEMP_BED },
-                    lcd_preheat_fan_speed[2] = { PREHEAT_1_FAN_SPEED, PREHEAT_2_FAN_SPEED };
-    #endif
-
-    EEPROM_WRITE(lcd_preheat_hotend_temp);
-    EEPROM_WRITE(lcd_preheat_bed_temp);
-    EEPROM_WRITE(lcd_preheat_fan_speed);
-
-
-    #if !HAS_LCD_CONTRAST
-      const uint16_t lcd_contrast = 32;
-    #endif
-    EEPROM_WRITE(lcd_contrast);
-
-    #if DISABLED(FWRETRACT)
-      const bool autoretract_enabled = false;
-      const float autoretract_defaults[] = { 3, 45, 0, 0, 0, 13, 0, 8 };
-      EEPROM_WRITE(autoretract_enabled);
-      EEPROM_WRITE(autoretract_defaults);
-    #else
-      EEPROM_WRITE(fwretract.autoretract_enabled);
-      EEPROM_WRITE(fwretract.retract_length);
-      EEPROM_WRITE(fwretract.retract_feedrate_mm_s);
-      EEPROM_WRITE(fwretract.retract_zlift);
-      EEPROM_WRITE(fwretract.retract_recover_length);
-      EEPROM_WRITE(fwretract.retract_recover_feedrate_mm_s);
-      EEPROM_WRITE(fwretract.swap_retract_length);
-      EEPROM_WRITE(fwretract.swap_retract_recover_length);
-      EEPROM_WRITE(fwretract.swap_retract_recover_feedrate_mm_s);
-    #endif
-
-    EEPROM_WRITE(parser.volumetric_enabled);
-
-
     // Save TMC2130 Configuration, and placeholder values
     uint16_t val;
     #if ENABLED(HAVE_TMC2130)
@@ -408,76 +372,6 @@ void MarlinSettings::postprocess() {
         float home_offset[XY];
       #endif
       EEPROM_READ(home_offset);
-
-      //
-      // Hotend Offsets, if any
-      //
-
-      #if HOTENDS > 1
-        // Skip hotend 0 which must be 0
-        for (uint8_t e = 1; e < HOTENDS; e++)
-          LOOP_XY(i) EEPROM_READ(hotend_offset[i][e]);
-      #endif
-
-		
-
-      //
-      // Mesh (Manual) Bed Leveling
-      //
-
-      bool leveling_is_on;
-      uint8_t mesh_num_x, mesh_num_y;
-      EEPROM_READ(leveling_is_on);
-      EEPROM_READ(dummy);
-      EEPROM_READ(mesh_num_x);
-      EEPROM_READ(mesh_num_y);
-
-		
-        // MBL is disabled - skip the stored data
-        for (uint16_t q = mesh_num_x * mesh_num_y; q--;) EEPROM_READ(dummy);
-
-      #if !HAS_BED_PROBE
-        float zprobe_zoffset;
-      #endif
-      EEPROM_READ(zprobe_zoffset);
-
-      //
-      // Planar Bed Leveling matrix
-      //
-
-      #if ABL_PLANAR
-        EEPROM_READ(planner.bed_level_matrix);
-      #else
-        for (uint8_t q = 9; q--;) EEPROM_READ(dummy);
-      #endif
-
-      //
-      // Bilinear Auto Bed Leveling
-      //
-
-      uint8_t grid_max_x, grid_max_y;
-      EEPROM_READ(grid_max_x);                       // 1 byte
-      EEPROM_READ(grid_max_y);                       // 1 byte
-		{
-          // Skip past disabled (or stale) Bilinear Grid data
-          int bgs[2], bs[2];
-          EEPROM_READ(bgs);
-          EEPROM_READ(bs);
-          for (uint16_t q = grid_max_x * grid_max_y; q--;) EEPROM_READ(dummy);
-        }
-
-      //
-      // Unified Bed Leveling active state
-      //
-
-      #if ENABLED(AUTO_BED_LEVELING_UBL)
-        EEPROM_READ(planner.leveling_active);
-        EEPROM_READ(ubl.storage_slot);
-      #else
-        uint8_t dummyui8;
-        EEPROM_READ(dummyb);
-        EEPROM_READ(dummyui8);
-      #endif // AUTO_BED_LEVELING_UBL
 
       //
       // Dual Endstops offsets
@@ -737,10 +631,6 @@ void MarlinSettings::reset() {
     #endif
   #endif
 
- 
-
-  parser.volumetric_enabled =false;
- 
 	
 
   endstops.enable_globally(
@@ -772,7 +662,7 @@ void MarlinSettings::reset() {
 
   #if ENABLED(EEPROM_CHITCHAT)
     SERIAL_ECHO_START();
-    SERIAL_ECHOLNPGM("Hardcoded Default Settings Loaded");
+    SERIAL_ECHOLNPGM(" Hardcoded Default Settings Loaded");
   #endif
 }
 
@@ -793,39 +683,20 @@ void MarlinSettings::reset() {
     CONFIG_ECHO_START;
     #if ENABLED(INCH_MODE_SUPPORT)
       #define LINEAR_UNIT(N) (float(N) / parser.linear_unit_factor)
-      #define VOLUMETRIC_UNIT(N) (float(N) / (parser.volumetric_enabled ? parser.volumetric_unit_factor : parser.linear_unit_factor))
       SERIAL_ECHOPGM("  G2");
       SERIAL_CHAR(parser.linear_unit_factor == 1.0 ? '1' : '0');
       SERIAL_ECHOPGM(" ; Units in ");
       serialprintPGM(parser.linear_unit_factor == 1.0 ? PSTR("mm\n") : PSTR("inches\n"));
     #else
       #define LINEAR_UNIT(N) (N)
-      #define VOLUMETRIC_UNIT(N) (N)
       SERIAL_ECHOLNPGM("  G21    ; Units in mm");
     #endif
 
     SERIAL_EOL();
 
-    /**
-     * Volumetric extrusion M200
-     */
     if (!forReplay) {
       CONFIG_ECHO_START;
-      SERIAL_ECHOPGM("Filament settings:");
-      if (parser.volumetric_enabled)
-        SERIAL_EOL();
-      else
-        SERIAL_ECHOLNPGM(" Disabled");
-    }
-
-    if (!parser.volumetric_enabled) {
-      CONFIG_ECHO_START;
-      SERIAL_ECHOLNPGM("  M200 D0");
-    }
-
-    if (!forReplay) {
-      CONFIG_ECHO_START;
-      SERIAL_ECHOLNPGM("Steps per unit:");
+      SERIAL_ECHOLNPGM(" Steps per unit:");
     }
     CONFIG_ECHO_START;
     SERIAL_ECHOPAIR("  M92 X", LINEAR_UNIT(planner.axis_steps_per_mm[X_AXIS]));
@@ -834,7 +705,7 @@ void MarlinSettings::reset() {
    
     if (!forReplay) {
       CONFIG_ECHO_START;
-      SERIAL_ECHOLNPGM("Maximum feedrates (units/s):");
+      SERIAL_ECHOLNPGM(" Maximum feedrates (units/s):");
     }
     CONFIG_ECHO_START;
     SERIAL_ECHOPAIR("  M203 X", LINEAR_UNIT(planner.max_feedrate_mm_s[X_AXIS]));
@@ -843,7 +714,7 @@ void MarlinSettings::reset() {
    
     if (!forReplay) {
       CONFIG_ECHO_START;
-      SERIAL_ECHOLNPGM("Maximum Acceleration (units/s2):");
+      SERIAL_ECHOLNPGM(" Maximum Acceleration (units/s2):");
     }
     CONFIG_ECHO_START;
     SERIAL_ECHOPAIR("  M201 X", LINEAR_UNIT(planner.max_acceleration_mm_per_s2[X_AXIS]));
@@ -852,7 +723,7 @@ void MarlinSettings::reset() {
 
     if (!forReplay) {
       CONFIG_ECHO_START;
-      SERIAL_ECHOLNPGM("Acceleration (units/s2): P<print_accel> R<retract_accel> T<travel_accel>");
+      SERIAL_ECHOLNPGM(" Acceleration (units/s2): P<print_accel> R<retract_accel> T<travel_accel>");
     }
     CONFIG_ECHO_START;
     SERIAL_ECHOPAIR("  M204 P", LINEAR_UNIT(planner.acceleration));
@@ -860,7 +731,7 @@ void MarlinSettings::reset() {
 
     if (!forReplay) {
       CONFIG_ECHO_START;
-      SERIAL_ECHOLNPGM("Advanced: S<min_feedrate> T<min_travel_feedrate> B<min_segment_time_us> X<max_xy_jerk> ");
+      SERIAL_ECHOLNPGM(" Advanced: S<min_feedrate> T<min_travel_feedrate> B<min_segment_time_us> X<max_xy_jerk> ");
     }
     CONFIG_ECHO_START;
     SERIAL_ECHOPAIR("  M205 S", LINEAR_UNIT(planner.min_feedrate_mm_s));
@@ -873,7 +744,7 @@ void MarlinSettings::reset() {
     #if HAS_M206_COMMAND
       if (!forReplay) {
         CONFIG_ECHO_START;
-        SERIAL_ECHOLNPGM("Home offset:");
+        SERIAL_ECHOLNPGM(" Home offset:");
       }
       CONFIG_ECHO_START;
       SERIAL_ECHOPAIR("  M206 X", LINEAR_UNIT(home_offset[X_AXIS]));
@@ -886,7 +757,7 @@ void MarlinSettings::reset() {
     #if ENABLED(X_DUAL_ENDSTOPS) || ENABLED(Y_DUAL_ENDSTOPS)
       if (!forReplay) {
         CONFIG_ECHO_START;
-        SERIAL_ECHOLNPGM("Endstop adjustment:");
+        SERIAL_ECHOLNPGM(" Endstop adjustment:");
       }
       CONFIG_ECHO_START;
       SERIAL_ECHOPGM("  M666");
@@ -908,7 +779,7 @@ void MarlinSettings::reset() {
     #if ENABLED(HAVE_TMC2130)
       if (!forReplay) {
         CONFIG_ECHO_START;
-        SERIAL_ECHOLNPGM("Stepper driver current:");
+        SERIAL_ECHOLNPGM(" Stepper driver current:");
       }
       CONFIG_ECHO_START;
       SERIAL_ECHO("  M906");
@@ -925,7 +796,7 @@ void MarlinSettings::reset() {
     #if HAS_MOTOR_CURRENT_PWM
       CONFIG_ECHO_START;
       if (!forReplay) {
-        SERIAL_ECHOLNPGM("Stepper motor currents:");
+        SERIAL_ECHOLNPGM(" Stepper motor currents:");
         CONFIG_ECHO_START;
       }
       SERIAL_ECHOPAIR("  M907 X", stepper.motor_current_setting[0]);

@@ -259,7 +259,7 @@
   #endif
 #endif
 
-// Is an endstop plug used for the Y2 endstop or the bed probe?
+// Is an endstop plug used for the Y2 endstop?
 #define IS_Y2_ENDSTOP(A,M) (ENABLED(Y_DUAL_ENDSTOPS) && Y2_USE_ENDSTOP == _##A##M##_)
 
 
@@ -297,7 +297,7 @@
 #define HAS_Y_MICROSTEPS  (PIN_EXISTS(Y_MS1))
 
 
-// Endstops and bed probe
+// Endstops
 #define HAS_X_MIN (PIN_EXISTS(X_MIN) && !IS_X2_ENDSTOP(X,MIN) && !IS_Y2_ENDSTOP(X,MIN))
 #define HAS_X_MAX (PIN_EXISTS(X_MAX) && !IS_X2_ENDSTOP(X,MAX) && !IS_Y2_ENDSTOP(X,MAX))
 #define HAS_Y_MIN (PIN_EXISTS(Y_MIN) && !IS_X2_ENDSTOP(Y,MIN) && !IS_Y2_ENDSTOP(Y,MIN))
@@ -322,7 +322,7 @@
 #define HAS_MOTOR_CURRENT_PWM (PIN_EXISTS(MOTOR_CURRENT_PWM_XY))
 
 /**
- * Servos and probes
+ * Servos
  */
 
 

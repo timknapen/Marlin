@@ -61,10 +61,8 @@ public:
 
   // Global states for GCode-level units features
 
-  static bool volumetric_enabled;
-
   #if ENABLED(INCH_MODE_SUPPORT)
-    static float linear_unit_factor, volumetric_unit_factor;
+    static float linear_unit_factor;
   #endif
 
   // Command line state
@@ -213,11 +211,10 @@ public:
           linear_unit_factor = 1.0;
           break;
       }
-      volumetric_unit_factor = POW(linear_unit_factor, 3.0);
     }
 
     inline static float axis_unit_factor(const AxisEnum axis) {
-      return (axis >= E_AXIS && volumetric_enabled ? volumetric_unit_factor : linear_unit_factor);
+      return (linear_unit_factor);
     }
 
     inline static float value_linear_units()                     { return value_float() * linear_unit_factor; }

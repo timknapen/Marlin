@@ -398,7 +398,7 @@
 
 
 //
-// Disable unused endstop / probe pins
+// Disable unused endstop pins
 //
 
 #if DISABLED(USE_XMAX_PLUG)

@@ -274,7 +274,7 @@ void GcodeSuite::process_parsed_command() {
 
       #if HAS_SERVOS
         case 280: M280(); break;  // M280: Set servo position absolute
-      #endif
+	  #endif
 
       case 400: M400(); break;    // M400: Finish all moves
 

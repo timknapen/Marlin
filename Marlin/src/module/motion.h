@@ -122,12 +122,12 @@ void do_blocking_move_to(const float &x, const float &y, const float &fr_mm_s=0.
 void do_blocking_move_to_x(const float &x, const float &fr_mm_s=0.0);
 void do_blocking_move_to_xy(const float &x, const float &y, const float &fr_mm_s=0.0);
 
-void setup_for_endstop_or_probe_move();
-void clean_up_after_endstop_or_probe_move();
+void setup_for_endstop_move();
+void clean_up_after_endstop_move();
 
-void bracket_probe_move(const bool before);
-void setup_for_endstop_or_probe_move();
-void clean_up_after_endstop_or_probe_move();
+void bracket_move(const bool before);
+void setup_for_endstop_move();
+void clean_up_after_endstop_move();
 
 //
 // Homing

@@ -40,14 +40,14 @@
 #define USBCON //1286  // Disable MarlinSerial etc.
 /*
 
-                                         Axidraw plan for Teensy3.5
+                                         Drawing Machine plan for Teensy3.5
                                                      USB
                                           GND |-----#####-----| VIN 5V
       X_STEP_PIN          MOSI1   RX1       0 |     #####     | Analog GND
       X_DIR_PIN           MISO1   TX1       1 |               | 3.3V
       Y_STEP_PIN                       PWM  2 | *NC     AREF* | 23  A9 PWM
       Y_DIR_PIN           SCL2 CAN0TX  PWM  3 | *A26     A10* | 22  A8 PWM
-	  *                   SDA2 CAN0RX  PWM  4 | *A25     A11* | 21  A7 PWM  CS0   MOSI1  RX1
+	  SERVO0_PIN          SDA2 CAN0RX  PWM  4 | *A25     A11* | 21  A7 PWM  CS0   MOSI1  RX1
 	  *                   MISO1   TX1  PWM  5 | *GND * * 57   | 20  A6 PWM  CS0   SCK1        FILWIDTH_PIN
       X_ENABLE_PIN                     PWM  6 | *GND * * 56   | 19  A5            SCL0        *
       Y_ENABLE_PIN  SCL0  MOSI0   RX3  PWM  7 |      * * 55   | 18  A4            SDA0        *
@@ -96,4 +96,5 @@ D8    Y_CS_PIN            CS1     RX4  A12 31 |   46 * * 47   | 34 A15 PWM      
 #define LED_PIN            13
 #define PS_ON_PIN           1
 #define ALARM_PIN          -1
+#define SERVO0_PIN	    	4
 

@@ -35,10 +35,8 @@
 // Must be declared for allocation and to satisfy the linker
 // Zero values need no initialization.
 
-bool GCodeParser::volumetric_enabled;
-
 #if ENABLED(INCH_MODE_SUPPORT)
-  float GCodeParser::linear_unit_factor, GCodeParser::volumetric_unit_factor;
+  float GCodeParser::linear_unit_factor;
 #endif
 
 
@@ -116,7 +114,7 @@ void GCodeParser::parse(char *p) {
   }
 
   // Bail if the letter is not G, M, or T
-  switch (letter) { case 'G': case 'M': default: return; }
+	switch (letter) { case 'G': case 'M': break; default: return; }
 
   // Skip spaces to get the numeric part
   while (*p == ' ') p++;

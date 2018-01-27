@@ -31,22 +31,21 @@
  * M280: Get or set servo position. P<index> [S<angle>]
  */
 void GcodeSuite::M280() {
-  if (!parser.seen('P')) return;
-  const int servo_index = parser.value_int();
-  if (WITHIN(servo_index, 0, NUM_SERVOS - 1)) {
-    if (parser.seen('S'))
-      MOVE_SERVO(servo_index, parser.value_int());
-    else {
-      SERIAL_ECHO_START();
-      SERIAL_ECHOPAIR(" Servo ", servo_index);
-      SERIAL_ECHOLNPAIR(": ", servo[servo_index].read());
-    }
-  }
-  else {
-    SERIAL_ERROR_START();
-    SERIAL_ECHOPAIR("Servo ", servo_index);
-    SERIAL_ECHOLNPGM(" out of range");
-  }
+	if (!parser.seen('P')) return;
+	const int servo_index = parser.value_int();
+	if (WITHIN(servo_index, 0, NUM_SERVOS - 1)) {
+		if (parser.seen('S')){
+			MOVE_SERVO(servo_index, parser.value_int());
+		}else {
+			SERIAL_ECHO_START();
+			SERIAL_ECHOPAIR(" Servo ", servo_index);
+			SERIAL_ECHOLNPAIR(": ", servo[servo_index].read());
+		}
+	}else{
+		SERIAL_ERROR_START();
+		SERIAL_ECHOPAIR("Servo ", servo_index);
+		SERIAL_ECHOLNPGM(" out of range");
+	}
 }
 
 #endif // HAS_SERVOS

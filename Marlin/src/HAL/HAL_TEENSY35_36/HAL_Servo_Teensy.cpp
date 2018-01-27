@@ -4,16 +4,18 @@
 #include "../../inc/MarlinConfig.h"
 
 int8_t libServo::attach(const int pin) {
+  this->pin = pin;
   if (this->servoIndex >= MAX_SERVOS) return -1;
   return Servo::attach(pin);
 }
 
 int8_t libServo::attach(const int pin, const int min, const int max) {
+	this->pin = pin;
   return Servo::attach(pin, min, max);
 }
 
 void libServo::move(const int value) {
-  if (this->attach(0) >= 0) {
+  if (this->attach(this->pin) >= 0) {
     this->write(value);
     delay(SERVO_DELAY);
     #if ENABLED(DEACTIVATE_SERVOS_AFTER_MOVE)

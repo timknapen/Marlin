@@ -454,7 +454,7 @@
 //#define CNC_COORDINATE_SYSTEMS
 
 /**
- * M43 - display pin status, watch pins for changes, watch endstops & toggle LED, Z servo probe test, toggle pins
+ * M43 - display pin status, watch pins for changes, watch endstops & toggle LED, toggle pins
  */
 //#define PINS_DEBUGGING
 
