@@ -26,7 +26,7 @@
 
 #include "../gcode.h"
 #include "../../Marlin.h" 
-// for wait_for_heatup, kill, quickstop_stepper
+// for kill, quickstop_stepper
 
 
 

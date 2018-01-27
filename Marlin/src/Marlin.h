@@ -84,7 +84,6 @@ inline bool IsStopped() { return !Running; }
 
 extern bool axis_known_position[XY];
 extern bool axis_homed[XY];
-extern volatile bool wait_for_heatup;
 
 #if HAS_RESUME_CONTINUE
   extern volatile bool wait_for_user;

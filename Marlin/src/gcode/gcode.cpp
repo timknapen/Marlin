@@ -222,7 +222,6 @@ void GcodeSuite::process_parsed_command() {
       case 111: M111(); break;    // M111: Set debug level
 
       #if DISABLED(EMERGENCY_PARSER)
-        case 108: M108(); break;  // M108: Cancel Waiting
         case 112: M112(); break;  // M112: Emergency Stop
         case 410: M410(); break;  // M410: Quickstop - Abort all the planned moves.
       #endif

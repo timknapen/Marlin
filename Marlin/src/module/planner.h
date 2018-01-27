@@ -231,7 +231,6 @@ class Planner {
 
     /**
      * Add a new linear movement to the buffer.
-     * The target is NOT translated to delta/scara
      *
      * (Cartesians may also call buffer_line_kinematic.)
      *
@@ -244,8 +243,6 @@ class Planner {
 
     /**
      * Add a new linear movement to the buffer.
-     * The target is cartesian, it's translated to delta/scara if
-     * needed.
      *
      *  cart     - x,y CARTESIAN target in mm
      *  fr_mm_s  - (target) speed of the move (mm/s)

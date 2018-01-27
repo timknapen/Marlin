@@ -129,8 +129,6 @@
   #error Please replace "const int dropsegments" with "#define MIN_STEPS_PER_SEGMENT" (and increase by 1) in Configuration_adv.h.
 #elif defined(PREVENT_DANGEROUS_EXTRUDE)
   #error "PREVENT_DANGEROUS_EXTRUDE is now PREVENT_COLD_EXTRUSION. Please update your configuration."
-#elif defined(SCARA)
-  #error "SCARA is now MORGAN_SCARA. Please update your configuration."
 #elif defined(ENABLE_AUTO_BED_LEVELING)
   #error "ENABLE_AUTO_BED_LEVELING is deprecated. Specify AUTO_BED_LEVELING_LINEAR, AUTO_BED_LEVELING_BILINEAR, or AUTO_BED_LEVELING_3POINT."
 #elif defined(AUTO_BED_LEVELING_FEATURE)
@@ -250,25 +248,6 @@
 static_assert(X_MAX_LENGTH >= X_BED_SIZE && Y_MAX_LENGTH >= Y_BED_SIZE,
   "Movement bounds ([XY]_MIN_POS, [XY]_MAX_POS) are too narrow to contain [XY]_BED_SIZE.");
 
-/**
- * Granular software endstops (Marlin >= 1.1.7)
- */
-#if ENABLED(MIN_SOFTWARE_ENDSTOPS) && DISABLED(MIN_SOFTWARE_ENDSTOP_Z)
-  #if IS_KINEMATIC
-    #error "MIN_SOFTWARE_ENDSTOPS on DELTA/SCARA also requires MIN_SOFTWARE_ENDSTOP_Z."
-  #elif DISABLED(MIN_SOFTWARE_ENDSTOP_X) && DISABLED(MIN_SOFTWARE_ENDSTOP_Y)
-    #error "MIN_SOFTWARE_ENDSTOPS requires at least one of the MIN_SOFTWARE_ENDSTOP_[XY] options."
-  #endif
-#endif
-
-#if ENABLED(MAX_SOFTWARE_ENDSTOPS) && DISABLED(MAX_SOFTWARE_ENDSTOP_Z)
-  #if IS_KINEMATIC
-    #error "MAX_SOFTWARE_ENDSTOPS on DELTA/SCARA also requires MAX_SOFTWARE_ENDSTOP_Z."
-  #elif DISABLED(MAX_SOFTWARE_ENDSTOP_X) && DISABLED(MAX_SOFTWARE_ENDSTOP_Y)
-    #error "MAX_SOFTWARE_ENDSTOPS requires at least one of the MAX_SOFTWARE_ENDSTOP_[XY] options."
-  #endif
-#endif
-
 
 /**
  * SD File Sorting
@@ -332,12 +311,6 @@ static_assert(1 >= 0
   #if ENABLED(DELTA)
     + 1
   #endif
-  #if ENABLED(MORGAN_SCARA)
-    + 1
-  #endif
-  #if ENABLED(MAKERARM_SCARA)
-    + 1
-  #endif
   #if ENABLED(COREXY)
     + 1
   #endif
@@ -356,7 +329,7 @@ static_assert(1 >= 0
   #if ENABLED(COREZY)
     + 1
   #endif
-  , "Please enable only one of DELTA, MORGAN_SCARA, MAKERARM_SCARA, COREXY, COREYX, COREXZ, COREZX, COREYZ, or COREZY."
+  , "Please enable only one of COREXY, COREYX."
 );
 
 
@@ -392,8 +365,7 @@ static_assert(1 >= 0
   #error "You must enable USE_YMIN_PLUG or USE_YMAX_PLUG."
 #endif
 
-// Delta and Cartesian use 3 homing endstops
-#if !IS_SCARA
+// Cartesian use 3 homing endstops
   #if X_HOME_DIR < 0 && DISABLED(USE_XMIN_PLUG)
     #error "Enable USE_XMIN_PLUG when homing X to MIN."
   #elif X_HOME_DIR > 0 && DISABLED(USE_XMAX_PLUG)
@@ -403,8 +375,6 @@ static_assert(1 >= 0
   #elif Y_HOME_DIR > 0 && DISABLED(USE_YMAX_PLUG)
     #error "Enable USE_YMAX_PLUG when homing Y to MAX."
   #endif
-#endif
-
 
 // Dual endstops requirements
 #if ENABLED(X_DUAL_ENDSTOPS)
@@ -424,8 +394,6 @@ static_assert(1 >= 0
     #error "USE_ZMAX_PLUG is required when X2_USE_ENDSTOP is _Z_MAX_."
   #elif !HAS_X2_MIN && !HAS_X2_MAX
     #error "X2_USE_ENDSTOP has been assigned to a nonexistent endstop!"
-  #elif ENABLED(DELTA)
-    #error "X_DUAL_ENDSTOPS is not compatible with DELTA."
   #endif
 #endif
 #if ENABLED(Y_DUAL_ENDSTOPS)
@@ -445,8 +413,6 @@ static_assert(1 >= 0
     #error "USE_ZMAX_PLUG is required when Y2_USE_ENDSTOP is _Z_MAX_."
   #elif !HAS_Y2_MIN && !HAS_Y2_MAX
     #error "Y2_USE_ENDSTOP has been assigned to a nonexistent endstop!"
-  #elif ENABLED(DELTA)
-    #error "Y_DUAL_ENDSTOPS is not compatible with DELTA."
   #endif
 #endif
 

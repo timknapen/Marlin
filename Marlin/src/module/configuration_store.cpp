@@ -124,9 +124,6 @@ void MarlinSettings::postprocess() {
   // steps per s2 needs to be updated to agree with units per s2
   planner.reset_acceleration_rates();
 
-  // Make sure delta kinematics are updated before refreshing the
-  // planner position so the stepper counts will be set correctly.
-	
   #if HAS_HOME_OFFSET
     // Software endstops depend on home_offset
     LOOP_XY(i) update_software_endstops((AxisEnum)i);
@@ -483,19 +480,10 @@ void MarlinSettings::postprocess() {
       #endif // AUTO_BED_LEVELING_UBL
 
       //
-      // DELTA Geometry or Dual Endstops offsets
+      // Dual Endstops offsets
       //
 
-      #if ENABLED(DELTA)
-        EEPROM_READ(delta_height);              // 1 float
-        EEPROM_READ(delta_endstop_adj);         // 3 floats
-        EEPROM_READ(delta_radius);              // 1 float
-        EEPROM_READ(delta_diagonal_rod);        // 1 float
-        EEPROM_READ(delta_segments_per_second); // 1 float
-        EEPROM_READ(delta_calibration_radius);  // 1 float
-        EEPROM_READ(delta_tower_angle_trim);    // 3 floats
-
-      #elif ENABLED(X_DUAL_ENDSTOPS) || ENABLED(Y_DUAL_ENDSTOPS) 
+      #if ENABLED(X_DUAL_ENDSTOPS) || ENABLED(Y_DUAL_ENDSTOPS) 
 		
         #if ENABLED(X_DUAL_ENDSTOPS)
           EEPROM_READ(endstops.x_endstop_adj);  // 1 float
@@ -909,7 +897,7 @@ void MarlinSettings::reset() {
         SERIAL_ECHOPAIR(" Y", LINEAR_UNIT(endstops.y_endstop_adj));
       #endif
       SERIAL_EOL();
-    #endif // DELTA
+    #endif 
 
 
   

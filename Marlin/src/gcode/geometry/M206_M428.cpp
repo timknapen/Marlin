@@ -31,9 +31,6 @@
 /**
  * M206: Set Additional Homing Offset (X Y ).
  *
- * *** @thinkyhead: I recommend deprecating M206 for SCARA in favor of M665.
- * ***              M206 for SCARA will remain enabled in 1.1.x for compatibility.
- * ***              In the 2.0 release, it will simply be disabled by default.
  */
 void GcodeSuite::M206() {
   LOOP_XY(i)

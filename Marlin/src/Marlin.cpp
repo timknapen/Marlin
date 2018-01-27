@@ -72,7 +72,7 @@ bool Running = true;
 /**
  * axis_homed
  *   Flags that each linear axis was homed.
- *   XY on cartesian, ABC on delta, ABZ on SCARA.
+ *   XY on cartesian
  *
  * axis_known_position
  *   Flags that the position is known in each linear axis. Set when homed.

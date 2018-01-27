@@ -290,7 +290,6 @@ inline void get_serial_commands() {
       #if DISABLED(EMERGENCY_PARSER)
         // If command was e-stop process now
         if (strcmp(command, "M108") == 0) {
-          wait_for_heatup = false;
           #if ENABLED(ULTIPANEL)
             wait_for_user = false;
           #endif

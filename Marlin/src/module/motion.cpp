@@ -301,10 +301,23 @@ float soft_endstop_min[XY] = { X_MIN_BED, Y_MIN_BED },
 
 
 /**
+ * Prepare a linear move in a Cartesian setup.
+ *
+ * When a mesh-based leveling system is active, moves are segmented
+ * according to the configuration of the leveling system.
+ *
+ * Returns true if current_position[] was set to destination[]
+ */
+inline bool prepare_move_to_destination_cartesian() {
+	buffer_line_to_destination(MMS_SCALED(feedrate_mm_s));
+	return false;
+}
+
+
+
+/**
  * Prepare a single move and get ready for the next one
  *
- * This may result in several calls to planner.buffer_line to
- * do smaller moves for DELTA, SCARA, mesh moves, etc.
  *
  * Make sure current_position[E] and destination[E] are good
  * before calling or cold/lengthy extrusion may get missed.

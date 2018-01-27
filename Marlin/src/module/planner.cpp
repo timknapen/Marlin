@@ -419,7 +419,7 @@ void Planner::_buffer_steps(const int32_t (&target)[XY], float fr_mm_s) {
     block->steps[Y_AXIS] = labs(db);
   #endif
 
-  block->step_event_count = MAX(block->steps[X_AXIS], block->steps[Y_AXIS]);
+  block->step_event_count = max(block->steps[X_AXIS], block->steps[Y_AXIS]);
 
   // Bail if this is a zero-length block
   if (block->step_event_count < MIN_STEPS_PER_SEGMENT) return;
@@ -465,9 +465,9 @@ void Planner::_buffer_steps(const int32_t (&target)[XY], float fr_mm_s) {
   else {
     block->millimeters = SQRT(
       #if CORE_IS_XY
-        sq(delta_mm[X_HEAD]) + sq(delta_mm[Y_HEAD]))
+        sq(delta_mm[X_HEAD]) + sq(delta_mm[Y_HEAD])
       #else
-        sq(delta_mm[X_AXIS]) + sq(delta_mm[Y_AXIS]))
+        sq(delta_mm[X_AXIS]) + sq(delta_mm[Y_AXIS])
       #endif
     );
   }
@@ -584,7 +584,8 @@ void Planner::_buffer_steps(const int32_t (&target)[XY], float fr_mm_s) {
     }while(0)
 
     // Start with print or travel acceleration
-    accel = CEIL((esteps ? acceleration : travel_acceleration) * steps_per_mm);
+	  bool bIsPrinting = true;
+    accel = CEIL((bIsPrinting ? acceleration : travel_acceleration) * steps_per_mm);
 
 
     // Limit acceleration per axis
@@ -786,7 +787,7 @@ void Planner::buffer_segment(const float &a, const float &b, const float &fr_mm_
 void Planner::_set_position_mm(const float &a, const float &b) {
 
   const int32_t na = position[X_AXIS] = LROUND(a * axis_steps_per_mm[X_AXIS]),
-                nb = position[Y_AXIS] = LROUND(b * axis_steps_per_mm[Y_AXIS]));
+                nb = position[Y_AXIS] = LROUND(b * axis_steps_per_mm[Y_AXIS]);
   stepper.set_position(na, nb);
   previous_nominal_speed = 0.0; // Resets planner junction speeds. Assumes start from rest.
   ZERO(previous_speed);

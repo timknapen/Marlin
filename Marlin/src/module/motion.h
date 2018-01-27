@@ -32,9 +32,6 @@
 
 #include "../inc/MarlinConfig.h"
 
-#if IS_SCARA
-  #include "../module/scara.h"
-#endif
 
 extern bool relative_mode;
 

@@ -78,7 +78,7 @@
     #define CORE_AXIS_1 A_AXIS
     #define CORE_AXIS_2 B_AXIS
   #endif
-  #if (ENABLED(COREYX))
+  #if (ENABLED(COREXY))
     #define CORESIGN(n) (-(n))
   #endif
 #endif
@@ -90,33 +90,20 @@
 #ifdef MANUAL_X_HOME_POS
   #define X_HOME_POS MANUAL_X_HOME_POS
 #elif ENABLED(BED_CENTER_AT_0_0)
-  #if ENABLED(DELTA)
-    #define X_HOME_POS 0
-  #else
+
     #define X_HOME_POS ((X_BED_SIZE) * (X_HOME_DIR) * 0.5)
-  #endif
 #else
-  #if ENABLED(DELTA)
-    #define X_HOME_POS (X_MIN_POS + (X_BED_SIZE) * 0.5)
-  #else
+
     #define X_HOME_POS (X_HOME_DIR < 0 ? X_MIN_POS : X_MAX_POS)
   #endif
-#endif
 
 #ifdef MANUAL_Y_HOME_POS
   #define Y_HOME_POS MANUAL_Y_HOME_POS
 #elif ENABLED(BED_CENTER_AT_0_0)
-  #if ENABLED(DELTA)
-    #define Y_HOME_POS 0
-  #else
-    #define Y_HOME_POS ((Y_BED_SIZE) * (Y_HOME_DIR) * 0.5)
-  #endif
+      #define Y_HOME_POS ((Y_BED_SIZE) * (Y_HOME_DIR) * 0.5)
 #else
-  #if ENABLED(DELTA)
-    #define Y_HOME_POS (Y_MIN_POS + (Y_BED_SIZE) * 0.5)
-  #else
+
     #define Y_HOME_POS (Y_HOME_DIR < 0 ? Y_MIN_POS : Y_MAX_POS)
-  #endif
 #endif
 
 
@@ -359,14 +346,14 @@
 // Updated G92 behavior shifts the workspace
 #define HAS_POSITION_SHIFT DISABLED(NO_WORKSPACE_OFFSETS)
 // The home offset also shifts the coordinate space
-#define HAS_HOME_OFFSET (DISABLED(NO_WORKSPACE_OFFSETS) && DISABLED(DELTA))
+#define HAS_HOME_OFFSET (DISABLED(NO_WORKSPACE_OFFSETS))
 // Either offset yields extra calculations on all moves
 #define HAS_WORKSPACE_OFFSET (HAS_POSITION_SHIFT || HAS_HOME_OFFSET)
-// M206 doesn't apply to DELTA
-#define HAS_M206_COMMAND (HAS_HOME_OFFSET && DISABLED(DELTA))
+
+#define HAS_M206_COMMAND (HAS_HOME_OFFSET )
 
 // Add commands that need sub-codes to this list
-#define USE_GCODE_SUBCODES ENABLED(G38_PROBE_TARGET) || ENABLED(CNC_COORDINATE_SYSTEMS)
+#define USE_GCODE_SUBCODES ENABLED(CNC_COORDINATE_SYSTEMS)
 
 // Use float instead of double. Needs profiling.
 #if defined(ARDUINO_ARCH_SAM) && ENABLED(DELTA_FAST_SQRT)
