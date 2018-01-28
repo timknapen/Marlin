@@ -234,7 +234,6 @@ void Endstops::update() {
      *
      * If steps differ, both axes are moving
      * If DeltaA ==  DeltaB, the movement is only in the 1st axis (X or Y)
-     * If DeltaA == -DeltaB, the movement is only in the 2nd axis (Y or Z)
      */
     #if ENABLED(COREYX)
       #define Y_CMP ==
@@ -248,8 +247,6 @@ void Endstops::update() {
     #define Y_AXIS_HEAD Y_AXIS
   #endif
 
-	
-	// With Dual X, endstops are only checked in the homing direction for the active extruder
 	#define X_MIN_TEST true
 	#define X_MAX_TEST true
 	

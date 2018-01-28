@@ -699,11 +699,11 @@ void Stepper::endstop_triggered(const AxisEnum axis) {
                           : count_position[CORE_AXIS_1] + count_position[CORE_AXIS_2]
     );
 
-  #else // !COREXY && !COREXZ && !COREYZ
-
+  #else // !COREXY
+	
     endstops_trigsteps[axis] = count_position[axis];
 
-  #endif // !COREXY && !COREXZ && !COREYZ
+  #endif // !COREXY
 
   kill_current_block();
   cleaning_buffer_counter = -1; // Discard the rest of the move

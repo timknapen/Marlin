@@ -18,9 +18,6 @@ void libServo::move(const int value) {
   if (this->attach(this->pin) >= 0) {
     this->write(value);
     delay(SERVO_DELAY);
-    #if ENABLED(DEACTIVATE_SERVOS_AFTER_MOVE)
-      this->detach();
-    #endif
   }
 }
 

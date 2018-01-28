@@ -59,7 +59,6 @@
  *  179  M205 X    planner.max_jerk[X_AXIS]         (float)
  *  183  M205 Y    planner.max_jerk[Y_AXIS]         (float)
  *  195  M206 XY   home_offset                      (float x3)
- *  207  M218 XY   hotend_offset                    (float x3 per additional hotend) +16
  *
  * [XY]_DUAL_ENDSTOPS:                             12 bytes
  *  354  M666 X    x_endstop_adj                    (float)
@@ -68,20 +67,9 @@
  * HAVE_TMC2130:                                    22 bytes
  *  560  M906 X    Stepper X current                (uint16_t)
  *  562  M906 Y    Stepper Y current                (uint16_t)
- *  564  M906 Z    Stepper Z current                (uint16_t)
- *  566  M906 X2   Stepper X2 current               (uint16_t)
- *  568  M906 Y2   Stepper Y2 current               (uint16_t)
- *  570  M906 Z2   Stepper Z2 current               (uint16_t)
- *  572  M906 E0   Stepper E0 current               (uint16_t)
- *  574  M906 E1   Stepper E1 current               (uint16_t)
- *  576  M906 E2   Stepper E2 current               (uint16_t)
- *  578  M906 E3   Stepper E3 current               (uint16_t)
- *  580  M906 E4   Stepper E4 current               (uint16_t)
  *
  * HAS_MOTOR_CURRENT_PWM:
  *  590  M907 X    Stepper XY current               (uint32_t)
- *  594  M907 Z    Stepper Z current                (uint32_t)
- *  598  M907 E    Stepper E current                (uint32_t)
  *
  * CNC_COORDINATE_SYSTEMS                           108 bytes
  *  602  G54-G59.3 coordinate_system                (float x 27)
@@ -391,71 +379,12 @@ void MarlinSettings::postprocess() {
         #endif
 		
 		EEPROM_READ(dummy);
-		
-
-        for (uint8_t q=8; q--;) EEPROM_READ(dummy);
+		for (uint8_t q=8; q--;) EEPROM_READ(dummy);
 
       #else
 
         for (uint8_t q=11; q--;) EEPROM_READ(dummy);
 
-      #endif
-
-      //
-      // LCD Preheat settings
-      //
-
-      #if DISABLED(ULTIPANEL)
-        int lcd_preheat_hotend_temp[2], lcd_preheat_bed_temp[2], lcd_preheat_fan_speed[2];
-      #endif
-      EEPROM_READ(lcd_preheat_hotend_temp); // 2 floats
-      EEPROM_READ(lcd_preheat_bed_temp);    // 2 floats
-      EEPROM_READ(lcd_preheat_fan_speed);   // 2 floats
-
-      //EEPROM_ASSERT(
-      //  WITHIN(lcd_preheat_fan_speed, 0, 255),
-      //  "lcd_preheat_fan_speed out of range"
-      //);
-
-      //
-      // Hotend PID
-      //
-
-      //
-      // PID Extrusion Scaling
-      //
-
-      #if DISABLED(PID_EXTRUSION_SCALING)
-        int lpq_len;
-      #endif
-      EEPROM_READ(lpq_len);
-
-      //
-      // LCD Contrast
-      //
-
-      #if !HAS_LCD_CONTRAST
-        uint16_t lcd_contrast;
-      #endif
-      EEPROM_READ(lcd_contrast);
-
-      //
-      // Firmware Retraction
-      //
-
-      #if ENABLED(FWRETRACT)
-        EEPROM_READ(fwretract.autoretract_enabled);
-        EEPROM_READ(fwretract.retract_length);
-        EEPROM_READ(fwretract.retract_feedrate_mm_s);
-        EEPROM_READ(fwretract.retract_zlift);
-        EEPROM_READ(fwretract.retract_recover_length);
-        EEPROM_READ(fwretract.retract_recover_feedrate_mm_s);
-        EEPROM_READ(fwretract.swap_retract_length);
-        EEPROM_READ(fwretract.swap_retract_recover_length);
-        EEPROM_READ(fwretract.swap_retract_recover_feedrate_mm_s);
-      #else
-        EEPROM_READ(dummyb);
-        for (uint8_t q=8; q--;) EEPROM_READ(dummy);
       #endif
 
 
@@ -723,7 +652,7 @@ void MarlinSettings::reset() {
 
     if (!forReplay) {
       CONFIG_ECHO_START;
-      SERIAL_ECHOLNPGM(" Acceleration (units/s2): P<print_accel> R<retract_accel> T<travel_accel>");
+      SERIAL_ECHOLNPGM(" Acceleration (units/s2): P<print_accel> T<travel_accel>");
     }
     CONFIG_ECHO_START;
     SERIAL_ECHOPAIR("  M204 P", LINEAR_UNIT(planner.acceleration));
@@ -800,8 +729,6 @@ void MarlinSettings::reset() {
         CONFIG_ECHO_START;
       }
       SERIAL_ECHOPAIR("  M907 X", stepper.motor_current_setting[0]);
-      SERIAL_ECHOPAIR(" Z", stepper.motor_current_setting[1]);
-      SERIAL_ECHOPAIR(" E", stepper.motor_current_setting[2]);
       SERIAL_EOL();
     #endif
   }

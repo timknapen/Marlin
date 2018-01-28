@@ -312,7 +312,7 @@ void kill(const char* lcd_msg) {
 }
 
 /**
- * Turn off heaters and stop the print in progress
+ * Stop the print in progress
  * After a stop the machine may be resumed with M999
  */
 void stop() {
@@ -409,7 +409,6 @@ void setup() {
     servo_init();
   #endif
 
- 
   #if HAS_STEPPER_RESET
     enableStepperDrivers();
   #endif
@@ -426,8 +425,6 @@ void setup() {
     OUT_WRITE(STAT_LED_BLUE_PIN, LOW); // turn it off
   #endif
 
-	
-
   #if ENABLED(ENDSTOP_INTERRUPTS_FEATURE)
     setup_endstop_interrupts();
   #endif
@@ -438,7 +435,6 @@ void setup() {
  *
  *  - Save or log commands to SD
  *  - Process available commands (if not saving)
- *  - Call heater manager
  *  - Call inactivity manager
  *  - Call endstop manager
  */

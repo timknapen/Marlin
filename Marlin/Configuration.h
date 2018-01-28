@@ -118,7 +118,7 @@
 
 #if POWER_SUPPLY > 0
   // Enable this option to leave the PSU off at startup.
-  // Power to steppers and heaters will need to be turned on with M80.
+  // Power to steppers will need to be turned on with M80.
   //#define PS_DEFAULT_OFF
 #endif
 
@@ -216,7 +216,7 @@
 
 /**
  * Default Jerk (mm/s)
- * Override with M205 X Y Z E
+ * Override with M205 X Y
  *
  * "Jerk" specifies the minimum speed change that requires acceleration.
  * When changing speed and direction, if the difference is less than the
@@ -333,7 +333,6 @@
 //
 #define HOST_KEEPALIVE_FEATURE        // Disable this if your host doesn't like keepalive messages
 #define DEFAULT_KEEPALIVE_INTERVAL 2  // Number of seconds between "busy" messages. Set with M113.
-#define BUSY_WHILE_HEATING            // Some hosts require "busy" messages even during heating
 
 //
 // M100 Free Memory Watcher
@@ -403,9 +402,5 @@
 // If the servo can't reach the requested position, increase it.
 #define SERVO_DELAY { 300 }
 
-// Servo deactivation
-//
-// With this option servos are powered only during movement, then turned off to prevent jitter.
-//#define DEACTIVATE_SERVOS_AFTER_MOVE
 
 #endif // CONFIGURATION_H

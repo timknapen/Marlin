@@ -40,7 +40,7 @@ void GcodeSuite::M350() {
 }
 
 /**
- * M351: Toggle MS1 MS2 pins directly with axis codes X Y Z E B
+ * M351: Toggle MS1 MS2 pins directly with axis codes X Y B
  *       S# determines MS1 or MS2, X# sets the pin high/low.
  */
 void GcodeSuite::M351() {

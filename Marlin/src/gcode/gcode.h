@@ -105,19 +105,15 @@
  * M120 - Enable endstops detection.
  * M121 - Disable endstops detection.
 
- * M201 - Set max acceleration in units/s^2 for print moves: "M201 X<accel> Y<accel> Z<accel> E<accel>"
- * M202 - Set max acceleration in units/s^2 for travel moves: "M202 X<accel> Y<accel> Z<accel> E<accel>" ** UNUSED IN MARLIN! **
- * M203 - Set maximum feedrate: "M203 X<fr> Y<fr> Z<fr> E<fr>" in units/sec.
+ * M201 - Set max acceleration in units/s^2 for print moves: "M201 X<accel> Y<accel> "
+ * M202 - Set max acceleration in units/s^2 for travel moves: "M202 X<accel> Y<accel> " ** UNUSED IN MARLIN! **
+ * M203 - Set maximum feedrate: "M203 X<fr> Y<fr>" in units/sec.
  * M204 - Set default acceleration in units/sec^2: P<printing> T<travel>
  * M205 - Set advanced settings. Current units apply:
             S<print> T<travel> minimum speeds
             B<minimum segment time>
-            X<max X jerk>, Y<max Y jerk>, Z<max Z jerk>, E<max E jerk>
+            X<max X jerk>, Y<max Y jerk>
  * M206 - Set additional homing offset. (Disabled by NO_WORKSPACE_OFFSETS)
- * M207 - Set Retract Length: S<length>, Feedrate: F<units/min>, and Z lift: Z<distance>. (Requires FWRETRACT)
- * M208 - Set Recover (unretract) Additional (!) Length: S<length> and Feedrate: F<units/min>. (Requires FWRETRACT)
- * M209 - Turn Automatic Retract Detection on/off: S<0|1> (For slicers that don't support G10/11). (Requires FWRETRACT)
-          Every normal extrude-only move will be classified as retract depending on the direction.
  * M211 - Enable, Disable, and/or Report software endstops: S<0|1> (Requires MIN_SOFTWARE_ENDSTOPS or MAX_SOFTWARE_ENDSTOPS)
 
  * M220 - Set Feedrate Percentage: "M220 S<percent>"
