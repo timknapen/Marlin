@@ -393,7 +393,7 @@
 #endif
 
 
-// Force SDCARD_SORT_ALPHA to be enabled for Graphical l c d on LPC1768
+// Force SDCARD_SORT_ALPHA to be enabled for Graphical lcd on LPC1768
 // because of a bug in the shared SPI implementation. (See #8122)
 #if defined(TARGET_LPC1768) && ENABLED(REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER)
   #define SDCARD_SORT_ALPHA         // Keeps one directory level in RAM. Changing

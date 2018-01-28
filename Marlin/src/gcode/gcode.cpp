@@ -162,8 +162,8 @@ void GcodeSuite::process_parsed_command() {
 
     case 'M': switch (parser.codenum) {
       #if HAS_RESUME_CONTINUE
-        case 0: // M0: Unconditional stop - Wait for user button press on LCD
-        case 1: // M1: Conditional stop - Wait for user button press on LCD
+        case 0: // M0: Unconditional stop
+        case 1: // M1: Conditional stop
           M0_M1();
           break;
       #endif // ULTIPANEL
@@ -268,7 +268,7 @@ void GcodeSuite::process_parsed_command() {
 
 	  case 211: M211(); break;    // M211: Enable, Disable, and/or Report software endstops
 
-      case 220: M220(); break;    // M220: Set Feedrate Percentage: S<percent> ("FR" on your LCD)
+      case 220: M220(); break;    // M220: Set Feedrate Percentage: S<percent>
 
 	  case 226: M226(); break;    // M226: Wait until a pin reaches a state
 

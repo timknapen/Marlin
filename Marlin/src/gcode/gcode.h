@@ -56,7 +56,7 @@
  *
  * "M" Codes
  *
- * M0   - Unconditional stop - Wait for user to press a button on the LCD (Only if ULTRA_LCD is enabled)
+ * M0   - Unconditional stop
  * M1   -> M0
  * M17  - Enable/Power all stepper motors
  * M18  - Disable all stepper motors; same as M84
