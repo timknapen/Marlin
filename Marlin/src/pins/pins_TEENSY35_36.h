@@ -39,33 +39,49 @@
 #define AT90USB 1286   // Disable MarlinSerial etc.
 #define USBCON //1286  // Disable MarlinSerial etc.
 /*
+ 
+ Teensy + Trinamic 2D Marlin prototype pins:  8 feb 2018
+ 2	X_END
+ 3	X_DIR
+ 4	X_STEP
+ 5	X_ENABLE
+ 7	X_CS
+ 
+ 11	MOSI
+ 12	MISO
+ 13	SCLK
+ 
+ 15 Y_DIR
+ 16	Y_STEP
+ 19	Y_CS
+ 22	Y_ENABLE
+ 23	Y_END
 
                                          Drawing Machine plan for Teensy3.5
                                                      USB
                                           GND |-----#####-----| VIN 5V
-      X_STEP_PIN          MOSI1   RX1       0 |     #####     | Analog GND
-      X_DIR_PIN           MISO1   TX1       1 |               | 3.3V
-      Y_STEP_PIN                       PWM  2 | *NC     AREF* | 23  A9 PWM
-      Y_DIR_PIN           SCL2 CAN0TX  PWM  3 | *A26     A10* | 22  A8 PWM
-	  SERVO0_PIN          SDA2 CAN0RX  PWM  4 | *A25     A11* | 21  A7 PWM  CS0   MOSI1  RX1
-	  *                   MISO1   TX1  PWM  5 | *GND * * 57   | 20  A6 PWM  CS0   SCK1        FILWIDTH_PIN
-      X_ENABLE_PIN                     PWM  6 | *GND * * 56   | 19  A5            SCL0        *
-      Y_ENABLE_PIN  SCL0  MOSI0   RX3  PWM  7 |      * * 55   | 18  A4            SDA0        *
-      *             SDA0  MISO0   TX3  PWM  8 |      * * 54   | 17  A3            SDA0        *
-                          CS0     RX2  PWM  9 |               | 16  A2            SCL0        *
-                          CS0     TX2  PWM 10 |               | 15  A1      CS0               X_CS_PIN
-      X_STOP_PIN          MOSI0            11 |               | 14  A0 PWM  CS0               *
-      Y_STOP_PIN          MISO0            12 |               | 13 LED            SCK0        LED_PIN
+                          MOSI1   RX1       0 |     #####     | Analog GND
+						  MISO1   TX1       1 |               | 3.3V
+      X_STOP_PIN                       PWM  2 | *NC     AREF* | 23  A9 PWM                    Y_STOP_PIN
+      X_DIR_PIN           SCL2 CAN0TX  PWM  3 | *A26     A10* | 22  A8 PWM                    Y_ENABLE_PIN
+	  X_STEP_PIN          SDA2 CAN0RX  PWM  4 | *A25     A11* | 21  A7 PWM  CS0   MOSI1  RX1
+	  X_ENABLE_PIN        MISO1   TX1  PWM  5 | *GND * * 57   | 20  A6 PWM  CS0   SCK1
+	                                   PWM  6 | *GND * * 56   | 19  A5            SCL0        Y_CS_PIN
+      X_CS_PIN      SCL0  MOSI0   RX3  PWM  7 |      * * 55   | 18  A4            SDA0
+                    SDA0  MISO0   TX3  PWM  8 |      * * 54   | 17  A3            SDA0
+                          CS0     RX2  PWM  9 |               | 16  A2            SCL0        Y_STEP_PIN
+                          CS0     TX2  PWM 10 |               | 15  A1      CS0               Y_DIR_PIN
+      MOSI_PIN            MOSI0            11 |               | 14  A0 PWM  CS0               SERVO_PIN
+      MISO_PIN            MISO0            12 |               | 13 LED            SCK0        SCLK_PIN
                                          3.3V |               | GND
-      *                                    24 |   40 * * 53   |    A22 DAC1
-AUX2                                       25 |   41 * * 52   |    A21 DAC0
-AUX2  *                   SCL2    TX1      26 |   42 * * 51   | 39 A20      MISO0             SDSS
-AUX2  *                   SCK0    RX1      27 | *  *  *  *  * | 38 A19 PWM        SDA1
-AUX2  *                   MOSI0            28 |   43 * * 50   | 37 A18 PWM        SCL1
-D10   *                   CAN0TX       PWM 29 |   44 * * 49   | 36 A17 PWM
-D9    *                   CAN0RX       PWM 30 |   45 * * 48   | 35 A16 PWM                    *
-D8    Y_CS_PIN            CS1     RX4  A12 31 |   46 * * 47   | 34 A15 PWM        SDA0  RX5   *
-                          SCK1    TX4  A13 32 |__GND_*_*_3.3V_| 33 A14 PWM        SCL0  TX5   *
+										   24 |   40 * * 53   |    A22 DAC1
+										   25 |   41 * * 52   |    A21 DAC0
+                          SCL2    TX1      26 |   42 * * 51   | 39 A20      MISO0
+						  SCK0    RX1      27 | *  *  *  *  * | 38 A19 PWM        SDA1
+                          CAN0TX       PWM 29 |   44 * * 49   | 36 A17 PWM
+                          CAN0RX       PWM 30 |   45 * * 48   | 35 A16 PWM
+                          CS1     RX4  A12 31 |   46 * * 47   | 34 A15 PWM        SDA0  RX5
+                          SCK1    TX4  A13 32 |__GND_*_*_3.3V_| 33 A14 PWM        SCL0  TX5
 
           Interior pins:
                           *                       40 * * 53   SCK2
@@ -79,22 +95,22 @@ D8    Y_CS_PIN            CS1     RX4  A12 31 |   46 * * 47   | 34 A15 PWM      
 
 */
 
-#define X_STEP_PIN         12
-#define X_DIR_PIN          11
-#define X_ENABLE_PIN       24
-#define X_CS_PIN           15	// for TMC2130
+#define X_STEP_PIN         4
+#define X_DIR_PIN          3
+#define X_ENABLE_PIN       5
+#define X_CS_PIN           7	// for TMC2130
 
-#define Y_STEP_PIN         19
-#define Y_DIR_PIN          18
-#define Y_ENABLE_PIN       20
-#define Y_CS_PIN           31	// for TMC2130
+#define Y_STEP_PIN         16
+#define Y_DIR_PIN          15
+#define Y_ENABLE_PIN       22
+#define Y_CS_PIN           19	// for TMC2130
 
-#define X_STOP_PIN         28
-#define Y_STOP_PIN         27
+#define X_STOP_PIN         2
+#define Y_STOP_PIN         23
 
 #define SDSS               BUILTIN_SDCARD //39 // 8
-#define LED_PIN            13
+//#define LED_PIN            13
 #define PS_ON_PIN           1
 #define ALARM_PIN          -1
-#define SERVO0_PIN	    	4
+#define SERVO0_PIN			14
 
