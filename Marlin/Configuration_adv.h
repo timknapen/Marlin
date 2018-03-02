@@ -330,11 +330,11 @@
   #define HOLD_MULTIPLIER    0.5  // Scales down the holding current from run current
   #define INTERPOLATE          1  // Interpolate X/Y MICROSTEPS to 256
 
-  #define X_CURRENT         1000  // rms current in mA. Multiply by 1.41 for peak current.
-  #define X_MICROSTEPS        16  // 0..256
+  #define X_CURRENT         500  // rms current in mA. Multiply by 1.41 for peak current.
+  #define X_MICROSTEPS      256  // 0..256
 
-  #define Y_CURRENT         1000
-  #define Y_MICROSTEPS        16
+  #define Y_CURRENT         500
+  #define Y_MICROSTEPS      256
 
   /**
    * Use Trinamic's ultra quiet stepping mode.
@@ -355,11 +355,11 @@
    * M911 - Report stepper driver overtemperature pre-warn condition.
    * M912 - Clear stepper driver overtemperature pre-warn condition flag.
    */
-  //#define AUTOMATIC_CURRENT_CONTROL
+  #define AUTOMATIC_CURRENT_CONTROL
 
   #if ENABLED(AUTOMATIC_CURRENT_CONTROL)
     #define CURRENT_STEP          50  // [mA]
-    #define AUTO_ADJUST_MAX     1300  // [mA], 1300mA_rms = 1840mA_peak
+    #define AUTO_ADJUST_MAX     500  // [mA], 1300mA_rms = 1840mA_peak
     #define REPORT_CURRENT_CHANGE
   #endif
 

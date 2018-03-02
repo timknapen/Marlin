@@ -187,14 +187,14 @@
  * Override with M92
  *                                      X, Y
  */
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 80, 80 }
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { 1275, 1275 }
 
 /**
  * Default Max Feed Rate (mm/s)
  * Override with M203
  *                                      X, Y
  */
-#define DEFAULT_MAX_FEEDRATE          { 300, 300}
+#define DEFAULT_MAX_FEEDRATE          { 6000, 6000}
 
 /**
  * Default Max Acceleration (change/s) change = mm/s
@@ -202,7 +202,7 @@
  * Override with M201
  *                                      X, Y
  */
-#define DEFAULT_MAX_ACCELERATION      { 3000, 3000 }
+#define DEFAULT_MAX_ACCELERATION      { 5000, 5000 }
 
 /**
  * Default Acceleration (change/s) change = mm/s
@@ -212,7 +212,7 @@
  *   M204 T    Travel Acceleration
  */
 #define DEFAULT_ACCELERATION          3000    // X, Y acceleration for drawing moves
-#define DEFAULT_TRAVEL_ACCELERATION   3000    // X, Y acceleration for travel (non drawing) moves
+#define DEFAULT_TRAVEL_ACCELERATION   5000    // X, Y acceleration for travel (non drawing) moves
 
 /**
  * Default Jerk (mm/s)
@@ -254,12 +254,12 @@
 // Direction of endstops when homing; 1=MAX, -1=MIN
 // :[-1,1]
 #define X_HOME_DIR -1
-#define Y_HOME_DIR -1
+#define Y_HOME_DIR 1
 
 //MARK: machine
 
 // The size of the drawing platform
-#define X_BED_SIZE 200
+#define X_BED_SIZE 300
 #define Y_BED_SIZE 200
 
 // Travel limits (mm) after homing, corresponding to endstop positions.
