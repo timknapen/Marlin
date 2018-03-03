@@ -289,7 +289,7 @@
 // enter the serial receive buffer, so they cannot be blocked.
 // Currently handles M108, M112, M410
 // Does not work on boards using AT90USB (USBCON) processors!
-//#define EMERGENCY_PARSER
+#define EMERGENCY_PARSER
 
 // Bad Serial-connections can miss a received command by sending an 'ok'
 // Therefore some clients abort after 30 seconds in a timeout.
@@ -319,10 +319,9 @@
 
   // CHOOSE YOUR MOTORS HERE, THIS IS MANDATORY
   #define X_IS_TMC2130
-  //#define X2_IS_TMC2130
   #define Y_IS_TMC2130
-  //#define Y2_IS_TMC2130
-  /**
+
+/**
    * Stepper driver settings
    */
 

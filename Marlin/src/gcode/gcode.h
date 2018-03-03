@@ -41,7 +41,7 @@
  *
  * "G" Codes
  *
- * G0   -> G1
+ * G0   - G1 but with pen up!
  * G1   - Coordinated Movement X Y
  * G2   - CW ARC
  * G3   - CCW ARC
@@ -220,7 +220,11 @@ public:
 
 private:
 
-  static void G0_G1(
+   static void G0(
+	
+   );
+
+  static void G1(
 	
   );
 

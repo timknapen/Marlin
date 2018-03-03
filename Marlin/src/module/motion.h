@@ -206,7 +206,7 @@ void homeaxis(const AxisEnum axis);
 
 
 
-#if HAS_WORKSPACE_OFFSET || ENABLED(DUAL_X_CARRIAGE)
+#if HAS_WORKSPACE_OFFSET
   void update_software_endstops(const AxisEnum axis);
 #endif
 

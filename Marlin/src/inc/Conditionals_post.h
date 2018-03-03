@@ -174,94 +174,6 @@
 #endif
 #define HAS_POWER_SWITCH (POWER_SUPPLY > 0 && PIN_EXISTS(PS_ON))
 
-/**
- * X_DUAL_ENDSTOPS endstop reassignment
- */
-#if ENABLED(X_DUAL_ENDSTOPS)
-  #if X_HOME_DIR > 0
-    #if X2_USE_ENDSTOP == _XMIN_
-      #define X2_MAX_ENDSTOP_INVERTING X_MIN_ENDSTOP_INVERTING
-      #define X2_MAX_PIN X_MIN_PIN
-    #elif X2_USE_ENDSTOP == _XMAX_
-      #define X2_MAX_ENDSTOP_INVERTING X_MAX_ENDSTOP_INVERTING
-      #define X2_MAX_PIN X_MAX_PIN
-    #elif X2_USE_ENDSTOP == _YMIN_
-      #define X2_MAX_ENDSTOP_INVERTING Y_MIN_ENDSTOP_INVERTING
-      #define X2_MAX_PIN Y_MIN_PIN
-    #elif X2_USE_ENDSTOP == _YMAX_
-      #define X2_MAX_ENDSTOP_INVERTING Y_MAX_ENDSTOP_INVERTING
-      #define X2_MAX_PIN Y_MAX_PIN
-    #else
-      #define X2_MAX_ENDSTOP_INVERTING false
-    #endif
-    #define X2_MIN_ENDSTOP_INVERTING false
-  #else
-    #if X2_USE_ENDSTOP == _XMIN_
-      #define X2_MIN_ENDSTOP_INVERTING X_MIN_ENDSTOP_INVERTING
-      #define X2_MIN_PIN X_MIN_PIN
-    #elif X2_USE_ENDSTOP == _XMAX_
-      #define X2_MIN_ENDSTOP_INVERTING X_MAX_ENDSTOP_INVERTING
-      #define X2_MIN_PIN X_MAX_PIN
-    #elif X2_USE_ENDSTOP == _YMIN_
-      #define X2_MIN_ENDSTOP_INVERTING Y_MIN_ENDSTOP_INVERTING
-      #define X2_MIN_PIN Y_MIN_PIN
-    #elif X2_USE_ENDSTOP == _YMAX_
-      #define X2_MIN_ENDSTOP_INVERTING Y_MAX_ENDSTOP_INVERTING
-      #define X2_MIN_PIN Y_MAX_PIN
-    #else
-      #define X2_MIN_ENDSTOP_INVERTING false
-    #endif
-    #define X2_MAX_ENDSTOP_INVERTING false
-  #endif
-#endif
-
-// Is an endstop plug used for the X2 endstop?
-#define IS_X2_ENDSTOP(A,M) (ENABLED(X_DUAL_ENDSTOPS) && X2_USE_ENDSTOP == _##A##M##_)
-
-/**
- * Y_DUAL_ENDSTOPS endstop reassignment
- */
-#if ENABLED(Y_DUAL_ENDSTOPS)
-  #if Y_HOME_DIR > 0
-    #if Y2_USE_ENDSTOP == _XMIN_
-      #define Y2_MAX_ENDSTOP_INVERTING X_MIN_ENDSTOP_INVERTING
-      #define Y2_MAX_PIN X_MIN_PIN
-    #elif Y2_USE_ENDSTOP == _XMAX_
-      #define Y2_MAX_ENDSTOP_INVERTING X_MAX_ENDSTOP_INVERTING
-      #define Y2_MAX_PIN X_MAX_PIN
-    #elif Y2_USE_ENDSTOP == _YMIN_
-      #define Y2_MAX_ENDSTOP_INVERTING Y_MIN_ENDSTOP_INVERTING
-      #define Y2_MAX_PIN Y_MIN_PIN
-    #elif Y2_USE_ENDSTOP == _YMAX_
-      #define Y2_MAX_ENDSTOP_INVERTING Y_MAX_ENDSTOP_INVERTING
-      #define Y2_MAX_PIN Y_MAX_PIN
-    #else
-      #define Y2_MAX_ENDSTOP_INVERTING false
-    #endif
-    #define Y2_MIN_ENDSTOP_INVERTING false
-  #else
-    #if Y2_USE_ENDSTOP == _XMIN_
-      #define Y2_MIN_ENDSTOP_INVERTING X_MIN_ENDSTOP_INVERTING
-      #define Y2_MIN_PIN X_MIN_PIN
-    #elif Y2_USE_ENDSTOP == _XMAX_
-      #define Y2_MIN_ENDSTOP_INVERTING X_MAX_ENDSTOP_INVERTING
-      #define Y2_MIN_PIN X_MAX_PIN
-    #elif Y2_USE_ENDSTOP == _YMIN_
-      #define Y2_MIN_ENDSTOP_INVERTING Y_MIN_ENDSTOP_INVERTING
-      #define Y2_MIN_PIN Y_MIN_PIN
-    #elif Y2_USE_ENDSTOP == _YMAX_
-      #define Y2_MIN_ENDSTOP_INVERTING Y_MAX_ENDSTOP_INVERTING
-      #define Y2_MIN_PIN Y_MAX_PIN
-    #else
-      #define Y2_MIN_ENDSTOP_INVERTING false
-    #endif
-    #define Y2_MAX_ENDSTOP_INVERTING false
-  #endif
-#endif
-
-// Is an endstop plug used for the Y2 endstop?
-#define IS_Y2_ENDSTOP(A,M) (ENABLED(Y_DUAL_ENDSTOPS) && Y2_USE_ENDSTOP == _##A##M##_)
-
 
 /**
  * Set ENDSTOPPULLUPS for active endstop switches
@@ -298,10 +210,10 @@
 
 
 // Endstops
-#define HAS_X_MIN (PIN_EXISTS(X_MIN) && !IS_X2_ENDSTOP(X,MIN) && !IS_Y2_ENDSTOP(X,MIN))
-#define HAS_X_MAX (PIN_EXISTS(X_MAX) && !IS_X2_ENDSTOP(X,MAX) && !IS_Y2_ENDSTOP(X,MAX))
-#define HAS_Y_MIN (PIN_EXISTS(Y_MIN) && !IS_X2_ENDSTOP(Y,MIN) && !IS_Y2_ENDSTOP(Y,MIN))
-#define HAS_Y_MAX (PIN_EXISTS(Y_MAX) && !IS_X2_ENDSTOP(Y,MAX) && !IS_Y2_ENDSTOP(Y,MAX))
+#define HAS_X_MIN PIN_EXISTS(X_MIN)
+#define HAS_X_MAX PIN_EXISTS(X_MAX)
+#define HAS_Y_MIN PIN_EXISTS(Y_MIN)
+#define HAS_Y_MAX PIN_EXISTS(Y_MAX)
 
 
 // Servos

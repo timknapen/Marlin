@@ -36,8 +36,8 @@
   #define BOARD_NAME "Teensy3.6"
 #endif
 
-#define AT90USB 1286   // Disable MarlinSerial etc.
-#define USBCON //1286  // Disable MarlinSerial etc.
+//#define AT90USB 1286   // Disable MarlinSerial etc.
+//#define USBCON //1286  // Disable MarlinSerial etc.
 /*
  
  Teensy + Trinamic 2D Marlin prototype pins:  8 feb 2018
@@ -105,8 +105,8 @@
 #define Y_ENABLE_PIN       22
 #define Y_CS_PIN           19	// for TMC2130
 
-#define X_STOP_PIN         2
-#define Y_STOP_PIN         23
+#define X_MIN_PIN			2
+#define Y_MAX_PIN			23
 
 #define SDSS               BUILTIN_SDCARD //39 // 8
 //#define LED_PIN            13

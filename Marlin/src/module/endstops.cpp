@@ -40,21 +40,7 @@ Endstops endstops;
 bool Endstops::enabled, Endstops::enabled_globally; // Initialized by settings.load()
 volatile char Endstops::endstop_hit_bits; // use X_MIN, Y_MIN as BIT value
 
-#if ENABLED(X_DUAL_ENDSTOPS) || ENABLED(Y_DUAL_ENDSTOPS)
-  uint16_t
-#else
-  byte
-#endif
-    Endstops::current_endstop_bits = 0,
-    Endstops::old_endstop_bits = 0;
-
-
-#if ENABLED(X_DUAL_ENDSTOPS)
-  float Endstops::x_endstop_adj; // Initialized by settings.load()
-#endif
-#if ENABLED(Y_DUAL_ENDSTOPS)
-  float Endstops::y_endstop_adj; // Initialized by settings.load()
-#endif
+byte Endstops::current_endstop_bits = 0,  Endstops::old_endstop_bits = 0;
 
 
 /**
@@ -104,7 +90,7 @@ void Endstops::init() {
 void Endstops::report_state() {
   if (endstop_hit_bits) {
    
-      #define _SET_STOP_CHAR(A,C) ;
+    #define _SET_STOP_CHAR(A,C) ;
 
     #define _ENDSTOP_HIT_ECHO(A,C) do{ \
       SERIAL_ECHOPAIR(" " STRINGIFY(A) ":", stepper.triggered_position_mm(A ##_AXIS)); \
@@ -157,26 +143,6 @@ void Endstops::M119() {
   #endif
 } // Endstops::M119
 
-#if ENABLED(X_DUAL_ENDSTOPS)
-  void Endstops::test_dual_x_endstops(const EndstopEnum es1, const EndstopEnum es2) {
-    const byte x_test = TEST_ENDSTOP(es1) | (TEST_ENDSTOP(es2) << 1); // bit 0 for X, bit 1 for X2
-    if (x_test && stepper.current_block->steps[X_AXIS] > 0) {
-      SBI(endstop_hit_bits, X_MIN);
-      if (!stepper.performing_homing || (x_test == 0x3))  //if not performing home or if both endstops were trigged during homing...
-        stepper.kill_current_block();
-    }
-  }
-#endif
-#if ENABLED(Y_DUAL_ENDSTOPS)
-  void Endstops::test_dual_y_endstops(const EndstopEnum es1, const EndstopEnum es2) {
-    const byte y_test = TEST_ENDSTOP(es1) | (TEST_ENDSTOP(es2) << 1); // bit 0 for Y, bit 1 for Y2
-    if (y_test && stepper.current_block->steps[Y_AXIS] > 0) {
-      SBI(endstop_hit_bits, Y_MIN);
-      if (!stepper.performing_homing || (y_test == 0x3))  //if not performing home or if both endstops were trigged during homing...
-        stepper.kill_current_block();
-    }
-  }
-#endif
 
 // Check endstops - Called from ISR!
 void Endstops::update() {
@@ -217,9 +183,9 @@ void Endstops::update() {
      * If DeltaA ==  DeltaB, the movement is only in the 1st axis (X)
      */
     #if ENABLED(COREXY)
-      #define X_CMP ==
-    #else
       #define X_CMP !=
+    #else
+      #define X_CMP ==
     #endif
     #define X_MOVE_TEST ( S_(1) != S_(2) || (S_(1) > 0 && D_(1) X_CMP D_(2)) )
     #define X_AXIS_HEAD X_HEAD
@@ -236,9 +202,9 @@ void Endstops::update() {
      * If DeltaA ==  DeltaB, the movement is only in the 1st axis (X or Y)
      */
     #if ENABLED(COREYX)
-      #define Y_CMP ==
-    #else
       #define Y_CMP !=
+    #else
+      #define Y_CMP ==
     #endif
     #define Y_MOVE_TEST ( S_(1) != S_(2) || (S_(1) > 0 && D_(1) Y_CMP D_(2)) )
     #define Y_AXIS_HEAD Y_HEAD
@@ -257,33 +223,12 @@ void Endstops::update() {
   if (X_MOVE_TEST) {
     if (stepper.motor_direction(X_AXIS_HEAD)) { // -direction
       #if HAS_X_MIN
-        #if ENABLED(X_DUAL_ENDSTOPS)
-          UPDATE_ENDSTOP_BIT(X, MIN);
-          #if HAS_X2_MIN
-            UPDATE_ENDSTOP_BIT(X2, MIN);
-          #else
-            COPY_BIT(current_endstop_bits, X_MIN, X2_MIN);
-          #endif
-          test_dual_x_endstops(X_MIN, X2_MIN);
-        #else
           if (X_MIN_TEST) UPDATE_ENDSTOP(X, MIN);
-        #endif
       #endif
     }
     else { // +direction
       #if HAS_X_MAX
-        #if ENABLED(X_DUAL_ENDSTOPS)
-          UPDATE_ENDSTOP_BIT(X, MAX);
-          #if HAS_X2_MAX
-            UPDATE_ENDSTOP_BIT(X2, MAX);
-          #else
-            COPY_BIT(current_endstop_bits, X_MAX, X2_MAX);
-          #endif
-          test_dual_x_endstops(X_MAX, X2_MAX);
-        #else
-          if (X_MIN_TEST) UPDATE_ENDSTOP(X, MAX);
-        #endif
-
+          if (X_MAX_TEST) UPDATE_ENDSTOP(X, MAX);
       #endif
     }
   }
@@ -291,32 +236,12 @@ void Endstops::update() {
   if (Y_MOVE_TEST) {
     if (stepper.motor_direction(Y_AXIS_HEAD)) { // -direction
       #if HAS_Y_MIN
-        #if ENABLED(Y_DUAL_ENDSTOPS)
-          UPDATE_ENDSTOP_BIT(Y, MIN);
-          #if HAS_Y2_MIN
-            UPDATE_ENDSTOP_BIT(Y2, MIN);
-          #else
-            COPY_BIT(current_endstop_bits, Y_MIN, Y2_MIN);
-          #endif
-          test_dual_y_endstops(Y_MIN, Y2_MIN);
-        #else
-          UPDATE_ENDSTOP(Y, MIN);
-        #endif
+		UPDATE_ENDSTOP(Y, MIN);
       #endif
     }
     else { // +direction
       #if HAS_Y_MAX
-        #if ENABLED(Y_DUAL_ENDSTOPS)
-          UPDATE_ENDSTOP_BIT(Y, MAX);
-          #if HAS_Y2_MAX
-            UPDATE_ENDSTOP_BIT(Y2, MAX);
-          #else
-            COPY_BIT(current_endstop_bits, Y_MAX, Y2_MAX);
-          #endif
-          test_dual_y_endstops(Y_MAX, Y2_MAX);
-        #else
-          UPDATE_ENDSTOP(Y, MAX);
-        #endif
+			UPDATE_ENDSTOP(Y, MAX);
       #endif
     }
   }

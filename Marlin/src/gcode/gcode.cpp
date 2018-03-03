@@ -104,8 +104,10 @@ void GcodeSuite::process_parsed_command() {
 
       // G0, G1
       case 0:
+		  G0();
+	    break;
       case 1:
-          G0_G1();
+          G1();
         break;
 
       // G2, G3

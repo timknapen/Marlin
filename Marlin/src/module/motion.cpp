@@ -429,14 +429,6 @@ void homeaxis(const AxisEnum axis) {
  
   const int axis_home_dir = home_dir(axis);
 
- 
-  // Set flags for X, Y motor locking
-  #if ENABLED(X_DUAL_ENDSTOPS)
-    if (axis == X_AXIS) stepper.set_homing_flag_x(true);
-  #endif
-  #if ENABLED(Y_DUAL_ENDSTOPS)
-    if (axis == Y_AXIS) stepper.set_homing_flag_y(true);
-  #endif
 
   // Disable stealthChop if used. Enable diag1 pin on driver.
   #if ENABLED(SENSORLESS_HOMING)
@@ -460,34 +452,6 @@ void homeaxis(const AxisEnum axis) {
     // Slow move towards endstop until triggered
     do_homing_move(axis, 2 * bump, get_homing_bump_feedrate(axis));
   }
-
-  #if ENABLED(X_DUAL_ENDSTOPS) || ENABLED(Y_DUAL_ENDSTOPS)
-    const bool pos_dir = axis_home_dir > 0;
-    #if ENABLED(X_DUAL_ENDSTOPS)
-      if (axis == X_AXIS) {
-        const bool lock_x1 = pos_dir ? (endstops.x_endstop_adj > 0) : (endstops.x_endstop_adj < 0);
-        float adj = FABS(endstops.x_endstop_adj);
-        if (pos_dir) adj = -adj;
-        if (lock_x1) stepper.set_x_lock(true); else stepper.set_x2_lock(true);
-        do_homing_move(axis, adj);
-        if (lock_x1) stepper.set_x_lock(false); else stepper.set_x2_lock(false);
-        stepper.set_homing_flag_x(false);
-      }
-    #endif
-    #if ENABLED(Y_DUAL_ENDSTOPS)
-      if (axis == Y_AXIS) {
-        const bool lock_y1 = pos_dir ? (endstops.y_endstop_adj > 0) : (endstops.y_endstop_adj < 0);
-        float adj = FABS(endstops.y_endstop_adj);
-        if (pos_dir) adj = -adj;
-        if (lock_y1) stepper.set_y_lock(true); else stepper.set_y2_lock(true);
-        do_homing_move(axis, adj);
-        if (lock_y1) stepper.set_y_lock(false); else stepper.set_y2_lock(false);
-        stepper.set_homing_flag_y(false);
-      }
-    #endif
-#endif
-
-
 
     // For cartesian/core machines,
     // set the axis to its home position
@@ -532,7 +496,7 @@ void homeaxis(const AxisEnum axis) {
 
   }
 
-#endif // HAS_WORKSPACE_OFFSET || DUAL_X_CARRIAGE
+#endif // HAS_WORKSPACE_OFFSET
 
 #if HAS_M206_COMMAND
   /**

@@ -66,9 +66,6 @@ class Stepper {
       static bool abort_on_endstop_hit;
     #endif
 
-    #if ENABLED(X_DUAL_ENDSTOPS) || ENABLED(Y_DUAL_ENDSTOPS)
-      static bool performing_homing;
-    #endif
 
     #if HAS_MOTOR_CURRENT_PWM
       #ifndef PWM_MOTOR_CURRENT
@@ -83,12 +80,7 @@ class Stepper {
 
     static uint8_t last_direction_bits;        // The next stepping-bits to be output
 
-    #if ENABLED(X_DUAL_ENDSTOPS)
-      static bool locked_x_motor, locked_x2_motor;
-    #endif
-    #if ENABLED(Y_DUAL_ENDSTOPS)
-      static bool locked_y_motor, locked_y2_motor;
-    #endif
+
 
     // Counter variables for the Bresenham line tracer
     static long counter_X, counter_Y;
@@ -196,18 +188,6 @@ class Stepper {
       static void microstep_ms(const uint8_t driver, const int8_t ms1, const int8_t ms2);
       static void microstep_mode(const uint8_t driver, const uint8_t stepping);
       static void microstep_readings();
-    #endif
-
-    #if ENABLED(X_DUAL_ENDSTOPS)
-      FORCE_INLINE static void set_homing_flag_x(const bool state) { performing_homing = state; }
-      FORCE_INLINE static void set_x_lock(const bool state) { locked_x_motor = state; }
-      FORCE_INLINE static void set_x2_lock(const bool state) { locked_x2_motor = state; }
-    #endif
-
-    #if ENABLED(Y_DUAL_ENDSTOPS)
-      FORCE_INLINE static void set_homing_flag_y(const bool state) { performing_homing = state; }
-      FORCE_INLINE static void set_y_lock(const bool state) { locked_y_motor = state; }
-      FORCE_INLINE static void set_y2_lock(const bool state) { locked_y2_motor = state; }
     #endif
 
 

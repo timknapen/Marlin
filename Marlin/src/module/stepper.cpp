@@ -71,9 +71,6 @@ block_t* Stepper::current_block = NULL;  // A pointer to the block currently bei
   bool Stepper::abort_on_endstop_hit = false;
 #endif
 
-#if ENABLED(X_DUAL_ENDSTOPS) || ENABLED(Y_DUAL_ENDSTOPS)
-  bool Stepper::performing_homing = false;
-#endif
 
 #if HAS_MOTOR_CURRENT_PWM
   uint32_t Stepper::motor_current_setting[3]; // Initialized by settings.load()
@@ -84,12 +81,6 @@ block_t* Stepper::current_block = NULL;  // A pointer to the block currently bei
 uint8_t Stepper::last_direction_bits = 0;        // The next stepping-bits to be output
 int16_t Stepper::cleaning_buffer_counter = 0;
 
-#if ENABLED(X_DUAL_ENDSTOPS)
-  bool Stepper::locked_x_motor = false, Stepper::locked_x2_motor = false;
-#endif
-#if ENABLED(Y_DUAL_ENDSTOPS)
-  bool Stepper::locked_y_motor = false, Stepper::locked_y2_motor = false;
-#endif
 
 long Stepper::counter_X = 0,
      Stepper::counter_Y = 0;
@@ -110,26 +101,6 @@ hal_timer_t Stepper::OCR1A_nominal,
 
 volatile long Stepper::endstops_trigsteps[XY];
 
-#if ENABLED(X_DUAL_ENDSTOPS) || ENABLED(Y_DUAL_ENDSTOPS)
-  #define LOCKED_X_MOTOR  locked_x_motor
-  #define LOCKED_Y_MOTOR  locked_y_motor
-
-  #define DUAL_ENDSTOP_APPLY_STEP(AXIS,v)                                                                                                             \
-    if (performing_homing) {                                                                                                                          \
-      if (AXIS##_HOME_DIR < 0) {                                                                                                                      \
-        if (!(TEST(endstops.old_endstop_bits, AXIS##_MIN) && (count_direction[AXIS##_AXIS] < 0)) && !LOCKED_##AXIS##_MOTOR) AXIS##_STEP_WRITE(v);     \
-        if (!(TEST(endstops.old_endstop_bits, AXIS##2_MIN) && (count_direction[AXIS##_AXIS] < 0)) && !LOCKED_##AXIS##2_MOTOR) AXIS##2_STEP_WRITE(v);  \
-      }                                                                                                                                               \
-      else {                                                                                                                                          \
-        if (!(TEST(endstops.old_endstop_bits, AXIS##_MAX) && (count_direction[AXIS##_AXIS] > 0)) && !LOCKED_##AXIS##_MOTOR) AXIS##_STEP_WRITE(v);     \
-        if (!(TEST(endstops.old_endstop_bits, AXIS##2_MAX) && (count_direction[AXIS##_AXIS] > 0)) && !LOCKED_##AXIS##2_MOTOR) AXIS##2_STEP_WRITE(v);  \
-      }                                                                                                                                               \
-    }                                                                                                                                                 \
-    else {                                                                                                                                            \
-      AXIS##_STEP_WRITE(v);                                                                                                                           \
-      AXIS##2_STEP_WRITE(v);                                                                                                                          \
-    }
-#endif
 
   #define X_APPLY_DIR(v,Q) X_DIR_WRITE(v)
   #define X_APPLY_STEP(v,Q) X_STEP_WRITE(v)

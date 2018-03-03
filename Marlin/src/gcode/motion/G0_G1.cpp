@@ -36,7 +36,13 @@ extern float destination[XY];
 /**
  * G0, G1: Coordinated movement of X Y axes
  */
-void GcodeSuite::G0_G1() {
+void GcodeSuite::G0() {
+	if (IsRunning() && G0_G1_CONDITION) {
+		get_destination_from_command(); // For X Y
+		prepare_move_to_destination();
+	}
+}
+void GcodeSuite::G1() {
   if (IsRunning() && G0_G1_CONDITION) {
     get_destination_from_command(); // For X Y
 	prepare_move_to_destination();

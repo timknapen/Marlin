@@ -188,28 +188,6 @@ void MarlinSettings::postprocess() {
    
     EEPROM_WRITE(zfh);
 
-	#if ENABLED(X_DUAL_ENDSTOPS) || ENABLED(Y_DUAL_ENDSTOPS)
-      // Write dual endstops in X, Y order. Unused = 0.0
-      dummy = 0.0f;
-      #if ENABLED(X_DUAL_ENDSTOPS)
-        EEPROM_WRITE(endstops.x_endstop_adj);   // 1 float
-      #else
-        EEPROM_WRITE(dummy);
-      #endif
-
-      #if ENABLED(Y_DUAL_ENDSTOPS)
-        EEPROM_WRITE(endstops.y_endstop_adj);   // 1 float
-      #else
-        EEPROM_WRITE(dummy);
-      #endif
-
-      for (uint8_t q = 8; q--;) EEPROM_WRITE(dummy);
-
-    #else
-      dummy = 0.0f;
-      for (uint8_t q = 11; q--;) EEPROM_WRITE(dummy);
-    #endif
-
     // Save TMC2130 Configuration, and placeholder values
     uint16_t val;
     #if ENABLED(HAVE_TMC2130)
@@ -361,31 +339,6 @@ void MarlinSettings::postprocess() {
       #endif
       EEPROM_READ(home_offset);
 
-      //
-      // Dual Endstops offsets
-      //
-
-      #if ENABLED(X_DUAL_ENDSTOPS) || ENABLED(Y_DUAL_ENDSTOPS) 
-		
-        #if ENABLED(X_DUAL_ENDSTOPS)
-          EEPROM_READ(endstops.x_endstop_adj);  // 1 float
-        #else
-          EEPROM_READ(dummy);
-        #endif
-        #if ENABLED(Y_DUAL_ENDSTOPS)
-          EEPROM_READ(endstops.y_endstop_adj);  // 1 float
-        #else
-          EEPROM_READ(dummy);
-        #endif
-		
-		EEPROM_READ(dummy);
-		for (uint8_t q=8; q--;) EEPROM_READ(dummy);
-
-      #else
-
-        for (uint8_t q=11; q--;) EEPROM_READ(dummy);
-
-      #endif
 
 
       //
@@ -537,30 +490,6 @@ void MarlinSettings::reset() {
     ZERO(home_offset);
   #endif
 
-	
-  #if ENABLED(X_DUAL_ENDSTOPS) || ENABLED(Y_DUAL_ENDSTOPS)
-
-    #if ENABLED(X_DUAL_ENDSTOPS)
-      endstops.x_endstop_adj = (
-        #ifdef X_DUAL_ENDSTOPS_ADJUSTMENT
-          X_DUAL_ENDSTOPS_ADJUSTMENT
-        #else
-          0
-        #endif
-      );
-    #endif
-    #if ENABLED(Y_DUAL_ENDSTOPS)
-      endstops.y_endstop_adj = (
-        #ifdef Y_DUAL_ENDSTOPS_ADJUSTMENT
-          Y_DUAL_ENDSTOPS_ADJUSTMENT
-        #else
-          0
-        #endif
-      );
-    #endif
-  #endif
-
-	
 
   endstops.enable_globally(
     #if ENABLED(ENDSTOPS_ALWAYS_ON_DEFAULT)
@@ -679,25 +608,6 @@ void MarlinSettings::reset() {
       SERIAL_ECHOPAIR("  M206 X", LINEAR_UNIT(home_offset[X_AXIS]));
       SERIAL_ECHOLNPAIR(" Y", LINEAR_UNIT(home_offset[Y_AXIS]));
     #endif
-
-  
-   
-	  
-    #if ENABLED(X_DUAL_ENDSTOPS) || ENABLED(Y_DUAL_ENDSTOPS)
-      if (!forReplay) {
-        CONFIG_ECHO_START;
-        SERIAL_ECHOLNPGM(" Endstop adjustment:");
-      }
-      CONFIG_ECHO_START;
-      SERIAL_ECHOPGM("  M666");
-      #if ENABLED(X_DUAL_ENDSTOPS)
-        SERIAL_ECHOPAIR(" X", LINEAR_UNIT(endstops.x_endstop_adj));
-      #endif
-      #if ENABLED(Y_DUAL_ENDSTOPS)
-        SERIAL_ECHOPAIR(" Y", LINEAR_UNIT(endstops.y_endstop_adj));
-      #endif
-      SERIAL_EOL();
-    #endif 
 
 
   
